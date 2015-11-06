@@ -23,7 +23,7 @@ int main()
 	//for(int i = 0; i < input_size*inv_rate; i++)
 	//	printf("%d", codeword[i]);
 	free(codeword);
-	free(input)
+	free(input);
 }
 
 char* encode(char *input, int input_size)
