@@ -7,8 +7,8 @@ rho = 2/3;
 %Gamma_dB = 1:8;
 %Gamma = 10.^(Gamma_dB/10);
 pck_len = 10^4;
-it_num = 10;
-ebn0_dB = 1:8;
+it_num = 10^4;
+ebn0_dB = 0:10;
 ebn0 = 10.^(ebn0_dB/10);
 sigma_w = sqrt(1./(2/3*ebn0));
 
@@ -40,7 +40,7 @@ BER_mat = zeros(length(ebn0), it_num);
 
 for i = 1:it_num
 	disp(i);
-	tic;
+	%tic;
 	% define input vector of size pck_len + mem
 	u = randi(2, pck_len + mem, 1) - 1;
 	u(pck_len + 1:pck_len + mem) = 0;
@@ -61,7 +61,7 @@ for i = 1:it_num
 		u_hat = viterbi517_matlab(y, sigma_w(j));
 		BER_mat(j, i) = sum(u ~= u_hat)/pck_len;
 	end
-	toc
+	%toc
 	
 	if(mod(i, 200) == 0)
 		save('517_BER.mat');
