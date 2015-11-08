@@ -3,10 +3,10 @@
 % decode with mex -- in C
 
 rho = 2/3;
-Gamma_dB = 0:15;
+Gamma_dB = 1:8;
 Gamma = 10.^(Gamma_dB/10);
 pck_len = 10^4;
-it_num = 10^3;
+it_num = 10^4;
 sigma_w = sqrt(1./Gamma);
 EBN0 = Gamma./rho;
 EBN0_dB = 10*log10(EBN0);
@@ -38,7 +38,7 @@ for i = 1:it_num
 	end
 	toc
 	
-	if(mod(i, 20) == 0)
+	if(mod(i, 200) == 0)
 		save('517_BER.mat');
 	end
 end
