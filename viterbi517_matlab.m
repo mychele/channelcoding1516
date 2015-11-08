@@ -1,4 +1,4 @@
-function [ u_hat ] = viterbi517_matlab( r, sigma_w)
+function [ u_hat ] = viterbi517_matlab( r, sigma_w, u, s )
 % This function performs Viterbi decoding for a (5,1,7) convolutional code
 % with 4 states, rate 1/3
 % @param r the received signal, column
@@ -66,11 +66,15 @@ for l = 1:N:length(r)
 		cost = inf;
 		for neigh_ID = neigh(state_ID+1, :)
 			newcost = Gamma_prev(neigh_ID+1) + llr.'*y_lut(u_poss*N + 1:(u_poss + 1)*N, neigh_ID+1);
-			if (newcost <= cost) % new min
+			if (newcost < cost) % new min
 				cost = newcost;
 				prev_state(ceil(l/N), state_ID+1) = neigh_ID;
-				Gamma(state_ID+1) = Gamma_prev(neigh_ID+1) + cost;
+				Gamma(state_ID+1) = cost;
 			end	
+		end
+		if (cost == inf) % it was not initialized
+			prev_state(ceil(l/N), state_ID+1) = neigh(1);
+			Gamma(state_ID+1) = cost;
 		end
 	end
 	
@@ -83,9 +87,12 @@ end
 % Backtrack from state 0
 u_hat = zeros(length(r)/N, 1);
 state_ID = 0;
-for l = 0:length(prev_state)-1
-	index = length(prev_state) - l;
+for l = 0:length(u_hat)-1
+	index = length(u_hat) - l;
 	u_hat(index) = floor(state_ID/mem);
+	%if(u_hat(index) ~= u(index))
+	%	keyboard;
+	%end
 	state_ID = prev_state(index, state_ID+1);
 end
 
