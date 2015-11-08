@@ -12,14 +12,14 @@ Pbit_uncoded = qfunc(sqrt(2*snr));
 gamma_c = R*min(d);
 Pbit_nok = qfunc(sqrt(2*snr*gamma_c));
 
-open('517_BER.mat');
+open('517_BER_firstsim.mat');
 
-BER = mean(BER_mat, 2);
+BER = sum(BER_mat, 2)/8;
 
 figure, 
 plot(10*log10(snr), log10(Pbit_code)), hold on
 plot(10*log10(snr), log10(Pbit_uncoded)), hold on
 plot(10*log10(snr), log10(Pbit_nok)), hold on
-plot(10*log10(snr), log10(BER)), hold on
+plot(EBN0_dB, log10(BER)), hold on
 legend('g3', 'uncoded', 'nominal coding gain', 'viterbi')
 
