@@ -1,7 +1,7 @@
 /*
  * This function performs ML decoding for a 517 binary convolutional code
  * @param a pointer to the received vector
- * @param the noise variance of the channel
+ * @param the noise std_deviation of the channel
  * @param the length of the received vector
  * @param the pointer to the array where received values will be stored
  */

@@ -2,3 +2,5 @@
 viterbi
 
 *.m~
+
+*.mexmaci64

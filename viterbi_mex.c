@@ -39,16 +39,17 @@ void mexFunction(
     r = mxGetPr(prhs[0]);
     // vector length
     n = mxGetN(prhs[0]);
-    // noise variance
-    sigma_w = mxGetScalar(mxGetField(prhs[1], 0, "sigw"));
+    // noise std deviation
+    sigma_w = mxGetScalar(prhs[1]);
     
-    printf("n = %d, sigw = %f\n",n,sigma_w);
+    //printf("n = %d, sigw = %f\n", n, sigma_w);
     
     
     /* 3. Prepare output vectors */
     int u_hat_size = n/N; // TODO sanitize length
     plhs[0] = mxCreateDoubleMatrix(1, u_hat_size, mxREAL);
     u_hat = mxGetPr(plhs[0]);
+    //printf("%d\n", u_hat_size);
     
     
     /* 4. Run the algorithm */
