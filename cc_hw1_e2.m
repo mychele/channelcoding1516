@@ -1,5 +1,5 @@
 sigma_w2 = 1;
-xmax = 100;
+xmax = 10;
 x = -xmax:xmax; % support (received signal)
 x_plus = 0:xmax;
 x_min = -xmax:0;
