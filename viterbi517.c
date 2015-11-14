@@ -82,8 +82,8 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 	int const outSize = n/N;							
 
 	// initialize useful quantities
-	double gammaPrev[numStates] = {0, DBL_MAX, DBL_MAX, DBL_MAX};
-	double gamma[numStates] = {DBL_MAX, DBL_MAX, DBL_MAX, DBL_MAX};
+	double gammaPrev[numStates] = {0, DBL_MAX/2, DBL_MAX/2, DBL_MAX/2};
+	double gamma[numStates] = {DBL_MAX/2, DBL_MAX/2, DBL_MAX/2, DBL_MAX/2};
 
 	char prevState[outSize][numStates];
 
@@ -102,7 +102,7 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 		// }
 		// cycle on the states
 		int stateID;
-		double minCost = DBL_MAX; // this will always be updated because of 
+		double minCost = DBL_MAX/2; // this will always be updated because of 
 		// the paths from 0 to 0 and 2
 		for (stateID = 0; stateID < numStates; stateID++)
 		{
@@ -114,7 +114,7 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 			// {
 			// 	printf("stateID = %d, possible input=%d\n", stateID, u_poss);
 			// }
-			double cost = DBL_MAX;
+			double cost = DBL_MAX/2;
 			// each node has mem neighbors, cycle on them
 			int maxNeighID = neighbors[stateID][mem - 1];
 			int neighID = neighbors[stateID][0];
@@ -132,7 +132,7 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 					gamma[stateID] = cost;
 				}
 			}
-			if (cost == DBL_MAX) // no paths going to this state, this happens 
+			if (cost == DBL_MAX/2) // no paths going to this state, this happens 
 				// for state 1 and 3 at the first step
 			{
 				prevState[l/N][stateID] = 0;
