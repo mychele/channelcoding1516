@@ -4,7 +4,7 @@ x = -xmax:xmax; % support (received signal)
 x_plus = 0:xmax;
 x_min = -xmax:0;
 R = 1;
-Pbit = qfunc(sqrt(0.5/sigma_w2*R));
+Pbit = qfunc(sqrt(1/sigma_w2*R));
 
 %% AWGN, soft decoding
 f_awgnsd = 2*x/sigma_w2;
