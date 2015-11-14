@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include <stdlib.h>
 #include <float.h>
-#include "viterbi517.h"
+#include "viterbi517_windowed.h"
 #define N 3
 
 /************************************************************************
@@ -20,13 +20,15 @@ void mexFunction(
     // useful variables
     double *r, *u_hat, sigma_w, mode;
     int n;
+    int windowSize;
+
 
     //
 
     /* 1. Check validity of expressions */
     
     // check input length
-    if (nrhs != 3) // we need the received vector and the noise variance
+    if (nrhs != 4) // we need the received vector and the noise variance
         mexErrMsgTxt("Two input arguments required");
     // check output length
     if (nlhs != 1) // return the decoded vector
@@ -43,6 +45,8 @@ void mexFunction(
     sigma_w = mxGetScalar(prhs[1]);
     // SD or HD
     mode = mxGetScalar(prhs[2]);
+    // window size
+    windowSize = mxGetScalar(prhs[3]);
     
     //printf("n = %d, sigw = %f\n", n, sigma_w);
     
@@ -55,7 +59,7 @@ void mexFunction(
     
     
     /* 4. Run the algorithm */
-    viterbi517(r,sigma_w,n,u_hat,mode);
+    viterbi517_windowed(r,sigma_w,n,u_hat,mode,windowSize);
     
     
     /* 5. Exit */
