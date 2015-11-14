@@ -25,22 +25,39 @@ static int const M = 2; // binary constellation
 static int const numStates = 4;
 // static char const verb = 0;
 
+double getSign(double value)
+{
+	if(value < 0)
+		return -1;
+	return 1;
+}
+
 
 /**
  * Compute cost of the transition from neighID to stateID with symbol u
  * @param the input symbol
  * @param the prev state
  * @param the codeword associated with the transition
+ * @param sigma_w
+ * @param use SD (0) or HD (1)
  * @return the cost
  */
-double getCost(int symbol, int neighID, double *codeword)
+double getCost(int symbol, int neighID, double *codeword, double sigma_w, double mode)
 {
 	double transCost = 0;
 	int l = 0;
 	for(; l < 3; l++)
 	{
 		double r_i = *(codeword + l);
-		transCost += -2*r_i*y_lut[neighID][symbol*N + l];
+		if(mode)
+		{
+			double sgn = getSign(r_i);
+			transCost += -sgn * y_lut[neighID][symbol*N + l];
+		}
+		else
+		{
+			transCost += -2*r_i*y_lut[neighID][symbol*N + l];
+		}
 		// if (verb)
 		// {
 		// 	printf("y%d=%d, r%d=%f\n", l, y_lut[neighID][symbol*N + l], l, -2*r_i);
@@ -50,10 +67,17 @@ double getCost(int symbol, int neighID, double *codeword)
 	// {
 	// 	printf("cost=%f\n", transCost);
 	// }
-	return transCost;
+	if(mode)
+	{
+		return transCost;
+	}
+	else
+	{
+		return transCost/pow(sigma_w, 2);
+	}
 }
 
-void viterbi517(double *r, double sigma_w, int n, double *u_hat)
+void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 {
 	int const outSize = n/N;							
 
@@ -100,7 +124,7 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat)
 				// {
 				// 	printf("neighID=%d\n", neighID);
 				// }
-				double newCost = gammaPrev[neighID] + getCost(u_poss, neighID, r + l)/pow(sigma_w,2);
+				double newCost = gammaPrev[neighID] + getCost(u_poss, neighID, r + l, sigma_w, mode);
 				if (newCost < cost)
 				{
 					cost = newCost;
