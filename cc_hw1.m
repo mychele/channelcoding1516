@@ -16,21 +16,17 @@ max_err = 10^3;
 n_err_sd_ci = zeros(size(ebn0));
 pck_sent_sd_ci = zeros(size(ebn0));
 
-time_sd_ci = tic
+tic
 for it_index = 1:it_num
 	% define input vector of size pck_len + mem
-	randi_time = tic;
 	u = randi(2, pck_len + mem, 1) - 1;
-	randi_time = toc-randi_time
 	u(pck_len + 1:pck_len + mem) = 0;
 	% encode
-	c = encoder517_matlab(u);
+	c = encoder517_mex(u.');
 	% conform map
-	s = 2*c - 1;
+	s = 2*c.' - 1;
 	% random gaussian noise
-	randn_time = tic;
 	w = randn(length(c), 1);
-	randn_time = toc-randn_time
 	for j = 1:length(sigma_w)
 		if n_err_sd_ci(j) < max_err
 			% channel output
@@ -48,9 +44,8 @@ for it_index = 1:it_num
         disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_ci./(pck_sent_sd_ci*pck_len))]);
 	end
 end
-time_sd_ci = toc - time_sd_ci
+time_sd_ci = toc
 save('517_BER.mat');
-
 
 %% Simulation of Viterbi, SD, simpler input
 n_err_sd_si = zeros(size(ebn0));
