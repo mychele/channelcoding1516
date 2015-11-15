@@ -6,11 +6,11 @@ N = 3;
 rho = 2/3;
 pck_len = 10^4;
 it_num = 10^4;
-ebn0_dB = 0:8;
+ebn0_dB = -3:8;
 ebn0 = 10.^(ebn0_dB/10);
 sigma_w = sqrt(1./(2/3*ebn0));
 mem = 2; % code memory
-max_err = 10^3;
+max_err = inf;
 
 %% Simulation of Viterbi, SD
 n_err_sd_ci = zeros(size(ebn0));
