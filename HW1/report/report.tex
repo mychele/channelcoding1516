@@ -1,0 +1,378 @@
+\documentclass[10pt]{article}
+
+%% Various useful packages and commands from different sources
+
+\usepackage[applemac]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{cite, url,color} % Citation numbers being automatically sorted and properly "compressed/ranged".
+%\usepackage{pgfplots}
+\usepackage{graphics,amsfonts}
+\usepackage[pdftex]{graphicx}
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+ \interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally does.
+
+% Compact lists
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{fancyvrb}
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,chains,shapes,arrows}
+\usepackage{pgfplots}
+\usetikzlibrary{plotmarks}
+\newlength\fheight
+\newlength\fwidth
+\pgfplotsset{compat=newest}
+\pgfplotsset{plot coordinates/math parser=false}
+
+\usepackage{listings} % for Matlab code
+\definecolor{commenti}{rgb}{0.13,0.55,0.13}
+\definecolor{stringhe}{rgb}{0.63,0.125,0.94}
+\lstloadlanguages{Matlab}
+\lstset{% general command to set parameter(s)
+framexleftmargin=0mm,
+frame=single,
+keywordstyle = \color{blue},% blue keywords
+identifierstyle =, % nothing happens
+commentstyle = \color{commenti}, % comments
+stringstyle = \ttfamily \color{stringhe}, % typewriter type for strings
+showstringspaces = false, % no special string spaces
+emph = {for, if, then, else, end},
+emphstyle = \color{blue},
+firstnumber = 1,
+numbers =right, %  show number_line
+numberstyle = \tiny, % style of number_line
+stepnumber = 5, % one number_line after stepnumber
+numbersep = 5pt,
+language = {Matlab},
+extendedchars = true,
+breaklines = true,
+breakautoindent = true,
+breakindent = 30pt,
+basicstyle=\footnotesize\ttfamily
+}
+
+\usepackage{array}
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+\usepackage{mdwmath}
+\usepackage{mdwtab}
+%mdwtab.sty	-- A complete ground-up rewrite of LaTeX's `tabular' and  `array' environments.  Has lots of advantages over
+%		   the standard version, and over the version in `array.sty'.
+% *** SUBFIGURE PACKAGES ***
+\usepackage[tight,footnotesize]{subfigure}
+\usepackage[top=2.2cm, bottom=2.2cm, right=1.7cm,left=1.7cm]{geometry}
+\usepackage{indentfirst}
+
+
+%\setlength\parindent{0pt}
+\linespread{1}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\M} {\mathtt{M}}
+\newcommand{\dB} {\mathrm{dB}}
+\newcommand{\tr} {\mathrm{tr}}
+\newcommand{\lmod}[1] {_{\,\mathrm{mod}\,#1}}
+\newcommand{\outf}[1] {\mathcal{O}(#1)}
+\newcommand{\SU}[1] {\mathcal{S}(#1)}
+\newcommand{\s} {\mathbf{s}}
+\newcommand{\y} {\mathbf{y}}
+
+
+\graphicspath{ {figures/} }
+
+% equations are numbered section by section
+%\numberwithin{equation}{section}
+
+
+\begin{document}
+\title{Channel Coding 15/16 - Homework 1}
+\author{Michele Polese}
+
+\maketitle
+
+% For tikz
+% Definition of blocks:
+\tikzstyle{block} = [draw, rectangle, 
+    minimum height=3em, minimum width=3em]
+\tikzstyle{circlenode} = [draw, circle, minimum height=3em, minimum width=3em]
+\tikzstyle{sum} = [draw, circle, node distance=1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% PROBLEM 1 %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Exercise 1}
+In the first exercise I will provide an analysis of the performances of the binary convolutional code defined by the triplet 
+\begin{equation}
+	\mathbf{g} = \mathbf{g}_3 = \begin{bmatrix}
+			1 + D^2 \\
+			D^2	\\
+			1 + D + D^2 \\
+			\end{bmatrix}
+\end{equation}
+This is a polynomial code, whose realization diagram is in Fig.~\ref{fig:diag}. Its memory is $\nu = 2$ and since it is a binary code with $q = 2$ the state space has size $q^\nu = 4$. Note that every sum from now on will be a sum in $\mathbb{F}_2$ (i.e. modulo 2 sum) unless specified.
+
+\begin{figure}[h]
+\centering
+
+% picture of realization diagram
+\begin{tikzpicture}[auto, thick, node distance=3cm, >=latex']
+	% Drawing the blocks of first filter :
+	%node at (0,0)[right=-3mm]{\Large \textopenbullet};
+	\node [input, name=input1] {};
+    \node [block, name=ret1, right of=input1] (ret1) {$D$};
+    \node [block, name=ret2, right of=ret1] (ret2) {$D$};
+    \node [right of=ret2] (output) {$y_2$};
+
+    % Joining blocks. 
+    % Commands \draw with options like [->] must be written individually
+	\draw[draw,->](input1) -- node[name=u] {$u_l$} (ret1);
+	\node [sum, below of=u, yshift=-1cm] (sum1) {+};
+ 	\draw[->](ret1) -- node[name=s1] {$u_{l-1} = s_1$} (ret2);
+ 	\node [sum, below of=s1, yshift=-1cm] (sum2) {+};
+ 	\draw[->] (ret2) edge node[name=s2] {$u_{l-2} = s_2$} (output);
+	\node [sum, below of=s2, yshift=-1cm] (sum3) {+};
+	\node [sum, above of=s2, yshift=0.5cm] (sum4) {+};
+ 	\draw[->] (u) edge (sum1);
+ 	\draw[->] (s1) edge (sum2);
+ 	\draw[->] (s2) edge (sum3);
+ 	\draw[->] (s2) edge (sum4);
+ 	\draw[->] (u) |- (sum4);
+ 	\draw[->] (sum1) edge (sum2);
+ 	\draw[->] (sum2) edge (sum3);
+ 	\node[above of=output, yshift=-1.25cm] (y1) {$y_1$};
+ 	\node[below of=output, yshift=1.25cm] (y3) {$y_3$};
+ 	\draw[->] (sum4) edge (y1);
+	\draw[->] (sum3) edge (y3);
+
+\end{tikzpicture}
+\caption{Realization diagram of convolution binary code with generator $\mathbf{g}$}
+\label{fig:diag}
+\end{figure}
+
+% state update & output function
+Let $\s_l = [s_{1, l}, s_{2, l}]^T$ be the state vector at time $l$. It can be immediately seen that the state update function $\SU{\s_l, u_l}$ is
+\begin{equation}
+	\s_{l+1} = \SU{\s_l, u_l} = \begin{bmatrix} 1 \\ 0 \\ \end{bmatrix} u_l + 
+				\begin{bmatrix} 0 & 0 \\ 1 & 0 \\ \end{bmatrix} \s_l
+\end{equation}
+Let $\mathbf{y}_l = [y_{1, l}, y_{2, l}, y_{3, l}]^T$ be the codeword obtained from input $u_l$ and state $\mathbf{s}_l$. Then the output function $\outf{\s_l, u_l}$ is
+\begin{equation}
+	\y_l = \outf{\s_l, u_l} = \begin{bmatrix} 1 \\ 0 \\ 1 \\ \end{bmatrix} u_l + 
+		\begin{bmatrix} 0 & 1 \\ 0 & 1 \\ 1 & 1 \\ \end{bmatrix} \s_l
+\end{equation}
+
+% N(a)
+
+By using the state update function $\SU{\s_l, u_l}$ it is possible to derive the \emph{neighbors set} of each state $\mathbf{a}$, which is the set of couples $(\s_l, u_l) = (\mathbf{b}, u)$ that leads to $\mathbf{a}$:
+\begin{equation}
+	\mathcal{N}(\mathbf{a}) = \left\{ (\mathbf{b}, u) \middle| \mathbf{a} = \SU{\mathbf{b}, u} \right\} 
+\end{equation}
+Then
+\begin{equation}
+	\mathcal{N}(00) = \left\{ ([00], 0), ([01], 0) \right\} 
+\end{equation}
+\begin{equation*}
+	\mathcal{N}(01) = \left\{ ([10], 0), ([11], 0) \right\} 
+\end{equation*}
+\begin{equation*}
+	\mathcal{N}(10) = \left\{ ([00], 1), ([01], 1) \right\} 
+\end{equation*}
+\begin{equation*}
+	\mathcal{N}(01) = \left\{ ([10], 1), ([11], 1) \right\} 
+\end{equation*}
+
+% state trans diagr
+The state transition diagram is a way to represent the code in term of possible transitions from a certain state and associated output given a certain input. The state transition diagram of $\mathbf{g}$ can be seen in Fig.~\ref{fig:state}.
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[auto, thick, node distance=4.5cm, ->,>=latex',shorten >=1pt]
+
+	\node [circlenode] (00) {$00$};
+	\node [circlenode, above right of=00] (01) {$01$};
+	\node [circlenode, below right of=00] (10) {$10$};
+	\node [circlenode, above right of=10] (11) {$11$};
+
+	\path[every node]
+		(00) edge [loop left] node[left] {$0, [000]$} (00)
+			 edge [bend right] node[left] {$1, [101]$} (10)
+		(01) edge [bend right] node[left] {$0, [111]$} (00)
+			 edge [bend right] node[left] {$1, [010]$} (10)
+		(10) edge [bend right] node[right] {$0, [001]$} (01)
+			 edge [bend right] node[right] {$1, [100]$} (11)
+		(11) edge [loop right] node[right] {$1, [011]$} (11)
+			 edge [bend right] node[right] {$0, [110]$} (01);
+	
+\end{tikzpicture}
+\caption{State transition diagram}
+\label{fig:state}
+\end{figure}
+
+% T
+From a slightly modified version of the state transition diagram (in Fig.~\ref{fig:state_t}) it is possible to derive the expression of the transfer function that characterizes the code. The loop on $00$ is removed and this state is split into starting state $\mathbf{0}_s$ and ending state $\mathbf{0}_e$.
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[auto, thick, node distance=4.5cm, ->,>=latex',shorten >=1pt]
+	\node [circlenode] (0s) {$\mathbf{0}_s$};
+	\node [circlenode, right of=0s] (10) {$10$};
+	\node [circlenode, below right of=10] (11) {$11$};
+	\node [circlenode, above right of=11] (01) {$01$};
+	\node [circlenode, right of=01] (0e) {$\mathbf{0}_e$};
+
+	\path[every node]
+		(0s) edge node[above] {$1, [101]$} node[below] {$x^2wz$} (10)
+		(10) edge [bend left] node[above] {$0, [001]$} node[below] {$xz$} (01)
+			 edge [bend right] node[left] {$1, [100]$} node[right] {$xwz$} (11)
+		(01) edge [bend left] node[above] {$1, [010]$} node[below] {$xwz$} (10)
+			 edge node[above] {$0, [111]$} node[below] {$x^3z$} (0e)
+		(11) edge [loop below] node[left] {$1, [011]$} node[right] {$x^2wz$} (11)
+			 edge [bend right] node[left] {$0, [110]$} node[right] {$x^2z$}(01);
+\end{tikzpicture}
+\caption{Modified transition diagram}
+\label{fig:state_t}
+\end{figure}
+
+The on each transition let $x$ be a variable whose exponent is associated with the Hamming weight of the output (i.e. if $||\outf{\s_l, u_l}||_H = d$, then on that edge there will be $x^d$), $w$ be a variable that represents the input weight (thus either with exponent $i$ 0 or 1) and $z$ be associated with the input length $l$ (in this case $l=1$). Then it is possible to label each transition with a $x^dw^iz^l$ triplet of variables and define the function
+\begin{equation}
+	W_{\mathbf{s}}(x, w, z) = \sum_{d, i, l = 0}^{\infty}W_{d, i, l} x^dw^iz^l
+\end{equation}
+with the weight $W_{d, i, l}$ given by the number of codeword $\mathbf{y}$ starting from state $00$, ending in state $\mathbf{s}$, with Hamming norm $d$, input weight $i$ and length $l$. 
+
+Let $T(x, w, z) = W_{\mathbf{0}_e} (x, w, z)$ be the transfer function of system, i.e. the function whose terms identify the number of codewords with $d < 2d_{min}$ with a certain input weight $i$ and length $l$. This can be derived by solving the following linear system
+\begin{equation}\label{eq:s1}
+\begin{cases}
+	W_{\mathbf{0}_s} = 1 \\ %TODO definition \\
+	W_{01} = W_{11}x^2z + W_{10}xz \\
+	W_{10} = x^2wz + W_{01}xwz \\
+	W_{11} = W_{11}x^2wz + W_{10}xwz \\
+	T = W_{\mathbf{0}_e} = W_{01}x^3z\\
+\end{cases}
+\end{equation}
+
+\begin{equation}
+\begin{cases}
+	W_{\mathbf{0}_s} = 1 \\ %TODO definition \\
+	W_{01} = W_{10}\frac{x^3wz^2}{1-x^2wz} + W_{10}xz \\
+	W_{10} = x^2wz + W_{01}xwz \\
+	W_{11} = W_{10}\frac{xwz}{1-x^2wz} \\
+	T = W_{\mathbf{0}_e} = W_{01}x^3z\\
+\end{cases}
+\end{equation}
+and the by focusing on $W_{01}$
+\begin{equation*}
+	W_{01} =  \frac{xz}{1-x^2wz}W_{10}
+\end{equation*}
+\begin{equation*}
+	W_{01}  =  \frac{x^2wz^2}{1-x^2wz}(x + W_{01})
+\end{equation*}
+\begin{equation*}
+	W_{01}\left(\frac{1 - x^2wz - x^2wz^2}{1-x^2wz} \right) = \frac{x^3wz^2}{1-x^2wz}
+\end{equation*}
+\begin{equation*}
+	W_{01} = \frac{x^3wz^2}{1-x^2wz(1+z)}
+\end{equation*}
+and finally from~\eqref{eq:s1}
+\begin{equation}\label{eq:T}
+	T(x, w, z) = W_{\mathbf{0}_e}(x, w, z) = \frac{x^6wz^3}{1-x^2wz(1+z)} = x^6wz^3\sum_{k=0}^{\infty} [x^2wz(1+z)]^k
+\end{equation}
+% Pbit
+It is possible to expand $T(x,w,z) = \sum{d, i, l = 0}^{\infty} t_{d, i, l}x^dw^iz^l$ in order to get the coefficients $t_{d,i,l}$ that represent the number of codeword with Hamming weight $d$, associated with an input of weight $i$ and length $l$. From~\eqref{eq:T} I get
+\begin{equation}\label{Texp}
+	T(x, w, z) = x^6wz^3 + x^8w^2z^4 + x^8w^2z^5 + x^{10}w^3z^5 + 2x^{10}w^3z^6 + x^{10}w^3z^7 + x^6wz^3\sum_{k=4}^{\infty}[x^2wz(1+z)]^k
+\end{equation}
+It can be seen that $d_{min}=6$ for this code. Since the transfer function $T$ considers only codewords that do not visit more than twice $00$ in their path (i.e. it is only the starting and ending state) it provides meaningful $t_{d, i, l}$ coefficients only for $d < 2d_{min} = 12$. The last infinite sum in~\eqref{Texp} yields terms with $d \ge 2d_{min}$ that cannot be considered in the derivation of $P_{bit}$ expression. The valid $t_{d, i, l}$ coefficients are
+\begin{equation*}
+	t_{6,1,3} = 1
+\end{equation*}
+\begin{equation}\label{eq:coeff}
+	t_{8,2,4} = t_{8,2,5} = 1
+\end{equation}
+\begin{equation*}
+	t_{10, 3, 5} = t_{10, 3, 7} = 1, \quad  t_{10,3,6} = 2
+\end{equation*}
+From \cite{erseghe} the bound for $P_{bit}$ is
+\begin{equation}
+	P_{bit} \le \sum_{d=d_{min}}^n K(d)Q\left(\sqrt{2\frac{E_b}{No}Rd}\right)
+\end{equation}
+with $K(d) = \frac{1}{k} \sum_{\mathbf{a}\in\mathcal{U}(d)} ||\mathbf{a}||_H$ and $\mathcal{U}_d = \left\{ \mathbf{u} \in \mathcal{U} \middle| \; ||\mathbf{Gu} ||_{H} = d \right\}$. For a convolutional code 
+\begin{equation}
+	K(d) = \frac{1}{\mu}\sum_{l=0}^{\infty} (\mu + \nu - l) \sum_{i=0}^{\infty} i t_{d,i,l} \quad d < 2d_{min}
+\end{equation}
+that can be upper bounded by
+\begin{equation}
+	K(d) \underset{\sim}{<} \sum_{i=0}^{\infty} i \left( \sum_{l=0}^{\infty}t_{d,i,l}\right) \quad d < 2d_{min}
+\end{equation}
+Then from~\eqref{eq:coeff} 
+\begin{equation*}
+	K(6) \lesssim 1\cdot t_{6,1,3} = 1
+\end{equation*}
+\begin{equation}
+	K(8) \lesssim 2\cdot (t_{8,2,4} + t_{8,2,5}) = 4
+\end{equation}
+\begin{equation*}
+	K(10) \lesssim 3\cdot (t_{10, 3, 5} + t_{10, 3, 7} + t_{10,3,6}) = 12
+\end{equation*}
+and eventually the expression for the bit error rate is
+\begin{equation}\label{eq:BER_bound}
+	P_{bit} \lesssim Q\left(\sqrt{4\frac{E_b}{N_0}} \right) + 4Q\left(\sqrt{\frac{16E_b}{3N_0}} \right) + 12Q\left(\sqrt{\frac{20E_b}{3N_0}} \right)
+\end{equation}
+given that the rate is $R=1/3$. An approximate expression (but underestimated for low SNR) is
+\begin{equation}\label{eq:BER_approx}
+	P_{bit} \cong Q\left(\sqrt{4\frac{E_b}{N_0}} \right)
+\end{equation}
+
+% plot expected
+In Fig.~\ref{fig:BER_theory} there is the plot of expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}. The nominal coding gain is by definition $\gamma_c = Rd_{min} = 3.01$ dB, while the effective coding gain is the difference in dB between the value of $E_b/N_0$ for which the curves~\eqref{eq:BER_bound} and $Q\left(\sqrt{2\frac{E_b}{N_0}}\right)$ (uncoded $P_{bit}$) reach $P_{bit} = P_{target} = 10^{-5}$. It can be numerically evaluated with MATLAB and for the code under analysis is $\gamma_e = 2.935$ dB. Therefore the difference between nominal and effective coding gain is $\gamma_c - \gamma_e = 0.075$ dB.
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.5\textwidth}
+\setlength\fwidth{0.7\textwidth}
+\input{./figures/BER_theory.tex}
+\caption{BER from expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}}
+\label{fig:BER_theory}
+\end{figure}
+
+% plot comparison with simulation
+In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C using MATLAB's MEX functions. The channel implementation instead is left to a sum between vectors in MATLAB, since the \texttt{randn} function of MATLAB generates random Gaussian noise with a very fast algorithm (Ziggurat algorithm by Masaglia, \cite{moler}).
+In Fig.~\ref{fig:BER_1} there is the comparison between the simulated results and the theoretical bounds.
+In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtracks on the complete trellis and a windowed version for 3 different window size.
+
+% give params and implementation details
+
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.5\textwidth}
+\setlength\fwidth{0.7\textwidth}
+\input{./figures/BER_1.tex}
+\caption{BER from expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx} vs simulated BER}
+\label{fig:BER_1}
+\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% PROBLEM 2 %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Exercise 2}
+
+\begin{thebibliography}{10}
+
+\end{thebibliography}
+
+\end{document}

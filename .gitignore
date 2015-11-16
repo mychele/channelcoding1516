@@ -4,3 +4,9 @@ viterbi
 *.m~
 
 *.mexmaci64
+
+*.aux
+
+*.log
+
+*.pdf
