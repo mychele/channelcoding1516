@@ -3,6 +3,7 @@ rng default
 
 %% Param
 N = 3;
+R = 1/N;
 rho = 2/3;
 pck_len = 10^4;
 it_num = 10^4;
@@ -10,7 +11,7 @@ ebn0_dB = -3:8;
 ebn0 = 10.^(ebn0_dB/10);
 sigma_w = sqrt(1./(2/3*ebn0));
 mem = 2; % code memory
-max_err = inf;
+max_err = 10^3;
 
 %% Simulation of Viterbi, SD
 n_err_sd_ci = zeros(size(ebn0));
@@ -207,25 +208,53 @@ end
 time_hd = toc
 save('517_BER.mat');
 
-%% Plot
-Pbit_code = qfunc(sqrt(4*ebn0)) + 4*qfunc(sqrt(16/3*ebn0)) + 12*qfunc(sqrt(20/3*ebn0));
-Pbit_uncoded = qfunc(sqrt(2*ebn0));
+%% Compute nominal and effective coding gain
+ebn0_dB = -3:13;
+Pbit_coded = @(x) qfunc(sqrt(4*x)) + 4*qfunc(sqrt(16/3*x)) + 12*qfunc(sqrt(20/3*x));
+Pbit_uncoded = @(x) qfunc(sqrt(2*x));
 gamma_c = R*6;
-Pbit_nom = qfunc(sqrt(2*ebn0*gamma_c));
+Pbit_nom = qfunc(sqrt(2*10.^(ebn0_dB/10)*gamma_c));
+
+Pe_target = 10^-5;
+diff_target_uncoded = @(x) abs(Pbit_uncoded(x) - Pe_target);
+ebno_uncoded = fminsearch(@(x) diff_target_uncoded(x), 10);
+diff_target_coded = @(x) abs(Pbit_coded(x) - Pe_target);
+ebno_coded = fminsearch(@(x) diff_target_coded(x), 10);
+disp(['Nominal coding gain = ' num2str(10*log10(gamma_c)) ' dB'])
+disp(['Effective coding gain = ' num2str(10*log10(ebno_uncoded/ebno_coded)) ' dB'])
+disp(['Difference = ' num2str(10*log10(gamma_c) - 10*log10(ebno_uncoded/ebno_coded)) ' dB'])
 
 figure,
-plot(ebn0_dB, log10(n_err_sd_ci./(pck_sent_sd_ci*pck_len)), '-x'), hold on
-plot(ebn0_dB, log10(n_err_sd_si./(pck_sent_sd_si*pck_len)), '-o'), hold on
-plot(ebn0_dB, log10(n_err_sd_win3./(pck_sent_sd_win3*pck_len)), '-^'), hold on
-plot(ebn0_dB, log10(n_err_sd_win5./(pck_sent_sd_win5*pck_len)), '-v'), hold on
-plot(ebn0_dB, log10(n_err_sd_win10./(pck_sent_sd_win10*pck_len)), '-*'), hold on
-plot(ebn0_dB, log10(n_err_hd./(pck_sent_hd*pck_len)), '-.'), hold on
-plot(ebn0_dB, log10(Pbit_code), '--'), hold on
-plot(ebn0_dB, log10(Pbit_uncoded), ':'), hold on
-plot(ebn0_dB, log10(Pbit_nom), '-s'), hold on
+semilogy(ebn0_dB, Pbit_coded(10.^(ebn0_dB/10)), '-d', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+semilogy(ebn0_dB, Pbit_nom, '-s', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+semilogy(ebn0_dB, Pbit_uncoded(10.^(ebn0_dB/10)), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
 xlabel('EB/N0')
 ylabel('BER')
-legend('sd, full input', 'sd, 0 input', 'sd, win3', 'sd, win5', 'sd, win10', 'hd')
+ylim([10^-10, 1])
+grid on
+legend('Bound ()', 'Expression ()', 'Uncoded')
+
+%% Plot simulation against bounds
+linewidth = 1.2;
+load('517_BER.mat');
+
+figure,
+semilogy(ebn0_dB, n_err_sd_ci./(pck_sent_sd_ci*pck_len), '-x', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+semilogy(ebn0_dB, n_err_sd_si./(pck_sent_sd_si*pck_len), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+semilogy(ebn0_dB, Pbit_coded(10.^(ebn0_dB/10)), '-d', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+semilogy(ebn0_dB, Pbit_nom, '-s', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+semilogy(ebn0_dB, Pbit_uncoded(10.^(ebn0_dB/10)), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+xlabel('$\frac{E_b}{N_0}$')
+ylabel('BER')
+grid on
+legend('Simulation, random input', 'Simulation, zero input', '\eqref{eq:BER_bound}', '\eqref{eq:BER_approx}', 'Uncoded')
+
+
+
+% semilogy(ebn0_dB, n_err_sd_win3./(pck_sent_sd_win3*pck_len), '-^'), hold on
+% semilogy(ebn0_dB, n_err_sd_win5./(pck_sent_sd_win5*pck_len), '-v'), hold on
+% semilogy(ebn0_dB, n_err_sd_win10./(pck_sent_sd_win10*pck_len), '-*'), hold on
+% semilogy(ebn0_dB, n_err_hd./(pck_sent_hd*pck_len), '-.'), hold on
 
 
 
