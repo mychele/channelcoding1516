@@ -6,12 +6,14 @@ N = 3;
 R = 1/N;
 rho = 2/3;
 pck_len = 10^4;
-it_num = 10^5;
-ebn0_dB = -3:8;
+it_num = 10^4;
+ebn0_dB = [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8];
 ebn0 = 10.^(ebn0_dB/10);
 sigma_w = sqrt(1./(2/3*ebn0));
 mem = 2; % code memory
-max_err = 10^3;
+max_err = inf; %10^3;
+save_data = 0;
+save_int = 100;
 
 %% Simulation of Viterbi, SD
 n_err_sd_ci = zeros(size(ebn0));
@@ -38,15 +40,19 @@ for it_index = 1:it_num
 			pck_sent_sd_ci(j) = pck_sent_sd_ci(j) + 1;
 		end
 	end	
-	if(mod(it_index, 1000) == 0)
-		save('517_BER.mat');
+	if(mod(it_index, save_int) == 0)
+		if(save_data == 1)
+			save('517_BER.mat');
+		end
 		% display current status
-		toc
-        disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_ci./(pck_sent_sd_ci*pck_len))]);
+		time_sd_ci(it_index/save_int) = toc;
+        %disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_ci./(pck_sent_sd_ci*pck_len))]);
 	end
 end
-time_sd_ci = toc
-save('517_BER.mat');
+
+if(save_data == 1)
+	save('517_BER.mat');
+end
 
 %% Simulation of Viterbi, SD, simpler input
 n_err_sd_si = zeros(size(ebn0));
@@ -69,15 +75,19 @@ for it_index = 1:it_num
 			pck_sent_sd_si(j) = pck_sent_sd_si(j) + 1;
 		end
 	end	
-	if(mod(it_index, 1000) == 0)
-		save('517_BER.mat');
+	if(mod(it_index, save_int) == 0)
+		if(save_data == 1)
+			save('517_BER.mat');
+		end
 		% display current status
-		toc
-        disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_si./(pck_sent_sd_si*pck_len))]);
+		time_sd_si(it_index/save_int) = toc;
+        %disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_si./(pck_sent_sd_si*pck_len))]);
 	end
 end
-time_sd_si = toc
-save('517_BER.mat');
+
+if(save_data == 1)
+	save('517_BER.mat');
+end
 
 %% Simulation of Viterbi, SD, simpler input, windowed 3
 n_err_sd_win3 = zeros(size(ebn0));
@@ -101,16 +111,18 @@ for it_index = 1:it_num
 			pck_sent_sd_win3(j) = pck_sent_sd_win3(j) + 1;
 		end
 	end	
-	if(mod(it_index, 1000) == 0)
-		save('517_BER.mat');
-		% display current status
-		toc
-        disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_win3./(pck_sent_sd_win3*pck_len))]);
+	if(mod(it_index, save_int) == 0)
+		if(save_data == 1)
+			save('517_BER.mat');
+		end		% display current status
+		time_win3(it_index/save_int) = toc;
+        %disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_win3./(pck_sent_sd_win3*pck_len))]);
 	end
 end
-time_sd_win3 = toc
-save('517_BER.mat');
 
+if(save_data == 1)
+	save('517_BER.mat');
+end
 
 %% Simulation of Viterbi, SD, simpler input, windowed 5
 n_err_sd_win5 = zeros(size(ebn0));
@@ -134,15 +146,18 @@ for it_index = 1:it_num
 			pck_sent_sd_win5(j) = pck_sent_sd_win5(j) + 1;
 		end
 	end	
-	if(mod(it_index, 1000) == 0)
-		save('517_BER.mat');
-		% display current status
-		toc
-        disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_win5./(pck_sent_sd_win5*pck_len))]);
+	if(mod(it_index, save_int) == 0)
+		if(save_data == 1)
+			save('517_BER.mat');
+		end		% display current status
+		time_win5(it_index/save_int) = toc;
+        %disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_win5./(pck_sent_sd_win5*pck_len))]);
 	end
 end
-time_sd_win5 = toc
-save('517_BER.mat');
+
+if(save_data == 1)
+	save('517_BER.mat');
+end
 
 %% Simulation of Viterbi, SD, simpler input, windowed 10
 n_err_sd_win10 = zeros(size(ebn0));
@@ -166,16 +181,18 @@ for it_index = 1:it_num
 			pck_sent_sd_win10(j) = pck_sent_sd_win10(j) + 1;
 		end
 	end	
-	if(mod(it_index, 1000) == 0)
-		save('517_BER.mat');
-		% display current status
-		toc
-        disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_win10./(pck_sent_sd_win10*pck_len))]);
+	if(mod(it_index, save_int) == 0)
+		if(save_data == 1)
+			save('517_BER.mat');
+		end		% display current status
+		time_win10(it_index/save_int) = toc;
+        %disp(['#' num2str(it_index) ', BER = ' num2str(n_err_sd_win10./(pck_sent_sd_win10*pck_len))]);
 	end
 end
-time_sd_win10 = toc
-save('517_BER.mat');
 
+if(save_data == 1)
+	save('517_BER.mat');
+end
 
 %% Simulation of Viterbi, HD, simpler input
 n_err_hd = zeros(size(ebn0));
@@ -198,17 +215,54 @@ for it_index = 1:it_num
 			pck_sent_hd(j) = pck_sent_hd(j) + 1;
 		end
 	end	
-	if(mod(it_index, 1000) == 0)
-		save('517_BER.mat');
-		% display current status
-		toc
-        disp(['#' num2str(it_index) ', BER = ' num2str(n_err_hd./(pck_sent_hd*pck_len))]);
+	if(mod(it_index, save_int) == 0)
+		if(save_data == 1)
+			save('517_BER.mat');
+		end		% display current status
+		time_hd(it_index/save_int) = toc;
+        %disp(['#' num2str(it_index) ', BER = ' num2str(n_err_hd./(pck_sent_hd*pck_len))]);
 	end
 end
-time_hd = toc
-save('517_BER.mat');
+
+if(save_data == 1)
+	save('517_BER.mat');
+end
+
+%% Elaborate time vectors
+
+int_sd_ci(2:length(time_sd_ci)) = time_sd_ci(2:end) - time_sd_ci(1:end-1);
+int_sd_ci(1) = time_sd_ci(1);
+int_sd_si(2:length(time_sd_si)) = time_sd_si(2:end) - time_sd_si(1:end-1);
+int_sd_si(1) = time_sd_si(1);
+int_win3(2:length(time_win3)) = time_win3(2:end) - time_win3(1:end-1);
+int_win3(1) = time_win3(1);
+int_win5(2:length(time_win5)) = time_win5(2:end) - time_win5(1:end-1);
+int_win5(1) = time_win5(1);
+int_win10(2:length(time_win10)) = time_win10(2:end) - time_win10(1:end-1);
+int_win10(1) = time_win10(1);
+int_hd(2:length(time_hd)) = time_hd(2:end) - time_hd(1:end-1);
+int_hd(1) = time_hd(1);
+
+mean_sd_ci = mean(int_sd_ci);
+ci_sd_ci = 1.96*std(int_sd_ci)/sqrt(length(int_sd_ci));
+mean_sd_si = mean(int_sd_si);
+ci_sd_si = 1.96*std(int_sd_si)/sqrt(length(int_sd_si));
+mean_win3 = mean(int_win3);
+ci_win3 = 1.96*std(int_win3)/sqrt(length(int_win3));
+mean_win5 = mean(int_win5);
+ci_win5 = 1.96*std(int_win5)/sqrt(length(int_win5));
+mean_win10 = mean(int_win10);
+ci_win10 = 1.96*std(int_win10)/sqrt(length(int_win10));
+mean_hd = mean(int_hd);
+ci_hd = 1.96*std(int_hd)/sqrt(length(int_hd));
+
+mean_vec = [mean_sd_ci, mean_sd_si, mean_win3, mean_win5, mean_win10, mean_hd];
+ci_vec = [ci_sd_ci, ci_sd_si, ci_win3, ci_win5, ci_win10, ci_hd];
+figure,
+errorbar(mean_vec, ci_vec, 'o')
 
 %% Compute nominal and effective coding gain
+linewidth = 1.2;
 ebn0_dB = -3:13;
 Pbit_coded = @(x) qfunc(sqrt(4*x)) + 4*qfunc(sqrt(16/3*x)) + 12*qfunc(sqrt(20/3*x));
 Pbit_uncoded = @(x) qfunc(sqrt(2*x));
@@ -235,29 +289,27 @@ grid on
 legend('Bound ()', 'Expression ()', 'Uncoded')
 
 %% Plot simulation against bounds
-linewidth = 1.2;
-load('517_BER.mat');
+if(save_data == 1)
+	load('517_BER.mat');
+	Pbit_nom = qfunc(sqrt(2*10.^(ebn0_dB/10)*gamma_c));
 
-figure,
-semilogy(ebn0_dB, n_err_sd_ci./(pck_sent_sd_ci*pck_len), '-x', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
-semilogy(ebn0_dB, n_err_sd_si./(pck_sent_sd_si*pck_len), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
-semilogy(ebn0_dB, Pbit_coded(10.^(ebn0_dB/10)), '-d', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
-semilogy(ebn0_dB, Pbit_nom, '-s', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
-semilogy(ebn0_dB, Pbit_uncoded(10.^(ebn0_dB/10)), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
-xlabel('$\frac{E_b}{N_0}$')
-ylabel('BER')
-grid on
-legend('Simulation, random input', 'Simulation, zero input', '\eqref{eq:BER_bound}', '\eqref{eq:BER_approx}', 'Uncoded')
+	figure,
+	semilogy(ebn0_dB, n_err_sd_ci./(pck_sent_sd_ci*pck_len), '-x', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+	semilogy(ebn0_dB, n_err_sd_si./(pck_sent_sd_si*pck_len), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+	semilogy(ebn0_dB, Pbit_coded(10.^(ebn0_dB/10)), '-d', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+	semilogy(ebn0_dB, Pbit_nom, '-s', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+	semilogy(ebn0_dB, Pbit_uncoded(10.^(ebn0_dB/10)), '-o', 'LineWidth', linewidth, 'MarkerSize', 4), hold on
+	%semilogy(ebn0_dB, n_err_hd./(pck_sent_hd*pck_len), '-.'), hold on
 
-
-
-% semilogy(ebn0_dB, n_err_sd_win3./(pck_sent_sd_win3*pck_len), '-^'), hold on
-% semilogy(ebn0_dB, n_err_sd_win5./(pck_sent_sd_win5*pck_len), '-v'), hold on
-% semilogy(ebn0_dB, n_err_sd_win10./(pck_sent_sd_win10*pck_len), '-*'), hold on
-% semilogy(ebn0_dB, n_err_hd./(pck_sent_hd*pck_len), '-.'), hold on
+	xlabel('$\frac{E_b}{N_0}$')
+	ylabel('BER')
+	grid on
+	legend('Simulation, random input', 'Simulation, zero input', '\eqref{eq:BER_bound}', '\eqref{eq:BER_approx}', 'Uncoded')
 
 
 
-
-
-
+	% semilogy(ebn0_dB, n_err_sd_win3./(pck_sent_sd_win3*pck_len), '-^'), hold on
+	% semilogy(ebn0_dB, n_err_sd_win5./(pck_sent_sd_win5*pck_len), '-v'), hold on
+	% semilogy(ebn0_dB, n_err_sd_win10./(pck_sent_sd_win10*pck_len), '-*'), hold on
+	% semilogy(ebn0_dB, n_err_hd./(pck_sent_hd*pck_len), '-.'), hold on
+end
