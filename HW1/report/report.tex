@@ -89,6 +89,7 @@ basicstyle=\footnotesize\ttfamily
 
 
 \graphicspath{ {figures/} }
+\setcounter{MaxMatrixCols}{20}
 
 % equations are numbered section by section
 %\numberwithin{equation}{section}
@@ -123,7 +124,7 @@ In the first exercise I will provide an analysis of the performances of the bina
 			1 + D + D^2 \\
 			\end{bmatrix}
 \end{equation}
-This is a polynomial code, whose realization diagram is in Fig.~\ref{fig:diag}. Its memory is $\nu = 2$ and since it is a binary code with $q = 2$ the state space has size $q^\nu = 4$. Note that every sum from now on will be a sum in $\mathbb{F}_2$ (i.e. modulo 2 sum) unless specified.
+This is a polynomial code, whose realization diagram is in Fig.~\ref{fig:diag}. The rate is $R = 1/3$. Its memory is $\nu = 2$ and since it is a binary code with $q = 2$ the state space has size $q^\nu = 4$. Note that every sum from now on will be a sum in $\mathbb{F}_2$ (i.e. modulo 2 sum) unless specified.
 
 \begin{figure}[h]
 \centering
@@ -135,15 +136,15 @@ This is a polynomial code, whose realization diagram is in Fig.~\ref{fig:diag}. 
 	\node [input, name=input1] {};
     \node [block, name=ret1, right of=input1] (ret1) {$D$};
     \node [block, name=ret2, right of=ret1] (ret2) {$D$};
-    \node [right of=ret2] (output) {$y_2$};
+    \node [right of=ret2] (output) {$y_{2,l}$};
 
     % Joining blocks. 
     % Commands \draw with options like [->] must be written individually
 	\draw[draw,->](input1) -- node[name=u] {$u_l$} (ret1);
 	\node [sum, below of=u, yshift=-1cm] (sum1) {+};
- 	\draw[->](ret1) -- node[name=s1] {$u_{l-1} = s_1$} (ret2);
+ 	\draw[->](ret1) -- node[name=s1] {$u_{l-1} = s_{1,l}$} (ret2);
  	\node [sum, below of=s1, yshift=-1cm] (sum2) {+};
- 	\draw[->] (ret2) edge node[name=s2] {$u_{l-2} = s_2$} (output);
+ 	\draw[->] (ret2) edge node[name=s2] {$u_{l-2} = s_{2,l}$} (output);
 	\node [sum, below of=s2, yshift=-1cm] (sum3) {+};
 	\node [sum, above of=s2, yshift=0.5cm] (sum4) {+};
  	\draw[->] (u) edge (sum1);
@@ -153,8 +154,8 @@ This is a polynomial code, whose realization diagram is in Fig.~\ref{fig:diag}. 
  	\draw[->] (u) |- (sum4);
  	\draw[->] (sum1) edge (sum2);
  	\draw[->] (sum2) edge (sum3);
- 	\node[above of=output, yshift=-1.25cm] (y1) {$y_1$};
- 	\node[below of=output, yshift=1.25cm] (y3) {$y_3$};
+ 	\node[above of=output, yshift=-1.25cm] (y1) {$y_{1,l}$};
+ 	\node[below of=output, yshift=1.25cm] (y3) {$y_{3,l}$};
  	\draw[->] (sum4) edge (y1);
 	\draw[->] (sum3) edge (y3);
 
@@ -209,13 +210,13 @@ The state transition diagram is a way to represent the code in term of possible 
 
 	\path[every node]
 		(00) edge [loop left] node[left] {$0, [000]$} (00)
-			 edge [bend right] node[left] {$1, [101]$} (10)
-		(01) edge [bend right] node[left] {$0, [111]$} (00)
+			 edge [bend right] node[below left] {$1, [101]$} (10)
+		(01) edge [bend right] node[above left] {$0, [111]$} (00)
 			 edge [bend right] node[left] {$1, [010]$} (10)
 		(10) edge [bend right] node[right] {$0, [001]$} (01)
-			 edge [bend right] node[right] {$1, [100]$} (11)
+			 edge [bend right] node[below right] {$1, [100]$} (11)
 		(11) edge [loop right] node[right] {$1, [011]$} (11)
-			 edge [bend right] node[right] {$0, [110]$} (01);
+			 edge [bend right] node[above right] {$0, [110]$} (01);
 	
 \end{tikzpicture}
 \caption{State transition diagram}
@@ -227,7 +228,7 @@ From a slightly modified version of the state transition diagram (in Fig.~\ref{f
 
 \begin{figure}
 \centering
-\begin{tikzpicture}[auto, thick, node distance=4.5cm, ->,>=latex',shorten >=1pt]
+\begin{tikzpicture}[auto, thick, node distance=5 cm, ->,>=latex',shorten >=1pt]
 	\node [circlenode] (0s) {$\mathbf{0}_s$};
 	\node [circlenode, right of=0s] (10) {$10$};
 	\node [circlenode, below right of=10] (11) {$11$};
@@ -237,17 +238,17 @@ From a slightly modified version of the state transition diagram (in Fig.~\ref{f
 	\path[every node]
 		(0s) edge node[above] {$1, [101]$} node[below] {$x^2wz$} (10)
 		(10) edge [bend left] node[above] {$0, [001]$} node[below] {$xz$} (01)
-			 edge [bend right] node[left] {$1, [100]$} node[right] {$xwz$} (11)
+			 edge [bend right] node[above right] {$1, [100]$} node[below left] {$xwz$} (11)
 		(01) edge [bend left] node[above] {$1, [010]$} node[below] {$xwz$} (10)
 			 edge node[above] {$0, [111]$} node[below] {$x^3z$} (0e)
-		(11) edge [loop below] node[left] {$1, [011]$} node[right] {$x^2wz$} (11)
-			 edge [bend right] node[left] {$0, [110]$} node[right] {$x^2z$}(01);
+		(11) edge [loop below] node[below left] {$1, [011]$} node[below right] {$x^2wz$} (11)
+			 edge [bend right] node[above left] {$0, [110]$} node[below right] {$x^2z$} (01);
 \end{tikzpicture}
 \caption{Modified transition diagram}
 \label{fig:state_t}
 \end{figure}
 
-The on each transition let $x$ be a variable whose exponent is associated with the Hamming weight of the output (i.e. if $||\outf{\s_l, u_l}||_H = d$, then on that edge there will be $x^d$), $w$ be a variable that represents the input weight (thus either with exponent $i$ 0 or 1) and $z$ be associated with the input length $l$ (in this case $l=1$). Then it is possible to label each transition with a $x^dw^iz^l$ triplet of variables and define the function
+The on each transition let $x$ be a variable whose exponent is associated with the Hamming weight of the output (i.e. if $\|\outf{\s_l, u_l}\|_H = d$, then on that edge there will be $x^d$), $w$ be a variable that represents the input weight (thus either with exponent $i$ 0 or 1) and $z$ be associated with the input length $l$ (in this case $l=1$). Then it is possible to label each transition with a $x^dw^iz^l$ triplet and define the function
 \begin{equation}
 	W_{\mathbf{s}}(x, w, z) = \sum_{d, i, l = 0}^{\infty}W_{d, i, l} x^dw^iz^l
 \end{equation}
@@ -291,7 +292,7 @@ and finally from~\eqref{eq:s1}
 	T(x, w, z) = W_{\mathbf{0}_e}(x, w, z) = \frac{x^6wz^3}{1-x^2wz(1+z)} = x^6wz^3\sum_{k=0}^{\infty} [x^2wz(1+z)]^k
 \end{equation}
 % Pbit
-It is possible to expand $T(x,w,z) = \sum{d, i, l = 0}^{\infty} t_{d, i, l}x^dw^iz^l$ in order to get the coefficients $t_{d,i,l}$ that represent the number of codeword with Hamming weight $d$, associated with an input of weight $i$ and length $l$. From~\eqref{eq:T} I get
+It is possible to expand $T(x,w,z) = \sum_{d, i, l = 0}^{\infty} t_{d, i, l}x^dw^iz^l$ in order to get the coefficients $t_{d,i,l}$ that represent the number of codeword with Hamming weight $d$, associated with an input of weight $i$ and length $l$. From~\eqref{eq:T} I get
 \begin{equation}\label{Texp}
 	T(x, w, z) = x^6wz^3 + x^8w^2z^4 + x^8w^2z^5 + x^{10}w^3z^5 + 2x^{10}w^3z^6 + x^{10}w^3z^7 + x^6wz^3\sum_{k=4}^{\infty}[x^2wz(1+z)]^k
 \end{equation}
@@ -309,13 +310,13 @@ From \cite{erseghe} the bound for $P_{bit}$ is
 \begin{equation}
 	P_{bit} \le \sum_{d=d_{min}}^n K(d)Q\left(\sqrt{2\frac{E_b}{No}Rd}\right)
 \end{equation}
-with $K(d) = \frac{1}{k} \sum_{\mathbf{a}\in\mathcal{U}(d)} ||\mathbf{a}||_H$ and $\mathcal{U}_d = \left\{ \mathbf{u} \in \mathcal{U} \middle| \; ||\mathbf{Gu} ||_{H} = d \right\}$. For a convolutional code 
+with $K(d) = \frac{1}{k} \sum_{\mathbf{a}\in\mathcal{U}(d)} \|\mathbf{a}\|_H$ and $\mathcal{U}_d = \left\{ \mathbf{u} \in \mathcal{U} \; \middle| \; \|\mathbf{Gu} \|_{H} = d \right\}$. For a convolutional code 
 \begin{equation}
 	K(d) = \frac{1}{\mu}\sum_{l=0}^{\infty} (\mu + \nu - l) \sum_{i=0}^{\infty} i t_{d,i,l} \quad d < 2d_{min}
 \end{equation}
 that can be upper bounded by
 \begin{equation}
-	K(d) \underset{\sim}{<} \sum_{i=0}^{\infty} i \left( \sum_{l=0}^{\infty}t_{d,i,l}\right) \quad d < 2d_{min}
+	K(d) \lesssim \sum_{i=0}^{\infty} i \left( \sum_{l=0}^{\infty}t_{d,i,l}\right) \quad d < 2d_{min}
 \end{equation}
 Then from~\eqref{eq:coeff} 
 \begin{equation*}
@@ -348,9 +349,38 @@ In Fig.~\ref{fig:BER_theory} there is the plot of expressions~\eqref{eq:BER_boun
 \end{figure}
 
 % plot comparison with simulation
-In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C using MATLAB's MEX functions. The channel implementation instead is left to a sum between vectors in MATLAB, since the \texttt{randn} function of MATLAB generates random Gaussian noise with a very fast algorithm (Ziggurat algorithm by Masaglia, \cite{moler}).
-In Fig.~\ref{fig:BER_1} there is the comparison between the simulated results and the theoretical bounds.
-In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtracks on the complete trellis and a windowed version for 3 different window size.
+In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C and called from a MATLAB script using MEX functions. 
+The channel implementation instead is left to a sum between vectors in MATLAB, so that the \texttt{randn} function of MATLAB can be used. Indeed the algorithm with which MATLAB generates Gaussian random noise is much more efficient than a simple Box-Muller transform \cite{moler}.
+
+The performances were tested for different values of $E_b/N_0 \in [-3, 8]$, with $K$ iterations. For each iteration let $\mathbf{u}$ be the input vector of size $\mu + \nu$, $\mathbf{y}$ the encoded vector, $\mathbf{s} = \mathcal{L}(\mathbf{y}) = 2\mathbf{y} - 1$ the vector of symbols which are sent through the channel and $\mathbf{w}$ a vector of IID samples $w_i \sim N(0,1), i = 0 \dots (\mu + \nu)/R - 1$. Then the received vector $\mathbf{r}_{E_b/N_0}$ for each value of $E_b/N_0$ is 
+\begin{equation}
+	\mathbf{r}_{E_b/N_0} = \mathbf{s} + \sigma_w \mathbf{w}
+\end{equation}
+with $\sigma_w$ such that
+\begin{equation}
+	\frac{1}{\sigma_w^2} = 2\frac{E_b}{N_0}R\frac{log_2M}{E_s} = \frac{2}{3} \frac{E_b}{N_0}
+\end{equation}
+since $M=2$ and $E_s = 1$.
+
+In this way for all the $E_b/N_0$ values encoding and noise generation are carried out only once. For each $E_b/N_0$ the $\mathbf{r}_{E_b/N_0}$ is decoded to retrieve $\mathbf{\hat{u}}$ and the number of decoded packets $N_{pck, E_b/N_0}$ for that SNR is increased by one. The number of errors is added to the total number of error for that SNR $N_{err, E_b/N_0}$. If the number of error exceeds a certain threshold $N_{min}$ then in the following iterations the decoding for this particular SNR is not carried out in order to speed up the simulation. Moreover an option to use the all zero input $\mathbf{u} = \mathbf{0}$ is introduced, so that the encoding operation is not needed since the encoded vector is $\mathbf{y} = -\mathbf{1}$.
+
+The BER is then computed as
+\begin{equation}
+	P_{bit, \frac{E_b}{N_0}} =\frac{N_{err, \frac{E_b}{N_0}}}{N_{pck, \frac{E_b}{N_0}}(\mu+\nu)}
+\end{equation}
+
+Let's draw some considerations as first on the BER performance of the code, then on the time required to complete a simulation with different settings.
+
+In Fig.~\ref{fig:BER_1} there is the comparison between the simulated results and the theoretical bounds. The length of the packets in this simulation is $\mu + \nu = 10^4 + 2$ and the number of iterations is $10^5$, with a threshold on the number of errors $N_{min} = 10^3$. Both a random input and the all zero input word are simulated and it can be seen that the simulated performances do not depend on the randomness of the input. Therefore it is not restrictive to use $\mathbf{u} = \mathbf{0}$.
+
+Notice that for low $E_b/N_0$ the bound~\eqref{eq:BER_bound} is quite loose, while as the SNR increases both the approximated expression~\eqref{eq:BER_approx} and the bound~\eqref{eq:BER_bound} are tight. 
+
+In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtracks on the complete trellis and a windowed version for 3 different window size $\upsilon$. It can be seen that for $\upsilon = 10 = 5\nu$ the performances in terms of decoding errors are equivalent to the ones of the standard Viterbi, while for smaller window sizes there are more errors. 
+
+In Fig.~\ref{fig:BER_3} a comparison between the standard soft decoding approach, where the cost of each transition is proportional to both the sign and the module of the received value, and the less powerful hard decoding approach, where only the sign of the received symbol is considered. It can be seen that the soft decoding approach gains about 1 dB with respect to the hard decoding one. 
+
+As far as complexity is considered, in Fig.~\ref{fig:perf} there is a comparison between mean execution time for different algorithms and simulation choices. 
+For this analysis $N_{min} = \infty$ so that the same number of decoding operations is carried out for the 12 $E_b/N_0$ values considered. 
 
 % give params and implementation details
 
@@ -363,6 +393,25 @@ In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtrack
 \label{fig:BER_1}
 \end{figure}
 
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.5\textwidth}
+\setlength\fwidth{0.7\textwidth}
+%\input{./figures/BER_2.tex}
+\caption{BER for standard Viterbi vs windowed Viterbi for different window sizes $\upsilon \in [3, 5, 10]$}
+\label{fig:BER_2}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.5\textwidth}
+\setlength\fwidth{0.7\textwidth}
+%\input{./figures/BER_3.tex}
+\caption{BER for Viterbi with soft decoding vs hard decoding}
+\label{fig:BER_3}
+\end{figure}
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,6 +419,64 @@ In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtrack
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section*{Exercise 2}
+
+\section*{Exercise 5}
+In this exercise I will derive the generating matrix $\mathbf{G}$ for a binary code with parity check matrix
+\begin{equation}
+	\mathbf{H} = 
+	\begin{bmatrix}
+		1&0&1&1&1&0&0&0&1&1\\
+		0&1&0&1&1&1&1&0&0&1\\
+		0&1&0&0&1&1&1&1&0&1\\
+		1&1&1&1&0&0&0&1&1&0\\
+		1&0&1&0&0&1&1&1&1&0\\
+	\end{bmatrix}
+\end{equation}
+Let the permutation matrix $\mathbf{\Pi}$ be
+
+\begin{equation}
+	\mathbf{\Pi} = 
+	\begin{bmatrix}
+		1&0&0&0&0&0&0&0&0&0\\
+		0&1&0&0&0&0&0&0&0&0\\
+		0&0&1&0&0&0&0&0&0&0\\
+		0&0&0&0&1&0&0&0&0&0\\
+		0&0&0&0&0&1&0&0&0&0\\
+		0&0&0&1&0&0&0&0&0&0\\
+		0&0&0&0&0&0&1&0&0&0\\
+		0&0&0&0&0&0&0&1&0&0\\
+		0&0&0&0&0&0&0&0&1&0\\
+		0&0&0&0&0&0&0&0&0&1\\
+	\end{bmatrix}
+\end{equation}
+Then $\mathbf{H}$ is the form $\mathbf{H} = [\mathbf{B}, \mathbf{C}]\mathbf{\Pi}$ with $\mathbf{C}$ invertible. The matrix $\mathbf{\hat{H}} = [\mathbf{B}, \mathbf{C}]$ can be obtained by right multiplying the inverse of $\mathbf{\Pi}$to $\mathbf{H}$. Notice that $\mathbf{Pi}$ is orthogonal and $\mathbf{\Pi}^T = \mathbf{\Pi}^{-1}$. Then 
+\begin{equation}
+\mathbf{\hat{H}} =
+	\begin{bmatrix}
+		1&0&1&1&0&1&0&0&1&1\\
+		0&1&0&1&1&1&1&0&0&1\\
+		0&1&0&1&1&0&1&1&0&1\\
+		1&1&1&0&0&1&0&1&1&0\\
+		1&0&1&0&1&0&1&1&1&0\\
+	\end{bmatrix}
+\end{equation}
+Let's apply Gauss-Jordan elimination to $[\mathbf{I}_5, \mathbf{\hat{H}}]$, in particular the following steps:
+\begin{itemize}
+ \item sum row n to rowhbi
+\end{itemize}
+The final result is in the form $[\mathbf{C}^{-1}, \mathbf{C}^{-1}\mathbf{B}, \mathbf{I}_{5}]$ with $\mathbf{A} = \mathbf{C}^{-1}\mathbf{B}$
+\begin{equation}
+	[\mathbf{C}^{-1}, \mathbf{C}^{-1}\mathbf{B}, \mathbf{I}_{5}] = 
+	\begin{bmatrix}
+		1&0&1&0&1&0&1&0&0&0&1&0&0&0&0\\
+		1&0&1&1&0&0&0&0&0&1&0&1&0&0&0\\
+		1&1&0&0&1&0&1&0&0&0&0&0&1&0&0\\
+		0&1&1&1&0&1&1&1&0&0&0&0&0&1&0\\
+		0&1&0&1&1&0&0&0&1&0&0&0&0&0&1\\
+	\end{bmatrix}
+\end{equation}
+
+
 
 \begin{thebibliography}{10}
 
