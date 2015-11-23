@@ -79,6 +79,7 @@ basicstyle=\footnotesize\ttfamily
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\M} {\mathtt{M}}
 \newcommand{\dB} {\mathrm{dB}}
 \newcommand{\tr} {\mathrm{tr}}
@@ -125,9 +126,9 @@ In the first exercise I will provide an analysis of the performances of the bina
 			1 + D + D^2 \\
 			\end{bmatrix}
 \end{equation}
-This is a polynomial code, whose realization diagram is in Fig.~\ref{fig:diag}. The rate is $R = 1/3$. Its memory is $\nu = 2$ and since it is a binary code with $q = 2$ the state space has size $q^\nu = 4$. Note that every sum from now on will be a sum in $\mathbb{F}_2$ (i.e. modulo 2 sum) unless specified.
+This is the polynomial code $(5,1,7)$ in octal notation, whose realization diagram is in Fig.~\ref{fig:diag}. The rate is $R = 1/3$. Its memory is $\nu = 2$ and since it is a binary code with $q = 2$ the state space has size $q^\nu = 4$. Note that every sum from now on will be a sum in $\mathbb{F}_2$ (i.e. modulo 2 sum) unless specified.
 
-\begin{figure}[h]
+\begin{figure}[t]
 \centering
 
 % picture of realization diagram
@@ -343,7 +344,8 @@ In Fig.~\ref{fig:BER_theory} there is the plot of expressions~\eqref{eq:BER_boun
 
 % plot comparison with simulation
 In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C and called from a MATLAB script using MEX functions. 
-The channel implementation instead is left to a sum between vectors in MATLAB, so that the \texttt{randn} function of MATLAB can be used. Indeed the algorithm with which MATLAB generates Gaussian random noise is much more efficient than a simple Box-Muller transform \cite{moler}.
+The channel implementation instead is left to a sum between vectors in MATLAB, so that the \texttt{randn} function of MATLAB can be used. Indeed the algorithm with which MATLAB generates Gaussian random noise is very efficient \cite{moler}. The standard Viterbi was implemented with backtracking in order to retrieve the symbols associated with each transition on the trellis. Moreover the neighbor set and the possible outputs were hard-coded in lookup tables. 
+
 
 The performances were tested for different values of $E_b/N_0 \in [-3, 8]$, with $K$ iterations. For each iteration let $\mathbf{u}$ be the input vector of size $\mu + \nu$, $\mathbf{y}$ the encoded vector, $\mathbf{s} = \mathcal{L}(\mathbf{y}) = 2\mathbf{y} - 1$ the vector of symbols which are sent through the channel and $\mathbf{w}$ a vector of IID samples $w_i \sim N(0,1), i = 0 \dots (\mu + \nu)/R - 1$. Then the received vector $\mathbf{r}_{E_b/N_0}$ for each value of $E_b/N_0$ is 
 \begin{equation}
@@ -355,22 +357,53 @@ with $\sigma_w$ such that
 \end{equation}
 since $M=2$ and $E_s = 1$.
 
-In this way for all the $E_b/N_0$ values encoding and noise generation are carried out only once. For each $E_b/N_0$ the $\mathbf{r}_{E_b/N_0}$ is decoded to retrieve $\mathbf{\hat{u}}$ and the number of decoded packets $N_{pck, E_b/N_0}$ for that SNR is increased by one. The number of errors is added to the total number of error for that SNR $N_{err, E_b/N_0}$. If the number of error exceeds a certain threshold $N_{min}$ then in the following iterations the decoding for this particular SNR is not carried out in order to speed up the simulation. Moreover an option to use the all zero input $\mathbf{u} = \mathbf{0}$ is introduced, so that the encoding operation is not needed since the encoded vector is $\mathbf{y} = -\mathbf{1}$.
+In this way for all the $E_b/N_0$ values encoding and noise generation are carried out only once. For each $E_b/N_0$ the $\mathbf{r}_{E_b/N_0}$ is decoded to retrieve $\mathbf{\hat{u}}$ and the number of decoded packets $N_{pck, E_b/N_0}$ for that SNR is increased by one. The number of errors is added to the total number of error for that SNR $N_{err, E_b/N_0}$. If the number of error exceeds a certain threshold $N_{min}$ then in the following iterations the decoding for this particular SNR is not carried out in order to speed up the simulation. Moreover an option to use the all zero input $\mathbf{u} = \mathbf{0}$ is introduced, so that the encoding operation is not needed since the encoded vector is $\mathbf{y} = -\mathbf{1}$. 
 
 The BER is then computed as
 \begin{equation}
 	P_{bit, \frac{E_b}{N_0}} =\frac{N_{err, \frac{E_b}{N_0}}}{N_{pck, \frac{E_b}{N_0}}(\mu+\nu)}
 \end{equation}
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-
-\subfloat[BER from expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}]{\setlength\fheight{0.45\textwidth}
-\setlength\fwidth{0.4\textwidth}
+\setlength\fheight{0.4\textwidth}
+\setlength\fwidth{0.6\textwidth}
 \input{./figures/BER_theory.tex}
+\caption{BER from expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}}
 \label{fig:BER_theory}
-}
-\hfil
+\end{figure}
+
+
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.4\textwidth}
+\setlength\fwidth{0.6\textwidth}
+\input{./figures/sim_time.tex}
+\caption{Simulation time required to complete 100 simulations with different setups}
+\label{fig:perf}
+\end{figure}
+%\clearpage
+
+Let's draw some considerations as first on the BER performance of the code, then on the time required to complete a simulation with different settings.
+
+In Fig.~\ref{fig:BER_1} there is the comparison between the simulated results and the theoretical bounds. The length of the packets in this simulation is $\mu + \nu = 10^4 + 2$ and the number of iterations is $10^5$, with a threshold on the number of errors $N_{min} = 10^3$. The expected precision is in the order of $10^{-8}$. Both a random input and the all zero input word are simulated and it can be seen that the simulated performances do not depend on the randomness of the input. Therefore it is not restrictive to use $\mathbf{u} = \mathbf{0}$ for the soft decoding case.
+
+Notice that for low $E_b/N_0$ the bound~\eqref{eq:BER_bound} is quite loose, while as the SNR increases both the approximated expression~\eqref{eq:BER_approx} and the bound~\eqref{eq:BER_bound} are tight. 
+
+In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtracks on the complete trellis and a windowed version for 3 different window size $\upsilon$. It can be seen that for $\upsilon = 10 = 5\nu$ the performances in terms of decoding errors are equivalent to the ones of the standard Viterbi, while for smaller window sizes there are more errors. 
+
+In Fig.~\ref{fig:BER_3} a comparison between the standard soft decoding approach, where the cost of each transition is proportional to both the sign and the module of the received value, and the less powerful hard decoding approach, where only the sign of the received symbol is considered. 
+It can be seen that the soft decoding approach gains about 2.5 dB with respect to the hard decoding one. A particular behavior is exhibited by the hard decoding performances when the all 0 codeword is sent, with a BER nearly 2 orders of magnitude smaller for the same $E_b/N_0$ ratio. 
+
+In Fig.~\ref{fig:BER_577} there is a comparison with the $(5, 7, 7)$ code which is the most performing convolutional code with $\nu = 2$ and $R=1/3$ according to \cite{proakis}. The simulation of the $(5,7,7)$ uses packets of length $\mu + \nu = 10^4 + 2$ and $5\cdot10^{5}$ iterations in order to get an accurate result at 8 dB (50 errors are recorded). It can be seen that for an SNR $E_b/N_0$ lower than 3 dB the $(5,1,7)$ performs better, but after 6 dB there is a gap of about 0.6 dB.
+
+As far as complexity is considered, in Fig.~\ref{fig:perf} there is a comparison between mean execution time for different algorithms and simulation choices. 
+For this analysis $N_{min} = \infty$ so that the same number of decoding operations is carried out for the 12 $E_b/N_0 \in [-3, 8]$ values considered. 
+In the $y$ axis there is the average time in seconds to complete 100 simulations with each different setting. 
+Notice that the difference between the simulation with encoding (with MEX functions) and with the all zero input word is minimal. Instead, if compared with the latter, the windowed versions are all slower since they need to backtrack $\upsilon$ positions in the trellis in order to decode each symbol, i.e. they backtrack approximately $(\mu + \nu)\upsilon$ positions while the standard Viterbi backtracks only from the last state to the first. In terms of memory consumption, instead, the windowed version does not need to store the whole trellis to perform the complete backtracking but only the last $\upsilon$ positions. 
+
+\begin{figure*}[h]
+\centering
 \subfloat[BER from expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx} vs simulated BER]{\setlength\fheight{0.45\textwidth}
 \setlength\fwidth{0.4\textwidth}
 \input{./figures/BER_1.tex}
@@ -388,42 +421,15 @@ The BER is then computed as
 \input{./figures/BER_3.tex}
 \label{fig:BER_3}
 }
+\hfil
+\subfloat[BER for (5,1,7) vs (5,7,7), simulation, random input]{\setlength\fheight{0.45\textwidth}
+\setlength\fwidth{0.4\textwidth}
+\input{./figures/BER_577.tex}
+\label{fig:BER_577}
+}
 \end{figure*}
 
 \clearpage
-
-Let's draw some considerations as first on the BER performance of the code, then on the time required to complete a simulation with different settings.
-
-In Fig.~\ref{fig:BER_1} there is the comparison between the simulated results and the theoretical bounds. The length of the packets in this simulation is $\mu + \nu = 10^4 + 2$ and the number of iterations is $10^5$, with a threshold on the number of errors $N_{min} = 10^3$. Both a random input and the all zero input word are simulated and it can be seen that the simulated performances do not depend on the randomness of the input. Therefore it is not restrictive to use $\mathbf{u} = \mathbf{0}$.
-
-Notice that for low $E_b/N_0$ the bound~\eqref{eq:BER_bound} is quite loose, while as the SNR increases both the approximated expression~\eqref{eq:BER_approx} and the bound~\eqref{eq:BER_bound} are tight. 
-
-In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtracks on the complete trellis and a windowed version for 3 different window size $\upsilon$. It can be seen that for $\upsilon = 10 = 5\nu$ the performances in terms of decoding errors are equivalent to the ones of the standard Viterbi, while for smaller window sizes there are more errors. 
-
-In Fig.~\ref{fig:BER_3} a comparison between the standard soft decoding approach, where the cost of each transition is proportional to both the sign and the module of the received value, and the less powerful hard decoding approach, where only the sign of the received symbol is considered. 
-It can be seen that the soft decoding approach gains about 2.5 dB with respect to the hard decoding one. A particular behavior is exhibited by the hard decoding performances when the all 0 codeword is sent, with a BER nearly 2 orders of magnitude smaller for the same $E_b/N_0$ ratio. 
-
-As far as complexity is considered, in Fig.~\ref{fig:perf} there is a comparison between mean execution time for different algorithms and simulation choices. 
-For this analysis $N_{min} = \infty$ so that the same number of decoding operations is carried out for the 12 $E_b/N_0 \in [-3, 8]$ values considered. 
-In the $y$ axis there is the average time in seconds to complete 100 simulations with each different setting. 
-The standard Viterbi was implemented with MEX functions and backtracking.
-Notice that the difference between the simulation with encoding (with MEX functions) and with the all zero input word is minimal. Instead, if compared with the latter, the windowed versions are all slower since they need to backtrack $\upsilon$ positions in the trellis in order to decode each symbol, i.e. they backtrack approximately $(\mu + \nu)\upsilon$ positions while the standard Viterbi backtracks only from the last state to the first.
-
-\begin{figure}[t]
-\centering
-\setlength\fheight{0.5\textwidth}
-\setlength\fwidth{0.7\textwidth}
-%\input{./figures/sim_time.tex}
-\caption{Simulation time required to complete 100 simulations with different setups}
-\label{fig:perf}
-\end{figure}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%% PROBLEM 2 %%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section*{Exercise 2}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%% PROBLEM 5 %%%%%%%%%%%%%%%%
@@ -458,7 +464,7 @@ Let the permutation matrix $\mathbf{\Pi}$ be
 		0&0&0&0&0&0&0&0&0&1\\
 	\end{bmatrix}
 \end{equation}
-Then $\mathbf{H}$ is the form $\mathbf{H} = [\mathbf{B}, \mathbf{C}]\mathbf{\Pi}$ with $\mathbf{C}$ invertible. The matrix $\mathbf{\hat{H}} = [\mathbf{B}, \mathbf{C}]$ can be obtained by right multiplying the inverse of $\mathbf{\Pi}$to $\mathbf{H}$. Notice that $\mathbf{Pi}$ is orthogonal and $\mathbf{\Pi}^T = \mathbf{\Pi}^{-1}$. Then 
+Then $\mathbf{H}$ is the form $\mathbf{H} = [\mathbf{B}, \mathbf{C}]\mathbf{\Pi}$ with $\mathbf{C}$ invertible. The matrix $\mathbf{\hat{H}} = [\mathbf{B}, \mathbf{C}]$ can be obtained by right multiplying the inverse of $\mathbf{\Pi}$ to $\mathbf{H}$. Notice that $\mathbf{\Pi}$ is orthogonal and $\mathbf{\Pi}^T = \mathbf{\Pi}^{-1}$. Then 
 \begin{equation}
 \mathbf{\hat{H}} =
 	\begin{bmatrix}
@@ -470,19 +476,63 @@ Then $\mathbf{H}$ is the form $\mathbf{H} = [\mathbf{B}, \mathbf{C}]\mathbf{\Pi}
 	\end{bmatrix}
 \end{equation}
 Let's apply Gauss-Jordan elimination to $[\mathbf{I}_5, \mathbf{\hat{H}}]$, in particular the following steps:
-\begin{itemize}
- \item sum row n to rowhbi
-\end{itemize}
+\begin{equation}
+	\left[
+	\begin{array}{ccccccccccccccc}
+		1&0&0&0&0&1&0&1&1&0&1&0&0&1&1\\
+		1&1&0&0&0&1&1&1&0&1&0&1&0&1&0\\
+		1&1&1&0&0&1&0&1&1&0&0&0&1&1&1\\
+		1&0&0&1&0&0&1&0&1&0&0&0&1&0&1\\
+		0&0&0&0&1&1&0&1&0&1&0&1&1&1&0\\
+	\end{array}
+	\right]
+	\begin{array}{l}
+		1 \\
+		1 + 2 \\
+		1 + 2 + 3 \\
+		1 + 4 \\
+		5 \\
+	\end{array}
+\end{equation}
+
+\begin{equation}
+	\left[
+	\begin{array}{ccccccccccccccc}
+		1&0&0&0&0&1&0&1&1&0&1&0&0&1&1\\
+		1&1&0&0&0&1&1&1&0&1&0&1&0&1&0\\
+		1&1&1&0&0&1&0&1&1&0&0&0&1&1&1\\
+		0&1&1&1&0&1&1&1&0&0&0&0&0&1&0\\
+		0&1&0&1&1&0&0&0&1&0&0&0&0&0&1\\
+	\end{array}
+	\right]
+	\begin{array}{l}
+		1 \\
+		2 \\
+		3 \\
+		3 + 4 \\
+		2 + 4 + 5 \\
+	\end{array}
+\end{equation}
+
 The final result is in the form $[\mathbf{C}^{-1}, \, \mathbf{C}^{-1}\mathbf{B}, \, \mathbf{I}_{5}]$ with $\mathbf{A} = \mathbf{C}^{-1}\mathbf{B}$
 \begin{equation}
 	[\mathbf{C}^{-1}, \mathbf{C}^{-1}\mathbf{B}, \mathbf{I}_{5}] = 
-	\begin{bmatrix}
+	\left[
+	\begin{array}{ccccccccccccccc}
 		1&0&1&0&1&0&1&0&0&0&1&0&0&0&0\\
 		1&0&1&1&0&0&0&0&0&1&0&1&0&0&0\\
 		1&1&0&0&1&0&1&0&0&0&0&0&1&0&0\\
 		0&1&1&1&0&1&1&1&0&0&0&0&0&1&0\\
 		0&1&0&1&1&0&0&0&1&0&0&0&0&0&1\\
-	\end{bmatrix}
+	\end{array}
+	\right]
+	\begin{array}{l}
+		1 + 4 + 5 \\
+		2 + 4 \\
+		3 + 4 + 5 \\
+		4 \\
+		5 \\
+	\end{array}
 \end{equation}
 so that 
 \begin{equation}
@@ -532,9 +582,64 @@ By pre-multiplying the transpose of the permutation matrix $\mathbf{\Pi}^T$ to $
 \end{equation}
 Note that $\mathbf{H}\mathbf{G} = \mathbf{0}$.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% PROBLEM 7 %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section*{Exercise 7}
+In this exercise I will describe a Viterbi-like algorithm to find the minimum Hamming weight $d_{min}$ of the code. The idea is to use the Hamming weight as cost of each transition, so that if $(\mathbf{b}, u)$ is a neighbor of $\mathbf{a}$ then
+\begin{equation}
+	\mathcal{C}(\mathbf{b}, u) = \|\outf{\mathbf{b}, u}\|_H
+\end{equation}
+Moreover define $\Gamma_l(\mathbf{a})$ as aggregate cost of the path that exits from $0$ and in $l$ steps reaches state $\mathbf{a}$.
+
+Then the algorithms has to identify $d_{min}$ as the minimum aggregate cost among the paths that start from state $\mathbf{0}$ and go back to it, since we are dealing with a terminated code. If there is a path that starts from $\mathbf{0}$, goes back to this state and then exits again then it will surely have an higher cost than $d_{min}$. For this purpose we can create a trellis in a Viterbi-like style, by however making infeasible to choose the transitions from $\mathbf{0}$ to itself, with associated output of Hamming weight equal to zero. In particular let $\mathcal{C}(\mathbf{0}, 0) = \infty$.
+
+Indeed, by choosing this transition at the first step of the trellis, it is as like postponing the search of the codeword of minimum weight at the second step. Therefore at the first step the algorithm exits from state $\mathbf{0}$, then at some time will return to it from a state $\mathbf{b} \ne \mathbf{0}$. If a this point the transition $(\mathbf{0}, 0)->\mathbf{0}$ is allowed, it will propagate the cost of the path with less hops to get back to $\mathbf{0}$ until a path of lower cost will be reached. This means that all the costs of paths with higher cost and higher number of hops will not be considered.
+
+The algorithm has an initialization phase where 
+\begin{equation}
+\begin{cases}
+	\Gamma_0(\mathbf{0}) = 0 \\
+	\Gamma_0(\mathbf{b}) = \infty & \mathbf{b} \ne \mathbf{0} \\
+
+\end{cases}
+\end{equation}	
+Then, for $l \in [1, \mu + \nu]$ with $\mu$ the length of the considered input and $\nu$ the memory of the code, and for each state $\mathbf{a}$, consider the neighbors set $\mathcal{N}(\mathbf{a})$ to find the transition of minimum cost:
+\begin{equation}
+	(\mathbf{\hat{b}}, \hat{u}) = \argmin_{(\mathbf{b}, u) \in \mathcal{N}(a)} \Gamma_{l-1}(\mathbf{b}) + \mathcal{C}(\mathbf{b}, u)
+\end{equation}
+Then update 
+\begin{equation}
+	\Gamma_{l}(\mathbf{a}) = \Gamma_{l-1}(\mathbf{\hat{b}}) + \mathcal{C}(\mathbf{\hat{b}}, \hat{u})
+\end{equation}
+Eventually choose 
+\begin{equation}
+	d_{min} = \min_{l} \Gamma_l(\mathbf{0})
+\end{equation}
+This algorithm has been implemented in MATLAB and returns the results in Table~\ref{table:dmin} which are consistent with what was found in Exercise 1 and in \cite{proakis}. Notice that convergence to $d_{min}$ is reached in few steps, and typically is not needed to iterate up to $\mu + \nu$. However, in the worst case, there are not visits to state $\mathbf{0}$ unless at the first and last step.
+\begin{table}
+	\centering
+	\begin{tabular}{c|c}
+		\toprule
+		Code (octal) & $d_{min}$ \\
+		\midrule
+		(5,7) & 5 \\
+		(5,1,7) & 6 \\
+		(5,7,7) & 8 \\
+		(5,7,7,7) & 10 \\
+	\end{tabular}
+	\caption{$d_{min}$ of different binary convolutional codes found by the algorithm}
+	\label{table:dmin}
+\end{table}
 
 \begin{thebibliography}{10}
+
+\bibitem{erseghe} Tomaso Erseghe, Channel Coding, \emph{A graduate course blueprint}, 2015
+
+\bibitem{proakis} John G. Proakis, Masoud Salehi, Digital communications, 5th ed., McGraw-Hill, 2008
+
+\bibitem{moler} Cleve Moler, Numerical Computing with MATLAB, SIAM, 2004
 
 \end{thebibliography}
 

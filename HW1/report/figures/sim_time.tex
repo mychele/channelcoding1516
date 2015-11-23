@@ -1,0 +1,42 @@
+% This file was created by matlab2tikz.
+%
+%The latest updates can be retrieved from
+%  http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz
+%where you can also make suggestions and rate matlab2tikz.
+%
+\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=0.951\fwidth,
+height=\fheight,
+at={(0\fwidth,0\fheight)},
+scale only axis,
+xmin=0.00000000000000000000,
+xmax=8.00000000000000000000,
+xlabel={Different simulation setup},
+xmajorgrids,
+ymin=1.10000000000000008882,
+ymax=1.55000000000000004441,
+ylabel={Time to execute 100 simulations [s]},
+ymajorgrids,
+axis background/.style={fill=white},
+xtick={1,2,3,4,5,6,7},
+xticklabels={SD Random, HD Random, SD Zero input, HD Zero input, $\upsilon = 3$ Zero input, $\upsilon = 5$ Zero input, $\upsilon = 10$ Zero input},
+xticklabel style={text width=30, align=center}
+%tick label style = {font=\scriptsize}
+]
+\addplot [color=mycolor1,only marks,mark=o,mark options={solid},forget plot]
+ plot [error bars/.cd, y dir = both, y explicit]
+ table[row sep=crcr, y error index=2]{%
+1.00000000000000000000	1.43460426395000006927	0.00640643505318490292	0.00640643505318490292\\
+2.00000000000000000000	1.24616393689999993555	0.00692884974221933715	0.00692884974221933715\\
+3.00000000000000000000	1.25291569685999992778	0.00600913441767358773	0.00600913441767358773\\
+4.00000000000000000000	1.13141408565000012310	0.01202371294465668337	0.01202371294465668337\\
+5.00000000000000000000	1.39219447717000011089	0.00694007368291772210	0.00694007368291772210\\
+6.00000000000000000000	1.43330832495000004556	0.00923976325614342571	0.00923976325614342571\\
+7.00000000000000000000	1.50141839890000006186	0.00858004931213116918	0.00858004931213116918\\
+};
+\end{axis}
+\end{tikzpicture}%
