@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include <stdlib.h>
 #include <float.h>
-#include "viterbi517.h"
+#include "viterbi577.h"
 #define N 3
 
 /************************************************************************
@@ -55,7 +55,7 @@ void mexFunction(
     
     
     /* 4. Run the algorithm */
-    viterbi517(r,sigma_w,n,u_hat,mode);
+    viterbi577(r,sigma_w,n,u_hat,mode);
     
     
     /* 5. Exit */
