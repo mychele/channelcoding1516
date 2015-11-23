@@ -1,3 +1,4 @@
+clear
 disp('This is the given pcc matrix H = [B, C]perm')
 H = [ 1 0 1 1 1 0 0 0 1 1;
 	  0 1 0 1 1 1 1 0 0 1;
@@ -27,16 +28,20 @@ disp(Htilde_nonstd);
 disp('Perform some row operations on Htilde to get C^{-1}')
 Hb = sum_rows([eye(5), Htilde_nonstd], 1, 2)
 Hb = sum_rows(Hb, 2, 3)
+
 Hb = sum_rows(Hb, 1, 4)
-Hb = sum_rows(Hb, 3, 4)
-Hb = sum_rows(Hb, 3, 5)
+
 Hb = sum_rows(Hb, 2, 5)
 Hb = sum_rows(Hb, 4, 5)
+Hb = sum_rows(Hb, 3, 4)
+%Hb = sum_rows(Hb, 3, 5)
+
+
 Hb = sum_rows(Hb, 5, 3)
-Hb = sum_rows(Hb, 5, 1)
 Hb = sum_rows(Hb, 4, 3)
-Hb = sum_rows(Hb, 4, 2)
+Hb = sum_rows(Hb, 5, 1)
 Hb = sum_rows(Hb, 4, 1)
+Hb = sum_rows(Hb, 4, 2)
 
 A = Hb(:, 6:10)
 C_1 = Hb(:, 1:5)
