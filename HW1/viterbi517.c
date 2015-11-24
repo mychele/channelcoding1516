@@ -23,7 +23,6 @@ static int const N = 3; // codeword length
 static int const mem = 2; // memory length
 static int const M = 2; // binary constellation
 static int const numStates = 4;
-// static char const verb = 0;
 
 double getSign(double value)
 {
@@ -32,16 +31,6 @@ double getSign(double value)
 	return 1;
 }
 
-
-/**
- * Compute cost of the transition from neighID to stateID with symbol u
- * @param the input symbol
- * @param the prev state
- * @param the codeword associated with the transition
- * @param sigma_w
- * @param use SD (0) or HD (1)
- * @return the cost
- */
 double getCost(int symbol, int neighID, double *codeword, double sigma_w, double mode)
 {
 	double transCost = 0;
@@ -58,15 +47,8 @@ double getCost(int symbol, int neighID, double *codeword, double sigma_w, double
 		{
 			transCost += -2*r_i*y_lut[neighID][symbol*N + l];
 		}
-		// if (verb)
-		// {
-		// 	printf("y%d=%d, r%d=%f\n", l, y_lut[neighID][symbol*N + l], l, -2*r_i);
-		// }
 	}
-	// if(verb)
-	// {
-	// 	printf("cost=%f\n", transCost);
-	// }
+
 	if(mode)
 	{
 		return transCost;
@@ -91,15 +73,6 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 	// cycle on received vector
 	for(l = 0; l < n; l = l + 3)
 	{
-		// TODO consider if it is a valuable improvement to compute LLR just once
-		// if(verb)
-		// {
-		// 	printf("%d\n", l);
-		// 	for(int in = 0; in <= 3; in++)
-		// 	{
-		// 		printf("gamma(%d) = %f\n", in, gammaPrev[in]);
-		// 	}
-		// }
 		// cycle on the states
 		int stateID;
 		double minCost = DBL_MAX/2; // this will always be updated because of 
@@ -110,20 +83,13 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 			// for 0 and 1 the input symbol that bring to the state is always
 			// 0, for 2 and 3 the input symbol is 1
 			int u_poss = stateID/mem;
-			// if (verb)
-			// {
-			// 	printf("stateID = %d, possible input=%d\n", stateID, u_poss);
-			// }
+
 			double cost = DBL_MAX/2;
 			// each node has mem neighbors, cycle on them
 			int maxNeighID = neighbors[stateID][mem - 1];
 			int neighID = neighbors[stateID][0];
 			for(; neighID <= maxNeighID; neighID++)
 			{
-				// if (verb)
-				// {
-				// 	printf("neighID=%d\n", neighID);
-				// }
 				double newCost = gammaPrev[neighID] + getCost(u_poss, neighID, r + l, sigma_w, mode);
 				if (newCost < cost)
 				{
@@ -152,10 +118,6 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 		for(gammaIndex = 0; gammaIndex < numStates; gammaIndex++)
 		{
 			gammaPrev[gammaIndex] = gamma[gammaIndex] - minCost;
-			// if (verb)
-			// {
-			// 	printf("prevState=%d for stateID=%d\n", prevState[l/N][gammaIndex], gammaIndex);
-			// }
 		}
 	}
 
@@ -164,10 +126,6 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode)
 	l = outSize - 1;
 	for(; l >= 0; l--)
 	{
-		// if (verb)
-		// {
-		// 	printf("stateID=%d\n", stateID);
-		// }
 		u_hat[l] = stateID/mem;
 		stateID = prevState[l][stateID];
 	}

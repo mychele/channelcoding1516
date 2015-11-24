@@ -5,7 +5,6 @@
  * @param the length of the received vector
  * @param the pointer to the array where received values will be stored
  */
-
 void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode);
 
 /**
@@ -19,4 +18,9 @@ void viterbi517(double *r, double sigma_w, int n, double *u_hat, double mode);
  */
 double getCost(int symbol, int neighID, double *codeword, double sigma_w, double mode);
 
+/**
+ * Return the sign of the value passed as argument
+ * @param a value
+ * @return the sign of the value
+ */
 double getSign(double value);
