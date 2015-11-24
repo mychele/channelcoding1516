@@ -1,4 +1,4 @@
-N = 2; % codeword length
+N = 4; % codeword length
 mem = 2; % memory length (size of the state vector)
 M = 2; % binary constellation
 num_states = M^mem;
@@ -23,16 +23,16 @@ state_mat_mult = [0 1; 0 1; 1 1];
 % state_mat_mult = [0 1; 1 1];
 
 % (5, 7, 7)
-% input_vec_mult = [1; 1; 1];
-% state_mat_mult = [0 1; 1 1; 1 1];
+input_vec_mult = [1; 1; 1; 1];
+state_mat_mult = [0 1; 1 1; 1 1; 1 1];
 
 % state_ID, symbol
 %neigh_ext = [0, 0; 1, 1; 2, 0; 3, 1; 0, 1; 1, 0; 2, 1; 3, 0]; % g4
-%neigh_ext = [0, 0; 1, 0; 2, 0; 3, 0; 0, 1; 1, 1; 2, 1; 3, 1]; % g3 but also (5,7)
-neigh_ext = [0, 0; 1, 1; 2, 1; 3, 0; 0, 1; 1, 0; 2, 0; 3, 1];
+neigh_ext = [0, 0; 1, 0; 2, 0; 3, 0; 0, 1; 1, 1; 2, 1; 3, 1]; % g3 but also (5,7)
+%neigh_ext = [0, 0; 1, 1; 2, 1; 3, 0; 0, 1; 1, 0; 2, 0; 3, 1];
 
-input_vec_mult = [1; 1];
-state_mat_mult = [0 0; 1 0];
+% input_vec_mult = [1; 1];
+% state_mat_mult = [0 0; 1 0];
 
 for state_ID = 0:num_states-1
 	% update state vector
@@ -61,16 +61,15 @@ for l = 1:20
 		for i = 1:mem
 			neigh_ID = neigh_ext(state_ID*mem + i, 1);
 			u_poss = neigh_ext(state_ID*mem + i, 2);
-			if (neigh_ID == 0 && u_poss == 0)
+			if (neigh_ID == 0 && u_poss == 0 && state_ID == 0)
 				newcost = inf; % invalidate transition from 0 to 0
 			else
 				newcost = Gamma_prev(neigh_ID+1) + sum(y_lut(u_poss*N + 1:(u_poss + 1)*N, neigh_ID+1));
 			end
 			if (newcost < cost) % new min
-				if(~(state_ID==0 && neigh_ID == 0 && newcost == 0)) % avoid to account for the path from 0 to 0
-					cost = newcost;
-				end
+				cost = newcost;
 				Gamma(state_ID+1) = cost;
+				prev_state(l, state_ID+1) = neigh_ID;
 			end
 		end
 		if (cost == inf) % it was not initialized
