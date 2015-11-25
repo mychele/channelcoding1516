@@ -8,6 +8,7 @@ static int const mem = 2; // memory length
 static int const M = 2; // binary constellation
 static int const numStates = 4;
 
+
 void encoder517(double* u, double* y, int n)
 {
 	//int y_size = n*N;
