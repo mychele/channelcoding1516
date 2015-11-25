@@ -1,38 +1,42 @@
-N = 4; % codeword length
 mem = 2; % memory length (size of the state vector)
 M = 2; % binary constellation
 num_states = M^mem;
 mu = 20;
+
+% g3
+input_vec_mult = [1; 0; 1];
+state_mat_mult = [0 1; 0 1; 1 1];
+neigh_ext = [0, 0; 1, 0; 2, 0; 3, 0; 0, 1; 1, 1; 2, 1; 3, 1]; % g3 but also (5,7)
+N = 3; % codeword length
+
+% g4
+% input_vec_mult = [1; 0; 1];
+% state_mat_mult = [0 0; 0 1; 1 0];
+% neigh_ext = [0, 0; 1, 1; 2, 0; 3, 1; 0, 1; 1, 0; 2, 1; 3, 0]; % g4
+% N = 3; % codeword length
+
+% (5, 7)
+% input_vec_mult = [1; 1];
+% state_mat_mult = [0 1; 1 1];
+% neigh_ext = [0, 0; 1, 0; 2, 0; 3, 0; 0, 1; 1, 1; 2, 1; 3, 1];
+% N = 2; % codeword length
+
+% (5, 7, 7, 7)
+% input_vec_mult = [1; 1; 1; 1];
+% state_mat_mult = [0 1; 1 1; 1 1; 1 1];
+% neigh_ext = [0, 0; 1, 0; 2, 0; 3, 0; 0, 1; 1, 1; 2, 1; 3, 1];
+% N = 4; % codeword length
+
+% input_vec_mult = [1; 1];
+% state_mat_mult = [0 0; 1 0];
+% neigh_ext = [0, 0; 1, 1; 2, 1; 3, 0; 0, 1; 1, 0; 2, 0; 3, 1];
+% N = 2; % codeword length
 
 % Precompute all the possible output vectors
 y_lut = zeros(M*N, num_states); % each column i has 2 codeword y, from state 
 % i with input 0 or 1. Each codeword has size N
 state = zeros(mem, 1); % state vector of size mem, with lsb in the left most position!
 state_ID = 0:3; % state ID (i.e. 00 -> 0, 01 -> 1...)
-
-% g3
-input_vec_mult = [1; 0; 1];
-state_mat_mult = [0 1; 0 1; 1 1];
-
-% g4
-% input_vec_mult = [1; 0; 1];
-% state_mat_mult = [0 0; 0 1; 1 0];
-
-% (5, 7)
-% input_vec_mult = [1; 1];
-% state_mat_mult = [0 1; 1 1];
-
-% (5, 7, 7)
-input_vec_mult = [1; 1; 1; 1];
-state_mat_mult = [0 1; 1 1; 1 1; 1 1];
-
-% state_ID, symbol
-%neigh_ext = [0, 0; 1, 1; 2, 0; 3, 1; 0, 1; 1, 0; 2, 1; 3, 0]; % g4
-neigh_ext = [0, 0; 1, 0; 2, 0; 3, 0; 0, 1; 1, 1; 2, 1; 3, 1]; % g3 but also (5,7)
-%neigh_ext = [0, 0; 1, 1; 2, 1; 3, 0; 0, 1; 1, 0; 2, 0; 3, 1];
-
-% input_vec_mult = [1; 1];
-% state_mat_mult = [0 0; 1 0];
 
 for state_ID = 0:num_states-1
 	% update state vector
@@ -79,4 +83,4 @@ for l = 1:20
 	Gamma_prev = Gamma;
  	Gamma_zero(l) = Gamma(1);
 end
-disp(min(Gamma_zero))
+disp(strcat('dmin = ', num2str(min(Gamma_zero))))
