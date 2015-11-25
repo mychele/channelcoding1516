@@ -10,3 +10,5 @@ viterbi
 *.log
 
 *.pdf
+
+*.out
