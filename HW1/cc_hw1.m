@@ -12,7 +12,7 @@ ebn0 = 10.^(ebn0_dB/10);
 sigma_w = sqrt(1./(2/3*ebn0));
 mem = 2; % code memory
 max_err = 10^3;
-save_data = 0;
+save_data = 1;
 save_int = 1000;
 
 %% Simulation of Viterbi, SD
@@ -163,7 +163,12 @@ winSize = 10;
 tic
 for it_index = 1:it_num
 	% define input vector of size pck_len + mem
-	s = -1*ones(N*(pck_len+mem), 1);
+	u = randi(2, pck_len + mem, 1) - 1;
+	u(pck_len + 1:pck_len + mem) = 0;
+	% encode
+	c = encoder517_mex(u.');
+	% conform map
+	s = 2*c.' - 1;
 	% random gaussian noise
 	w = randn(length(s), 1);
 	
@@ -173,7 +178,7 @@ for it_index = 1:it_num
 			y = s + sigma_w(j)*w;
 			% decode with Viterbi
 			u_hat = viterbi_mex_win(y.', sigma_w(j), 0, winSize);
-			n_err_sd_win10(j) = n_err_sd_win10(j) + sum(u_hat.' ~= 0);
+			n_err_sd_win10(j) = n_err_sd_win10(j) + sum(u_hat.' ~= u);
 			pck_sent_sd_win10(j) = pck_sent_sd_win10(j) + 1;
 		end
 	end	

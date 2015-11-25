@@ -56,7 +56,7 @@ Gamma_prev = inf*ones(num_states, 1);
 Gamma_prev(1) = 0; % start from state 0
 Gamma = inf*ones(num_states, 1);
 
-for l = 1:20
+for l = 1:num_states
 	% cycle through states
 	for state_ID = 0:num_states-1
 		% cycle on the neighbors, compute new cost, update if lower than
