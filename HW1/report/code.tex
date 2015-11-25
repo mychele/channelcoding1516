@@ -23,7 +23,7 @@
 \usepackage{listings} % for Matlab code
 \definecolor{commenti}{rgb}{0.13,0.55,0.13}
 \definecolor{stringhe}{rgb}{0.63,0.125,0.94}
-\lstloadlanguages{C}
+\lstloadlanguages{C, MATLAB}
 \lstset{% general command to set parameter(s)
 % framexleftmargin=0mm,
 % frame=single,
@@ -35,12 +35,37 @@ stringstyle = \ttfamily \color{stringhe}, % typewriter type for strings
 emph = {for, if, then, else, end},
 % emphstyle = \color{blue},
 % firstnumber = 1,
-% numbers =right, %  show number_line
-% numberstyle = \tiny, % style of number_line
-% stepnumber = 5, % one number_line after stepnumber
-% numbersep = 5pt,
+numbers =right, %  show number_line
+numberstyle = \tiny, % style of number_line
+stepnumber = 5, % one number_line after stepnumber
+numbersep = 5pt,
 language = {C},
 % extendedchars = true,
+% breaklines = true,
+% breakautoindent = true,
+% breakindent = 30pt,
+keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+basicstyle=\footnotesize\ttfamily,
+tabsize = 4
+}
+
+\lstset{% general command to set parameter(s)
+% framexleftmargin=0mm,
+% frame=single,
+keywordstyle = \color{blue},% blue keywords
+% identifierstyle =, % nothing happens
+commentstyle = \color{commenti}, % comments
+stringstyle = \ttfamily \color{stringhe}, % typewriter type for strings
+showstringspaces = false, % no special string spaces
+emph = {for, if, then, else, end},
+% emphstyle = \color{blue},
+% firstnumber = 1,
+numbers =right, %  show number_line
+numberstyle = \tiny, % style of number_line
+stepnumber = 5, % one number_line after stepnumber
+numbersep = 5pt,
+language = {MATLAB},
+extendedchars = true,
 % breaklines = true,
 % breakautoindent = true,
 % breakindent = 30pt,
@@ -80,9 +105,49 @@ tabsize = 4
 
 \maketitle
 
+A live version of the following code and all its little variations can be found on my Github repository.
+
 \section*{C code}
+
+This is the code that implements a Viterbi Decoder for a (5,1,7) binary convolutional code, both with soft decoding (SD) and hard decoding (HD) options. The code can be easily adapted to decode a (5, 7, 7) binary convolutional code by swapping the \texttt{y\_lut} output lookup table.
 \subsection*{\texttt{viterbi517.h}}
-\lstinputlisting{../viterbi517.h}
+\lstinputlisting[language=C]{../viterbi517.h}
 \subsection*{\texttt{viterbi517.c}}
-\lstinputlisting{../viterbi517.c}
+\lstinputlisting[language=C]{../viterbi517.c}
+
+The following code implements a windowed version of Viterbi decoding for a (5,1,7) binary convolutional code. The window size is left as an option. It relies on the viterbi517.h methods to compute the cost of the transitions.
+
+\subsection*{\texttt{viterbi517\_windowed.h}}
+\lstinputlisting[language=C]{../viterbi517_windowed.h}
+\clearpage
+\subsection*{\texttt{viterbi517\_windowed.c}}
+\lstinputlisting[language=C]{../viterbi517_windowed.c}
+
+This is the implementation of an encoder for (5,1,7) binary convolutional code.
+
+\subsection*{\texttt{encoder517.h}}
+\lstinputlisting[language=C]{../encoder517.h}
+\subsection*{\texttt{encoder517.c}}
+\lstinputlisting[language=C]{../encoder517.c}
+
+This is an example of a MEX function that calls the Viterbi decoder for (5,1,7) from MATLAB. Different MEX function were written to call the windowed version and the encoder, but since they are very similar to this are not reported here.
+
+\subsection*{\texttt{viterbi\_mex.c}}
+\lstinputlisting[language=C]{../viterbi_mex.c}
+
+\section*{MATLAB code}
+
+\subsection*{\texttt{cc\_hw1.m}}
+This is the main script for the first exercise. It executes all the simulations needed automatically, there is an option to store results into a .mat file, and outputs different plots. The parameters of the simulations are set in the first lines of code, but they can be tweaked for each different simulation.
+\lstinputlisting{../cc_hw1.m}
+
+\subsection*{\texttt{cc\_hw1\_e5.m}}
+This is the script for exercise 5. It uses the function \texttt{sum\_rows.m} to perform sum between rows in $\mathbb{F}_2$.
+\lstinputlisting{../cc_hw1_e5.m}
+\subsection*{\texttt{sum\_rows.m}}
+\lstinputlisting{../sum_rows.m}
+
+\subsection*{\texttt{dmin\_finder.m}} 
+In this script I implemented the algorithm described in exercise 7 to find the $d_{min}$ of a convolutional code.
+\lstinputlisting{../dmin_finder.m}
 \end{document}
