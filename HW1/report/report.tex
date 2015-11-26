@@ -114,6 +114,8 @@ basicstyle=\footnotesize\ttfamily
 \tikzstyle{output} = [coordinate]
 \tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
 
+In this report the solution to Exercise 1, 5 and 7 will be discussed. In the attached file there is the code that was developed to solve these exercises and perform the simulations.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%% PROBLEM 1 %%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -265,7 +267,7 @@ with the weight $W_{d, i, l}$ given by the number of codeword $\mathbf{y}$ start
 	} W_{\mathbf{b}}(x,w,z) x^{\|\outf{\mathbf{b}, u}\|_H} w^{\|u\|_H} z
 \end{equation}
 
-Let $T(x, w, z) = W_{\mathbf{0}_e} (x, w, z)$ be the transfer function of system, i.e. the function whose terms identify the number of codewords with $d < 2d_{min}$ with a certain input weight $i$ and length $l$. This can be derived by solving the following linear system
+Let $T(x, w, z) = W_{\mathbf{0}_e} (x, w, z)$ be the transfer function of system, i.e. the function whose coefficients identify the number of codewords with $d < 2d_{min}$ with a certain input weight $i$ and length $l$. This can be derived by solving the following linear system
 \begin{equation}\label{eq:s1}
 \begin{cases}
 	W_{\mathbf{0}_s} = 1 \\ %TODO definition \\
@@ -341,7 +343,7 @@ Then from~\eqref{eq:coeff}
 \end{equation*}
 and eventually the expression for the bit error rate is
 \begin{equation}\label{eq:BER_bound}
-	P_{bit} \lesssim Q\left(\sqrt{4\frac{E_b}{N_0}} \right) + 4\cdot Q\left(\sqrt{\frac{16E_b}{3N_0}} \right) + 12 \cdot Q\left(\sqrt{\frac{20E_b}{3N_0}} \right)
+	P_{bit} \lesssim Q\left(\sqrt{4\frac{E_b}{N_0}} \right) + 4\cdot Q\left(\sqrt{\frac{16}{3}\frac{E_b}{N_0}} \right) + 12 \cdot Q\left(\sqrt{\frac{20}{3}\frac{E_b}{N_0}} \right)
 \end{equation}
 given that the rate is $R=1/3$. An approximate expression (but underestimated for low SNR) is
 \begin{equation}\label{eq:BER_approx}
@@ -349,15 +351,17 @@ given that the rate is $R=1/3$. An approximate expression (but underestimated fo
 \end{equation}
 
 % plot expected
-In Fig.~\ref{fig:BER_theory} there is the plot of expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}. The nominal coding gain is by definition $\gamma_c = Rd_{min} = 3.01$ dB, while the effective coding gain is the difference in dB between the value of $E_b/N_0$ for which the curves~\eqref{eq:BER_bound} and $Q\left(\sqrt{2\frac{E_b}{N_0}}\right)$ (uncoded $P_{bit}$) reach $P_{bit} = P_{target} = 10^{-5}$. It can be numerically evaluated with MATLAB and for the code under analysis is $\gamma_e = 2.935$ dB. Therefore the difference between nominal and effective coding gain is $\gamma_c - \gamma_e = 0.075$ dB.
+In Fig.~\ref{fig:BER_theory} there is the plot of expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}. The nominal coding gain is by definition $\gamma_c = Rd_{min} = 3.01$ dB, while the effective coding gain $\gamma_e$ is the difference in dB between the value of $E_b/N_0$ for which the curves~\eqref{eq:BER_bound} and $Q\left(\sqrt{2\frac{E_b}{N_0}}\right)$ (uncoded $P_{bit}$) reach $P_{bit} = P_{target} = 10^{-5}$. It can be numerically evaluated with MATLAB and for the code under analysis is $\gamma_e = 2.935$ dB. Therefore the difference between nominal and effective coding gain is $\gamma_c - \gamma_e = 0.075$ dB.
 
 \subsection{Performance evaluation through simulation}
 
 % plot comparison with simulation
-In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C and called from a MATLAB script using MEX functions. 
-The channel implementation instead is left to a sum between vectors in MATLAB, so that the \texttt{randn} function of MATLAB can be used. Indeed the algorithm with which MATLAB generates Gaussian random noise is very efficient \cite{moler}. The standard Viterbi was implemented with backtracking in order to retrieve the symbols associated with each transition on the trellis. Moreover the neighbor set and the possible outputs were hard-coded in lookup tables. 
+In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C and called from a MATLAB script using MEX functions. The standard Viterbi was implemented with backtracking in order to retrieve the symbols associated with each transition on the trellis, so that the complexity is reduced with respect to the survivor sequence update implementation. In order to avoid overflow a normalization of the metric vector $\mathbf{\Gamma}_l$ is carried out at each step by subtracting the minimum among its entries. Moreover to avoid useless computations the neighbor set and the possible outputs were hard-coded in lookup tables. 
 
-The performances were tested for different values of $E_b/N_0 \in [-3, 8]$, with $K$ iterations. For each iteration let $\mathbf{u}$ be the input vector of size $\mu + \nu$, $\mathbf{y}$ the encoded vector, $\mathbf{s} = \mathcal{L}(\mathbf{y}) = 2\mathbf{y} - 1$ the vector of symbols which are sent through the channel and $\mathbf{w}$ a vector of IID samples $w_i \sim N(0,1), i = 0 \dots (\mu + \nu)/R - 1$. Then the received vector $\mathbf{r}_{E_b/N_0}$ for each value of $E_b/N_0$ is 
+A windowed version was implemented too, i.e. a Viterbi that at step $l$ decides on the symbol received $l - \upsilon$ steps before by backtracking from the state $\mathbf{\hat{s}} = \argmin_{\mathbf{s}_i \in \{\mathbf{s}_1 \dots \mathbf{s}_{q^{\nu}}\}} \Gamma_l(\mathbf{s}_i)$. Let $\upsilon$ be the window size. The last $\upsilon$ metric column vector $\mathbf{\Gamma}$ are stored using a circular matrix and an index $i\in[0, \upsilon-1]$ to keep memory of what is the current position. As soon as the circular matrix is filled the first symbol is decoded and at the next step the first column of the matrix will be updated with the current cost, and so on. Considerations on the complexity of the different versions will be given later. 
+
+The channel implementation is left to a sum between vectors in MATLAB, so that the \texttt{randn} function of MATLAB can be used. Indeed the algorithm with which MATLAB generates Gaussian random noise is very efficient \cite{moler}. 
+The BER performances were tested for different values of $E_b/N_0 \in [-3, 8]$, with $K$ iterations. For each iteration let $\mathbf{u}$ be the input vector of size $\mu + \nu$ (with the last $\nu$ entries set to $0$ in order to terminate the code). Let $\mathbf{y}$ be the encoded vector, $\mathbf{s} = \mathcal{L}(\mathbf{y}) = 2\mathbf{y} - 1$ the vector of symbols which are sent through the channel and $\mathbf{w}$ a vector of IID samples $w_i \sim N(0,1), i = 0 \dots (\mu + \nu)/R - 1$. Then the received vector $\mathbf{r}_{E_b/N_0}$ for each value of $E_b/N_0$ is 
 \begin{equation}
 	\mathbf{r}_{E_b/N_0} = \mathbf{s} + \sigma_w \mathbf{w}
 \end{equation}
@@ -377,7 +381,7 @@ since $M=2$ and $E_s = 1$.
 \label{fig:BER_theory}
 \end{figure}
 
-In this way for all the $E_b/N_0$ values encoding and noise generation are carried out only once. For each $E_b/N_0$ the $\mathbf{r}_{E_b/N_0}$ is decoded to retrieve $\mathbf{\hat{u}}$ and the number of decoded packets $N_{pck, E_b/N_0}$ for that SNR is increased by one. The number of errors is added to the total number of error for that SNR $N_{err, E_b/N_0}$. If the number of error exceeds a certain threshold $N_{min}$ then in the following iterations the decoding for this particular SNR is not carried out in order to speed up the simulation. Moreover an option to use the all zero input $\mathbf{u} = \mathbf{0}$ is introduced, so that the encoding operation is not needed since the encoded vector is $\mathbf{y} = -\mathbf{1}$. 
+In this way for all the $E_b/N_0$ values encoding and noise generation are carried out only once. For each $E_b/N_0$ the $\mathbf{r}_{E_b/N_0}$ is decoded to retrieve $\mathbf{\hat{u}}$ and the number of decoded packets $N_{pck, E_b/N_0}$ for that SNR is increased by one. The number of errors is added to the total number of errors for that SNR $N_{err, E_b/N_0}$. If the number of error exceeds a certain threshold $N_{min}$ then in the following iterations the decoding for this particular SNR is not carried out in order to speed up the simulation. Moreover an option to use the all zero input $\mathbf{u} = \mathbf{0}$ is introduced, so that the encoding operation is not needed since the encoded vector is $\mathbf{y} = -\mathbf{1}$. 
 
 The BER is then computed as
 \begin{equation}
@@ -402,14 +406,16 @@ In Fig.~\ref{fig:BER_577} there is a comparison with the $(5, 7, 7)$ code which 
 \setlength\fheight{0.4\textwidth}
 \setlength\fwidth{0.6\textwidth}
 \input{./figures/sim_time.tex}
-\caption{Simulation time required to complete 100 simulations with different setups}
+\caption{Average simulation time required to complete 100 simulations with different setups}
 \label{fig:perf}
 \end{figure}
 
-As far as complexity is considered, in Fig.~\ref{fig:perf} there is a comparison between mean execution time for different algorithms and simulation choices. 
+As far as complexity is considered, in Fig.~\ref{fig:perf} there is a comparison between average execution time for different algorithms and simulation choices. 
 For this analysis $N_{min} = \infty$ so that the same number of decoding operations is carried out for the 12 $E_b/N_0 \in [-3, 8]$ values considered. 
-In the $y$ axis there is the average time in seconds to complete 100 simulations with each different setting. 
-Notice that the difference between the simulation with encoding (with MEX functions) and with the all zero input word is minimal. Instead, if compared with the latter, the windowed versions are all slower since they need to backtrack $\upsilon$ positions in the trellis in order to decode each symbol, i.e. they backtrack approximately $(\mu + \nu)\upsilon$ positions while the standard Viterbi backtracks only from the last state to the first, so $\mu+\nu$ positions. In terms of memory consumption, instead, the windowed version does not need to store the whole trellis to perform the complete backtracking but only the last $\upsilon$ positions. 
+
+In the $y$ axis there is the average time in seconds to complete 100 simulations with each different setting. The total number of iteration for each scheme is $10^4$, and every 100 the execution time is sampled. Then the sample mean $\hat{\mu}$ among these is computed as well as confidence intervals $\hat{\mu} \pm 1.96\hat{s}/\sqrt{n}$ with $n=100$ and $\hat{s}$ the sample standard deviation.
+
+Notice that the difference between the simulation with encoding (with MEX functions) and with the all zero input word is minimal. Instead, if compared with the latter, the windowed versions are all slower since they need to backtrack $\upsilon$ positions in the trellis in order to decode \emph{each} symbol, i.e. they backtrack approximately $(\mu + \nu)\upsilon$ positions while the standard Viterbi backtracks only from the last state to the first, so $\mu+\nu$ positions. In terms of memory consumption, instead, the windowed version does not need to store the whole trellis to perform the complete backtracking but only the last $\upsilon$ positions. 
 
 \begin{figure*}[h]
 \centering
@@ -437,7 +443,6 @@ Notice that the difference between the simulation with encoding (with MEX functi
 \label{fig:BER_577}
 }
 \end{figure*}
-
 
 \clearpage
 
@@ -588,7 +593,7 @@ By pre-multiplying the transpose of the permutation matrix $\mathbf{\Pi}^T$ to $
 		0&0&0&1&0\\
 	\end{bmatrix}
 \end{equation}
-Note that $\mathbf{H}\mathbf{G} = \mathbf{0}$.
+Note that $\mathbf{H}\mathbf{G} = \mathbf{0}$, as expected, since the columns of $\mathbf{G}$ are codewords themselves and $\mathbf{H}$ is a parity check matrix, i.e. $\mathbf{H}\mathbf{c} = \mathbf{0}$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%% PROBLEM 7 %%%%%%%%%%%%%%%%
@@ -624,13 +629,13 @@ Note that $\mathbf{H}\mathbf{G} = \mathbf{0}$.
 	\node [trellisnode, above=1cm of 14] (24) {$6$};
 	\node [trellisnode, above=1cm of 24] (34) {$8$};
 
-	\node [trellisnode, right of=04] (05) {$13$};
-	\node [below=0.1cm of 05] (n7) {$l=5$};
-	\node [trellisnode, above=1cm of 05] (15) {$9$};
-	\node [trellisnode, above=1cm of 15] (25) {$9$};
-	\node [trellisnode, above=1cm of 25] (35) {$7$};
-	\node [,above left=0.01cm of 15] (n1) {$3$};
-	\node [,above right=0.01cm of 14] (n2) {$0$};
+	% \node [trellisnode, right of=04] (05) {$13$};
+	% \node [below=0.1cm of 05] (n7) {$l=5$};
+	% \node [trellisnode, above=1cm of 05] (15) {$9$};
+	% \node [trellisnode, above=1cm of 15] (25) {$9$};
+	% \node [trellisnode, above=1cm of 25] (35) {$7$};
+	% \node [,above left=0.01cm of 15] (n1) {$3$};
+	% \node [,above right=0.01cm of 14] (n2) {$0$};
 
 
 	\path[every node]
@@ -647,11 +652,11 @@ Note that $\mathbf{H}\mathbf{G} = \mathbf{0}$.
 	(13) edge[red] node[above] {$4$} (04)
 		edge node[above] {$0$} (24)
 	(23) edge node[above] {$1$} (34)
-	(33) edge node[above] {$1$} (14)
-	(14) edge node[above] {$4$} (05)
-		edge (25)
-	(24) edge (15)
-		edge node[above] {$1$} (35);
+	(33) edge node[above] {$1$} (14);
+	% (14) edge node[above] {$4$} (05)
+	% 	edge (25)
+	% (24) edge (15)
+	% 	edge node[above] {$1$} (35);
 	
 
 \end{tikzpicture}
@@ -667,8 +672,6 @@ Moreover define $\Gamma_l(\mathbf{a})$ as aggregate cost of the path that exits 
 
 Then the algorithms has to identify $d_{min}$ as the minimum aggregate cost among the paths that start from state $\mathbf{0}$ and go back to it, since we are dealing with a terminated code. If there is a path that starts from $\mathbf{0}$, goes back to this state and then exits again then it will surely have an higher cost than the one that continues to visit $\mathbf{0}$ from that point on. For this purpose we can create a trellis in a Viterbi-like style, by however making infeasible to choose the transitions from $\mathbf{0}$ to itself, with associated output of Hamming weight equal to zero. In particular let $\mathcal{C}(\mathbf{0}, 0) = \infty$.
 
-%Indeed, by choosing this transition at the first step of the trellis, it is as like postponing the search of the codeword of minimum weight at the second step. Therefore at the first step the algorithm exits from state $\mathbf{0}$, then at some time will return to it from a state $\mathbf{b} \ne \mathbf{0}$. If a this point the transition $(\mathbf{0}, 0)->\mathbf{0}$ is allowed, it will propagate the cost of the path with less hops to get back to $\mathbf{0}$ until a path of lower cost will be reached. This means that all the costs of paths with higher cost and higher number of hops will not be considered.
-
 The algorithm has an initialization phase where 
 \begin{equation}
 \begin{cases}
@@ -677,7 +680,7 @@ The algorithm has an initialization phase where
 
 \end{cases}
 \end{equation}	
-Then, for $l \in [1, \mu + \nu]$ with $\mu$ the length of the considered input and $\nu$ the memory of the code, and for each state $\mathbf{a}$, consider the neighbors set $\mathcal{N}(\mathbf{a})$ to find the transition of minimum cost:
+Then, for $l \in [1, q^{\nu}]$ with $\nu$ the memory of the code and $q^{\nu}$ the number of states, and for each state $\mathbf{a}$, consider the neighbors set $\mathcal{N}(\mathbf{a})$ to find the transition of minimum cost:
 \begin{equation}
 	(\mathbf{\hat{b}}, \hat{u}) = \argmin_{(\mathbf{b}, u) \in \mathcal{N}(a)} \Gamma_{l-1}(\mathbf{b}) + \mathcal{C}(\mathbf{b}, u)
 \end{equation}
@@ -687,9 +690,9 @@ Then update
 \end{equation}
 Eventually choose 
 \begin{equation}
-	d_{min} = \min_{l \in [1, \mu + \nu]} \Gamma_l(\mathbf{0})
+	d_{min} = \min_{l \in [1, q^{\nu}]} \Gamma_l(\mathbf{0})
 \end{equation}
-This algorithm has been implemented in MATLAB and returns the results in Table~\ref{table:dmin} which are consistent with what was found in Exercise 1 and in \cite{proakis}. Notice that convergence to $d_{min}$ is reached in few steps, and typically is not needed to iterate up to $\mu + \nu$. However, in the worst case, there are not visits to state $\mathbf{0}$ unless at the first and last step. In Fig.~\ref{fig:trellis_min} there is the trellis for $l\in[0,5]$ that is built by the algorithm for a $(5,7,7,7)$ binary convolutional code. The path in red is the one that yields a codeword with weight $d_{min}$, and it can be seen that it is not the one with the smallest number of hops to go back to $\mathbf{0}$.
+This algorithm has been implemented in MATLAB and returns the results in Table~\ref{table:dmin} which are consistent with what was found in Exercise 1 and in \cite{proakis}. In Fig.~\ref{fig:trellis_min} there is the trellis for $l\in[0,4]$ that is built by the algorithm for a $(5,7,7,7)$ binary convolutional code. The path in red is the one that yields a codeword with weight $d_{min}$, and it can be seen that it is not the one with the smallest number of hops to go back to $\mathbf{0}$. Notice that $q^{\nu}$ iterations are required in the worst case (although without loops) for the paths exiting from $\mathbf{0}$ to go back to this state, i.e. by visiting all the states.
 
 \begin{table}[h]
 	\centering
