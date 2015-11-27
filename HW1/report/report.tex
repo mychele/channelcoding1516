@@ -261,7 +261,7 @@ On each transition let $x$ be a variable whose exponent is associated with the H
 \begin{equation}
 	W_{\mathbf{s}}(x, w, z) = \sum_{d, i, l = 0}^{\infty}W_{d, i, l} x^dw^iz^l
 \end{equation}
-with the weight $W_{d, i, l}$ given by the number of codeword $\mathbf{y}$ starting from state $00$, ending in state $\mathbf{s}$, with Hamming norm $d$, input weight $i$ and length $l$. In particular there is linear relation between WEFs of neighbors, i.e.
+with the weight $W_{d, i, l}$ given by the number of codewords $\mathbf{y}$ starting from state $00$, ending in state $\mathbf{s}$, with Hamming norm $d$, input weight $i$ and length $l$. In particular there is linear relation between WEFs of neighbors, i.e.
 \begin{equation}
 	W_{\mathbf{a}}(x, w, z) = \sum_{(\mathbf{b}, u) \in \mathcal{N}(\mathbf{a})
 	} W_{\mathbf{b}}(x,w,z) x^{\|\outf{\mathbf{b}, u}\|_H} w^{\|u\|_H} z
@@ -305,7 +305,7 @@ and finally from~\eqref{eq:s1}
 	T(x, w, z) = W_{\mathbf{0}_e}(x, w, z) = \frac{x^6wz^3}{1-x^2wz(1+z)} = x^6wz^3\sum_{k=0}^{\infty} [x^2wz(1+z)]^k
 \end{equation}
 % Pbit
-It is possible to expand $T(x,w,z) = \sum_{d, i, l = 0}^{\infty} t_{d, i, l}x^dw^iz^l$ in order to get the coefficients $t_{d,i,l}$ that represent the number of codeword with Hamming weight $d$, associated with an input of weight $i$ and length $l$. From~\eqref{eq:T} I get
+It is possible to expand $T(x,w,z) = \sum_{d, i, l = 0}^{\infty} t_{d, i, l}x^dw^iz^l$ in order to get the coefficients $t_{d,i,l}$ that represent the number of codewords with Hamming weight $d$, associated with an input of weight $i$ and length $l$. From~\eqref{eq:T}:
 \begin{equation}\label{Texp}
 	T(x, w, z) = x^6wz^3 + x^8w^2z^4 + x^8w^2z^5 + x^{10}w^3z^5 + 2x^{10}w^3z^6 + x^{10}w^3z^7 + x^6wz^3\sum_{k=4}^{\infty}[x^2wz(1+z)]^k
 \end{equation}
@@ -358,7 +358,7 @@ In Fig.~\ref{fig:BER_theory} there is the plot of expressions~\eqref{eq:BER_boun
 % plot comparison with simulation
 In order to evaluate through simulation the performance of the convolutional code with generator polynomial $\mathbf{g}$ an encoder and a Viterbi decoder were implemented in C and called from a MATLAB script using MEX functions. The standard Viterbi was implemented with backtracking in order to retrieve the symbols associated with each transition on the trellis, so that the complexity is reduced with respect to the survivor sequence update implementation. In order to avoid overflow a normalization of the metric vector $\mathbf{\Gamma}_l$ is carried out at each step by subtracting the minimum among its entries. Moreover to avoid useless computations the neighbor set and the possible outputs were hard-coded in lookup tables. 
 
-A windowed version was implemented too, i.e. a Viterbi that at step $l$ decides on the symbol received $l - \upsilon$ steps before by backtracking from the state $\mathbf{\hat{s}} = \argmin_{\mathbf{s}_i \in \{\mathbf{s}_1 \dots \mathbf{s}_{q^{\nu}}\}} \Gamma_l(\mathbf{s}_i)$. Let $\upsilon$ be the window size. The last $\upsilon$ metric column vector $\mathbf{\Gamma}$ are stored using a circular matrix and an index $i\in[0, \upsilon-1]$ to keep memory of what is the current position. As soon as the circular matrix is filled the first symbol is decoded and at the next step the first column of the matrix will be updated with the current cost, and so on. Considerations on the complexity of the different versions will be given later. 
+A windowed version was implemented too, i.e. a Viterbi that at step $l$ decides on the symbol received $l - \upsilon$ steps before by backtracking from the state $\mathbf{\hat{s}} = \argmin_{\mathbf{s}} \mathbf{\Gamma}_l$. Let $\upsilon$ be the window size. The last $\upsilon$ metric vectors $\mathbf{\Gamma}$ (column vector) are stored using a circular matrix and an index $i\in[0, \upsilon-1]$ to keep memory of what is the current position. As soon as the circular matrix is filled the first symbol is decoded and at the next step the first column of the matrix will be updated with the current cost, and so on. Considerations on the complexity of the different versions will be given later. 
 
 The channel implementation is left to a sum between vectors in MATLAB, so that the \texttt{randn} function of MATLAB can be used. Indeed the algorithm with which MATLAB generates Gaussian random noise is very efficient \cite{moler}. 
 The BER performances were tested for different values of $E_b/N_0 \in [-3, 8]$, with $K$ iterations. For each iteration let $\mathbf{u}$ be the input vector of size $\mu + \nu$ (with the last $\nu$ entries set to $0$ in order to terminate the code). Let $\mathbf{y}$ be the encoded vector, $\mathbf{s} = \mathcal{L}(\mathbf{y}) = 2\mathbf{y} - 1$ the vector of symbols which are sent through the channel and $\mathbf{w}$ a vector of IID samples $w_i \sim N(0,1), i = 0 \dots (\mu + \nu)/R - 1$. Then the received vector $\mathbf{r}_{E_b/N_0}$ for each value of $E_b/N_0$ is 
@@ -375,7 +375,7 @@ since $M=2$ and $E_s = 1$.
 \begin{figure}[t]
 \centering
 \setlength\fheight{0.4\textwidth}
-\setlength\fwidth{0.6\textwidth}
+\setlength\fwidth{0.55\textwidth}
 \input{./figures/BER_theory.tex}
 \caption{BER from expressions~\eqref{eq:BER_bound} and~\eqref{eq:BER_approx}}
 \label{fig:BER_theory}
@@ -397,14 +397,14 @@ Notice that for low $E_b/N_0$ the bound~\eqref{eq:BER_bound} is quite loose, whi
 In Fig.~\ref{fig:BER_2} there is the comparison between a Viterbi that backtracks on the complete trellis and a windowed version for 3 different window size $\upsilon$. It can be seen that for $\upsilon = 10 = 5\nu$ the performances in terms of decoding errors are equivalent to the ones of the standard Viterbi, while for smaller window sizes the gap in performances increases up to more than 2 dB for $\upsilon = 3$. 
 
 In Fig.~\ref{fig:BER_3} a comparison between the standard soft decoding approach, where the cost of each transition is proportional to both the sign and the module of the received value, and the less powerful hard decoding approach, where only the sign of the received symbol is considered. 
-It can be seen that the soft decoding approach gains about 2.5 dB with respect to the hard decoding one. A particular behavior is exhibited by the hard decoding performances when the all 0 codeword is sent, with a BER nearly 2 orders of magnitude smaller for the same $E_b/N_0$ ratio. 
+It can be seen that the soft decoding approach gains about 2.5 dB with respect to the hard decoding one. A particular behavior is exhibited by the hard decoding performances when the all 0 codeword is sent, with a BER nearly 2 orders of magnitude smaller for the same $E_b/N_0$ ratio, thus it is not a safe assumption to use the all 0 codeword to test an hard decoding approach. 
 
 In Fig.~\ref{fig:BER_577} there is a comparison with the $(5, 7, 7)$ code which is the most performing convolutional code with $\nu = 2$ and $R=1/3$ according to \cite{proakis}. The simulation of the $(5,7,7)$ uses packets of length $\mu + \nu = 10^4 + 2$ and $5\cdot10^{5}$ iterations in order to get an accurate result at 8 dB (50 errors are recorded). It can be seen that for an SNR $E_b/N_0$ lower than 3 dB the $(5,1,7)$ performs better, but after 6 dB it exhibits a gap of about 0.6 dB with $(5,7,7)$.
 
 \begin{figure}[h!]
 \centering
-\setlength\fheight{0.4\textwidth}
-\setlength\fwidth{0.6\textwidth}
+\setlength\fheight{0.35\textwidth}
+\setlength\fwidth{0.55\textwidth}
 \input{./figures/sim_time.tex}
 \caption{Average simulation time required to complete 100 simulations with different setups}
 \label{fig:perf}
@@ -415,7 +415,7 @@ For this analysis $N_{min} = \infty$ so that the same number of decoding operati
 
 In the $y$ axis there is the average time in seconds to complete 100 simulations with each different setting. The total number of iteration for each scheme is $10^4$, and every 100 the execution time is sampled. Then the sample mean $\hat{\mu}$ among these is computed as well as confidence intervals $\hat{\mu} \pm 1.96\hat{s}/\sqrt{n}$ with $n=100$ and $\hat{s}$ the sample standard deviation.
 
-Notice that the difference between the simulation with encoding (with MEX functions) and with the all zero input word is minimal. Instead, if compared with the latter, the windowed versions are all slower since they need to backtrack $\upsilon$ positions in the trellis in order to decode \emph{each} symbol, i.e. they backtrack approximately $(\mu + \nu)\upsilon$ positions while the standard Viterbi backtracks only from the last state to the first, so $\mu+\nu$ positions. In terms of memory consumption, instead, the windowed version does not need to store the whole trellis to perform the complete backtracking but only the last $\upsilon$ positions. 
+Notice that the difference between the simulation with encoding (with MEX functions) and with the all zero input word is minimal. Instead, if compared with the latter, the windowed versions are all slower since they need to backtrack $\upsilon$ positions in the trellis in order to decode \emph{each} symbol, i.e. they backtrack approximately $(\mu + \nu)\upsilon$ positions while the standard Viterbi backtracks only from the last state to the first, so $\mu+\nu$ positions. In terms of memory consumption, instead, the windowed version does not need to store the whole trellis to perform the complete backtracking but only the last $\upsilon$ positions. The HD approach is faster than the SD because it has only to evaluate the sign of received symbols.
 
 \begin{figure*}[h]
 \centering
@@ -664,13 +664,13 @@ Note that $\mathbf{H}\mathbf{G} = \mathbf{0}$, as expected, since the columns of
 \label{fig:trellis_min}
 \end{figure}
 
-In this exercise I will describe a Viterbi-like algorithm to find the minimum Hamming weight $d_{min}$ of the code. The idea is to use the Hamming weight as cost of each transition, so that if $(\mathbf{b}, u)$ is a neighbor of $\mathbf{a}$ then
+In this exercise I will describe a Viterbi-like algorithm to find the minimum Hamming weight $d_{min}$ of the code. The idea is to use the Hamming weight as cost of each transition, so that if $(\mathbf{b}, u)$ is a neighbor of $\mathbf{a}$ then for the transition from $\mathbf{b}$ to $\mathbf{a}$
 \begin{equation}
 	\mathcal{C}(\mathbf{b}, u) = \|\outf{\mathbf{b}, u}\|_H
 \end{equation}
 Moreover define $\Gamma_l(\mathbf{a})$ as aggregate cost of the path that exits from $\mathbf{0}$ and in $l$ steps reaches state $\mathbf{a}$.
 
-Then the algorithms has to identify $d_{min}$ as the minimum aggregate cost among the paths that start from state $\mathbf{0}$ and go back to it, since we are dealing with a terminated code. If there is a path that starts from $\mathbf{0}$, goes back to this state and then exits again then it will surely have an higher cost than the one that continues to visit $\mathbf{0}$ from that point on. For this purpose we can create a trellis in a Viterbi-like style, by however making infeasible to choose the transitions from $\mathbf{0}$ to itself, with associated output of Hamming weight equal to zero. In particular let $\mathcal{C}(\mathbf{0}, 0) = \infty$.
+The algorithms has to identify $d_{min}$ as the minimum aggregate cost among the paths that start from state $\mathbf{0}$ and go back to it, since we are dealing with a terminated code. If there is a path that starts from $\mathbf{0}$, goes back to this state and then exits again then it will surely have an higher cost than the one that continues to visit $\mathbf{0}$ from that point on. For this purpose we can create a trellis in a Viterbi-like style, by however making infeasible to choose the transitions from $\mathbf{0}$ to itself, with associated output of Hamming weight equal to zero. In particular let $\mathcal{C}(\mathbf{0}, 0) = \infty$.
 
 The algorithm has an initialization phase where 
 \begin{equation}
@@ -711,7 +711,7 @@ This algorithm has been implemented in MATLAB and returns the results in Table~\
 
 \begin{thebibliography}{10}
 
-\bibitem{erseghe} Tomaso Erseghe, Channel Coding, \emph{A graduate course blueprint}, 2015
+\bibitem{erseghe} Tomaso Erseghe, \emph{Channel Coding}, A graduate course blueprint, 2015
 
 \bibitem{proakis} John G. Proakis, Masoud Salehi, Digital communications, 5th ed., McGraw-Hill, 2008
 
