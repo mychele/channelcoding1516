@@ -1,0 +1,907 @@
+\documentclass[10pt]{article}
+
+%% Various useful packages and commands from different sources
+
+\usepackage[applemac]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{cite, url,color} % Citation numbers being automatically sorted and properly "compressed/ranged".
+%\usepackage{pgfplots}
+\usepackage{graphics,amsfonts}
+\usepackage[pdftex]{graphicx}
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+% Also, note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+ \interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally does.
+
+% Compact lists
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{fancyvrb}
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,chains,shapes,arrows}
+\usepackage{pgfplots}
+\usetikzlibrary{plotmarks}
+\newlength\fheight
+\newlength\fwidth
+\pgfplotsset{compat=newest}
+\pgfplotsset{plot coordinates/math parser=false}
+
+\usepackage{listings} % for Matlab code
+\definecolor{commenti}{rgb}{0.13,0.55,0.13}
+\definecolor{stringhe}{rgb}{0.63,0.125,0.94}
+\lstloadlanguages{Matlab}
+\lstset{% general command to set parameter(s)
+framexleftmargin=0mm,
+frame=single,
+keywordstyle = \color{blue},% blue keywords
+identifierstyle =, % nothing happens
+commentstyle = \color{commenti}, % comments
+stringstyle = \ttfamily \color{stringhe}, % typewriter type for strings
+showstringspaces = false, % no special string spaces
+emph = {for, if, then, else, end},
+emphstyle = \color{blue},
+firstnumber = 1,
+numbers =right, %  show number_line
+numberstyle = \tiny, % style of number_line
+stepnumber = 5, % one number_line after stepnumber
+numbersep = 5pt,
+language = {Matlab},
+extendedchars = true,
+breaklines = true,
+breakautoindent = true,
+breakindent = 30pt,
+basicstyle=\footnotesize\ttfamily
+}
+
+\usepackage{array}
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+\usepackage{mdwmath}
+\usepackage{mdwtab}
+%mdwtab.sty	-- A complete ground-up rewrite of LaTeX's `tabular' and  `array' environments.  Has lots of advantages over
+%		   the standard version, and over the version in `array.sty'.
+% *** SUBFIGURE PACKAGES ***
+% \usepackage[tight,footnotesize]{subfigure}
+\usepackage{subfig}
+\usepackage[top=2.2cm, bottom=2.2cm, right=1.7cm,left=1.7cm]{geometry}
+\usepackage{indentfirst}
+
+
+%\setlength\parindent{0pt}
+\linespread{1}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\M} {\mathtt{M}}
+\newcommand{\dB} {\mathrm{dB}}
+\newcommand{\tr} {\mathrm{tr}}
+\newcommand{\lmod}[1] {_{\,\mathrm{mod}\,#1}}
+\newcommand{\outf}[1] {\mathcal{O}(#1)}
+\newcommand{\SU}[1] {\mathcal{S}(#1)}
+\newcommand{\s} {\mathbf{s}}
+\newcommand{\y} {\mathbf{y}}
+
+
+\graphicspath{ {figures/} }
+\setcounter{MaxMatrixCols}{20}
+
+% equations are numbered section by section
+%\numberwithin{equation}{section}
+
+
+\begin{document}
+\title{Channel Coding 15/16 - Homework 2}
+\author{Michele Polese}
+
+\maketitle
+
+% For tikz
+% Definition of blocks:
+\tikzstyle{block} = [draw, rectangle, 
+    minimum height=1em, minimum width=1em]
+\tikzstyle{circlenode} = [draw, circle, minimum height=3em, minimum width=3em]
+\tikzstyle{trellisnode} = [draw, circle, minimum height=2em, minimum width=2em]
+\tikzstyle{sum} = [draw, circle, node distance=1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+In this report the solution to Exercises 4, 9 and 11 will be discussed. In the attached file there is the code that was developed to solve these exercises.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% PROBLEM 4 %%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Exercise 4 - Non linear encoding}
+In this exercise we will analyze sum-product and min-sum algorithms applied to a non linear element in a code. As first we will discuss the factor graph, its behavioral function, then an approach for marginalization when a decision on input symbols has to be taken, and finally we will present more general results to be applied whenever the node is part of a more complex factor graph.
+
+\subsection*{Non linear code}
+Consider the non linear code that maps the binary sequence $u_0, u_1, u_2, \dots$ into $c_0, c_1, c_2, c_3, c_4, c_5, c_6, \dots$ by grouping input bits into pairs and applying the non linear relation of equation~\eqref{eq:nlmap}.
+
+\begin{equation}\label{eq:nlmap}
+\centering
+	\begin{array} {ccccccc}
+		u_0 & u_1 & \rightarrow & c_0 & c_1 & c_2 & c_3 \\
+		0 & 0 & \rightarrow & 0 & 0 & 0 & 0 \\
+		0 & 1 & \rightarrow & 1 & 0 & 0 & 0 \\
+		1 & 0 & \rightarrow & 0 & 1 & 0 & 0 \\
+		1 & 1 & \rightarrow & 0 & 0 & 1 & 0 \\
+	\end{array}
+\end{equation}
+
+Assume that $u_i$ symbols are IID, that the transmission happens on an AWGN channel and that $c_i$ are mapped into transmitted symbols $s_i$ such that
+
+\begin{equation}\label{eq:lmap}
+	s_i = \mathcal{L}(c_i) =
+	\begin{cases}
+		+1 & \mbox{ if } c_i = 1 \\
+		-1 & \mbox{ if } c_i = 0 \\
+	\end{cases}
+\end{equation}
+
+The objective of this exercise is to find compact expressions for the LLR that can be used when applying sum-product or min-sum algorithms to decode a message encoded with~\eqref{eq:nlmap}.
+Let's introduce the node $w$ as in Fig.~\ref{fig:factornode}.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[auto, thick, node distance=1 cm]
+	\node[block] (w) {$w$};
+	\node[left= 2cm of w] (place1) {};
+	\node[below=0.3cm of place1] (c1) {};
+	\node[below of=c1] (c0) {};
+	\node[above of=c1] (c2) {};
+	\node[above of=c2] (c3) {};
+	\node[right= 2cm of w] (place2) {};
+	\node[below= 0.75cm of place2] (u0) {};
+	\node[above= 0.75cm of place2] (u1) {};
+
+	\path[every node]
+		(c3) edge node[below] {$c_3$} (w)
+		(c2) edge node[below] {$c_2$} (w)
+		(c1) edge node[below] {$c_1$} (w)
+		(c0) edge node[below] {$c_0$} (w)
+		(u0) edge node[below] {$u_0$} (w)
+		(u1) edge node[below] {$u_1$} (w);
+\end{tikzpicture}
+\caption{Factor node $w$}
+\label{fig:factornode}
+\end{figure}
+
+Let $w$ be the behavioral function for the transformation~\eqref{eq:nlmap}, so that
+\begin{equation}\label{eq:beha}
+	w(c_0, c_1, c_2, c_3, u_0, u_1) =
+	\begin{cases}
+		1 & \mbox{ if } c_0c_1c_2c_3 \mbox{ is the codeword associated with } u_0u_1 \\
+		0 & \mbox{ otherwise}
+	\end{cases}
+\end{equation}
+
+By using~\eqref{eq:beha} it is possible to express the MAP criterion to decide on $\hat{u}_i$ in a simple form
+
+\begin{equation}
+	\hat{u}_i = \argmax_{a} \sum_{\mathbf{c}} \sum_{\mathbf{u} \sim u_i} w(\mathbf{c}, \mathbf{u}) p(\boldsymbol{\rho}_m | \mathbf{c}) p(\mathbf{u}_m = \mathbf{u})
+\end{equation}
+
+In particular, given the fact that $u_i$ depends only on 4 $c_j$, i.e. for $j \in [2(i-\bmod(i,2)), 2(i-\bmod(i,2) + 1) - 1]$, it is possible to consider the pair $[u_i, u_{i+1}]_{\bmod(i,2) = 0}$ and the associated 4-tuple $[c_{2i}, c_{2i+1}, c_{2i+2}, c_{2i+3}]$. 
+For simplicity from now on we will analyze MAP decoding for $[u_0, u_1]$ and associated codeword $[c_0, c_1, c_2, c_3]$. 
+
+Then given independent input symbols the MAP criterion becomes
+\begin{equation}\label{eq:u0}
+	\hat{u}_0 = \argmax_{a \in [0,1]} \sum_{c_0, c_1, c_2, c_3} \sum_{u_1} w(c_0, c_1, c_2, c_3, u_0, u_1) p(\boldsymbol{\rho}_0 | c_0, c_1, c_2, c_3) p(u_0 = a) p(u_1)
+\end{equation}
+
+\begin{equation}\label{eq:u1}
+	\hat{u}_1 = \argmax_{a \in [0,1]} \sum_{c_0, c_1, c_2, c_3} \sum_{u_0} w(c_0, c_1, c_2, c_3, u_0, u_1) p(\boldsymbol{\rho}_0 | c_0, c_1, c_2, c_3) p(u_0) p(u_1 = a) 
+\end{equation}
+
+Note that under the hypothesis of having an AWGN channel and given $\boldsymbol{\rho}_0 = [r_0, r_1, r_2, r_3]$ then
+\begin{equation}
+	p(\boldsymbol{\rho}_0 | c_0, c_1, c_2, c_3) = \Pi_{i = 0}^{3} g(r_i | c_i)
+\end{equation}
+with
+\begin{equation}
+	g(r_i|c_i) = \frac{1}{\sqrt{2\pi \sigma_w^2}} e^{-\frac{(r_i - \mathcal{L}(c_i))^2}{2\sigma_w^2}}
+\end{equation}
+Message passing can be used to solve~\eqref{eq:u0} and~\eqref{eq:u1}. In the particular define the APP (a posteriori probability) as the product
+\begin{equation}\label{eq:APP}
+	w(c_0, c_1, c_2, c_3, u_0, u_1) \Pi_{i = 0}^{3} g(r_i | c_i)p(u_0) p(u_1) 
+\end{equation}
+The APP can be represented by the Forney-style Factor Graph in Fig.~\ref{fig:FFG}.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[auto, thick, node distance=1 cm]
+	\node[block] (w) {$w$};
+	\node[left= 2cm of w] (place1) {};
+	\node[block, below=0.1cm of place1] (c1) {$g(r_1|c_1)$};
+	\node[block, below of=c1] (c0) {$g(r_0|c_0)$};
+	\node[block, above of=c1] (c2) {$g(r_2|c_2)$};
+	\node[block, above of=c2] (c3) {$g(r_3|c_3)$};
+	\node[block, below right=1cm of w] (u0) {$p(u_0)$};
+	\node[block, above right=1cm of w] (u1) {$p(u_1)$};
+
+	\path[every node]
+		(c3) edge node[above] {$c_3$} (w)
+		(c2) edge node[above left] {$c_2$} (w)
+		(c1) edge node[below left] {$c_1$} (w)
+		(c0) edge node[below] {$c_0$} (w)
+		(u0) edge node[below] {$u_0$} (w)
+		(u1) edge node[above] {$u_1$} (w);
+\end{tikzpicture}
+\caption{FFG for the APP~\eqref{eq:APP}}
+\label{fig:FFG}
+\end{figure}
+
+\subsection*{Sum-product algorithm}
+
+Let's apply sum-product algorithm to the FFG in Fig.~\ref{fig:FFG}. Compute $\mu_{w\rightarrow u_0} (u_0)$ and then the LLR associated with this message.
+Let $\mu_{c_i\rightarrow w}(c_i) = g(r_i|c_i)$ and $\mu_{u_i \rightarrow w}(u_i) = p(u_i)$. Then
+\begin{equation}\label{eq:u0form1}
+	\mu_{w\rightarrow u_0} (u_0) = \sum_{c_0, c_1, c_2, c_3, u_1} w(c_0, c_1, c_2, c_3, u_0, u_1) \Pi_{i=0}^{3}\mu_{c_i\rightarrow w} (c_i) \mu_{u_1 \rightarrow w} (u_1) 
+\end{equation}
+and
+\begin{equation}
+	LLR_{w\rightarrow u_0} = \ln \left( \frac{\mu_{w\rightarrow u_0} (0)}{\mu_{w\rightarrow u_0} (1)} \right)
+\end{equation}
+Because of the behavioral function $w$ the numerator has terms different from $0$ only for $u_1 = 0, c_i = 0 \; \forall i$ and $u_1 = c_0 = 1, c_1 = c_2 = c_3 = 0$. For the same reason at the denominator the non zero terms are for $u_1 = c_0 = c_2 = c_3 = 0, c_1 = 1$ and $u_1 = c_2 = 1, c_0 = c_1 = c_3 = 0$. In particular notice that $c_3 = 0$ in every case.
+Then 
+\begin{equation}
+	LLR_{w\rightarrow u_0} = \ln 
+		\left( 
+		\frac{g(r_0|0)g(r_1|0)g(r_2|0)g(r_3|0)p(u_1=0) + g(r_0|1)g(r_1|0)g(r_2|0)g(r_3|0)p(u_1=1)}
+		{g(r_0|0)g(r_1|1)g(r_2|0)g(r_3|0)p(u_1=0) + g(r_0|0)g(r_1|0)g(r_2|1)g(r_3|0)p(u_1=1)}
+		\right)
+\end{equation}
+The factor $g(r_3|0)$ can be simplified, as like as the $(\frac{1}{\sqrt{2\pi \sigma_w^2}})^4$ which is given by the product of the channel transition probabilities. Then notice that
+\begin{equation} \label{eq:power}
+	e^{(r_i + 1)^2} + e^{(r_i - 1)^2} = 
+	e^{r_i^2}e^{2r_i}e^{1} + e^{r_i^2}e^{-2r_1}e^{1} = e^{r_i^2 + 1} (e^{2r_i} + e^{-2r_1})
+\end{equation} 
+Equation~\eqref{eq:power} can be used to collect terms of $g(r_0|0)$ and $g(r_0|1)$ in the summation at the numerator, as well as $g(r_1|0)$, $g(r_1|1)$ and $g(r_2|0)$, $g(r_2|1)$ at the denominator. Then
+\begin{equation}
+	LLR_{w\rightarrow u_0} = \ln 
+		\left( 
+		\frac{
+			e^{-\frac{1}{2\sigma_w^2} ((r_1+1)^2+(r_2+1)^2+r_0^2+1)}
+				\left[
+					e^{-\frac{2r_0}{2\sigma_w^2}}p(u_1=0)+e^{-\frac{-2r_0}{2\sigma_w^2}}p(u_1=1)
+				\right]
+		}{
+			e^{-\frac{1}{2\sigma_w^2} ((r_0+1)^2+r_1^2+1+r_2^2+1)}
+				\left[
+					e^{-\frac{-2r_1 + 2r_2}{2\sigma_w^2}}p(u_1=0)+e^{-\frac{2r_1 - 2r_2}{2\sigma_w^2}}p(u_1=1)
+				\right]
+		}
+		\right)
+\end{equation}
+
+\begin{equation}
+	LLR_{w\rightarrow u_0} = \ln 
+		\left( 
+		\frac{
+			e^{-\frac{2r_1+2r_2}{2\sigma_w^2}}
+				\left[
+					e^{-\frac{2r_0}{2\sigma_w^2}}p(u_1=0)+e^{-\frac{-2r_0}{2\sigma_w^2}}p(u_1=1)
+				\right]
+		}{
+			e^{-\frac{2r_0}{2\sigma_w^2}}
+				\left[
+					e^{-\frac{-2r_1 + 2r_2}{2\sigma_w^2}}p(u_1=0)+e^{-\frac{2r_1 - 2r_2}{2\sigma_w^2}}p(u_1=1)
+				\right]
+		}
+		\right)
+\end{equation}
+
+
+\begin{equation}
+	LLR_{w\rightarrow u_0} = 
+	\frac{1}{\sigma_w^2}(r_0 - r_1 - r_2) + 
+	\ln 
+		\left( 
+		\frac{
+			e^{-\frac{r_0}{\sigma_w^2}}p(u_1=0)+e^{\frac{r_0}{\sigma_w^2}}p(u_1=1)
+		}{
+			e^{\frac{r_1 - r_2}{\sigma_w^2}}p(u_1=0)+e^{-\frac{r_1 - r_2}{\sigma_w^2}}p(u_1=1)
+		}
+		\right)
+\end{equation}
+and in the case in which $p(u_1 = 0) = p(u_1 = 1)$ this expression becomes
+\begin{equation}\label{eq:llru0final}
+	LLR_{w\rightarrow u_0} = 
+	\frac{1}{\sigma_w^2}(r_0 - r_1 - r_2) + 
+	\ln 
+		\left( 
+		\frac{
+			\cosh{\frac{r_0}{\sigma_w^2}}
+		}{
+			\cosh{\frac{r_1-r_2}{\sigma_w^2}}
+		}
+		\right)
+\end{equation}
+The same computation can be carried out for $\mu_{w\rightarrow u_1} (u_1)$:
+\begin{equation}
+	\mu_{w\rightarrow u_1} (u_1) = \sum_{c_0, c_1, c_2, c_3, u_0} w(c_0, c_1, c_2, c_3, u_0, u_1) \Pi_{i=0}^{3}\mu_{c_i\rightarrow w} (c_i) \mu_{u_0 \rightarrow w} (u_0) 
+\end{equation}
+and 
+\begin{equation}
+	LLR_{w\rightarrow u_1} = \ln \left( \frac{\mu_{w\rightarrow u_1} (0)}{\mu_{w\rightarrow u_1} (1)} \right)
+\end{equation}
+The numerator has terms different from zero in the summation only for $u_0 = c_i = 0, \forall i$ and $u_0 = c_1 = 1, c_0 = c_2 = c_3 = 0$ and the denominator for $u_0 = c_1 = c_2 = c_3 = 0, c_0 = 1$ and $u_0 = c_2 = 1, c_0 = c_1 = c_3 = 0$, so that
+\begin{equation}
+	LLR_{w\rightarrow u_1} = \ln 
+		\left( 
+		\frac{g(r_0|0)g(r_1|0)g(r_2|0)g(r_3|0)p(u_0=0) + g(r_0|0)g(r_1|1)g(r_2|0)g(r_3|0)p(u_0=1)}
+		{g(r_0|1)g(r_1|0)g(r_2|0)g(r_3|0)p(u_0=0) + g(r_0|0)g(r_1|0)g(r_2|1)g(r_3|0)p(u_0=1)}
+		\right)
+\end{equation}
+Note that once again $g(r_3|0)$ can be simplified, as like as $(\frac{1}{\sqrt{2\pi \sigma_w^2}})^4$. Then by using~\eqref{eq:power} the LLR can be simplified to
+
+\begin{equation}
+	LLR_{w\rightarrow u_1} = \ln 
+		\left( 
+		\frac{
+			e^{-\frac{1}{2\sigma_w^2} ((r_0+1)^2+(r_2+1)^2+r_1^2+1)}
+				\left[
+					e^{-\frac{2r_1}{2\sigma_w^2}}p(u_0=0)+e^{-\frac{-2r_1}{2\sigma_w^2}}p(u_0=1)
+				\right]
+		}{
+			e^{-\frac{1}{2\sigma_w^2} ((r_1+1)^2+r_0^2+1+r_2^2+1)}
+				\left[
+					e^{-\frac{-2r_0 + 2r_2}{2\sigma_w^2}}p(u_0=0)+e^{-\frac{2r_0 - 2r_2}{2\sigma_w^2}}p(u_0=1)
+				\right]
+		}
+		\right)
+\end{equation}
+
+\begin{equation}
+	LLR_{w\rightarrow u_1} = \ln 
+		\left( 
+		\frac{
+			e^{-\frac{2r_0+2r_2}{2\sigma_w^2}}
+				\left[
+					e^{-\frac{2r_1}{2\sigma_w^2}}p(u_0=0)+e^{-\frac{-2r_0}{2\sigma_w^2}}p(u_0=1)
+				\right]
+		}{
+			e^{-\frac{2r_1}{2\sigma_w^2}}
+				\left[
+					e^{-\frac{-2r_0 + 2r_2}{2\sigma_w^2}}p(u_0=0)+e^{-\frac{2r_0 - 2r_2}{2\sigma_w^2}}p(u_0=1)
+				\right]
+		}
+		\right)
+\end{equation}
+
+\begin{equation}
+	LLR_{w\rightarrow u_1} = 
+	\frac{1}{\sigma_w^2}(r_1 - r_0 - r_2) + 
+	\ln 
+		\left( 
+		\frac{
+			e^{-\frac{r_1}{\sigma_w^2}}p(u_0=0)+e^{\frac{r_1}{\sigma_w^2}}p(u_0=1)
+		}{
+			e^{\frac{r_0 - r_2}{\sigma_w^2}}p(u_0=0)+e^{-\frac{r_0 - r_2}{\sigma_w^2}}p(u_0=1)
+		}
+		\right)
+\end{equation}
+and in the case in which $p(u_0 = 0) = p(u_0 = 1)$ this expression becomes
+\begin{equation}\label{eq:llru1final}
+	LLR_{w\rightarrow u_1} = 
+	\frac{1}{\sigma_w^2}(r_1 - r_0 - r_2) + 
+	\ln 
+		\left( 
+		\frac{
+			\cosh{\frac{r_1}{\sigma_w^2}}
+		}{
+			\cosh{\frac{r_0-r_2}{\sigma_w^2}}
+		}
+		\right)
+\end{equation}
+It can be seen that $LLR_{w\rightarrow u_0}$ and $LLR_{w\rightarrow u_1}$ share a similar structure.
+Eventually it is possible to carry out a marginalization and a decision on $u_i$, i.e.
+\begin{equation}
+\hat{u}_i = \begin{cases}
+				0 & \mbox{ if } LLR_{w\rightarrow u_i} + LLR_{p\rightarrow u_i} \ge 0 \\
+				1 & \mbox{ otherwise } \\
+			\end{cases}
+\end{equation}
+with
+\begin{equation}
+LLR_{p\rightarrow u_i} = \ln \left( \frac{p(u_i = 0)}{p(u_i=1)} \right)
+\end{equation}
+
+\subsection*{Min-sum algorithm}
+Let's consider also the min-sum algorithm and define the messages exiting from leafs as
+\begin{equation}
+	\hat{\mu}_{c_i \rightarrow w}(c_i) = -\ln(g(r_i|c_i)) = -\ln\left(\frac{1}{\sqrt{2\pi \sigma_w^2}} e^{-\frac{(r_i - \mathcal{L}(c_i))^2}{2\sigma_w^2}}\right) = \frac{1}{2\sigma_w^2}(r_i - \mathcal{L}(c_i))^2 - \ln\left(\frac{1}{\sqrt{2\pi \sigma_w^2}}\right)
+\end{equation}
+and
+\begin{equation}
+	\hat{\mu}_{u_i \rightarrow w}(u_i) = -\ln(p(u_i)) := \hat{p}(u_i) 
+\end{equation}
+Let $\alpha = - \ln\left(\frac{1}{\sqrt{2\pi \sigma_w^2}}\right)$ be a constant which will be simplified in the LLR. Then by applying min-sum to the message from $w$ to $u_0$ we have
+\begin{equation}\label{eq:minsum}
+	\hat{\mu}_{w \rightarrow u_0}(u_0) = \min_{c_0, c_1, c_2, c_3, u_1} 
+		\left\{
+			-\ln(w(c_0, c_1, c_2, c_3, u_0, u_1)) + 
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_1 \rightarrow w}(u_1)
+		\right\}
+\end{equation}
+Notice that if $w(c_0, c_1, c_2, c_3, u_0, u_1) = 0$ then $-\ln(w(c_0, c_1, c_2, c_3, u_0, u_1)) = \infty$, i.e. if a combination $(c_0, c_1, c_2, c_3, u_0, u_1)$ is not a valid coded/uncoded couple then it will not be surely chosen as the one that yields the minimum value in~\eqref{eq:minsum}. Therefore~\eqref{eq:minsum} can be written as
+\begin{equation}\label{eq:minsum2}
+	\hat{\mu}_{w \rightarrow u_0}(u_0) = \min_{c_0, c_1, c_2, c_3, u_1 | w(c_0, c_1, c_2, c_3, u_0, u_1) = 1} 
+		\left\{
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_1 \rightarrow w}(u_1)
+		\right\}
+\end{equation}
+Then the LLR can be computed as
+\begin{equation}
+	LLR_{w \rightarrow u_0} = \hat{\mu}_{w \rightarrow u_0}(1) - \hat{\mu}_{w \rightarrow u_0}(0)
+\end{equation}
+
+\begin{multline}\label{eq:LLR1}
+	LLR_{w \rightarrow u_0} = 
+	\min_{c_0, c_1, c_2, c_3, u_1 | w(c_0, c_1, c_2, c_3, 1, u_1) = 1} 
+		\left\{
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_1 \rightarrow w}(u_1)
+		\right\}
+	- \\
+	\min_{c_0, c_1, c_2, c_3, u_1 | w(c_0, c_1, c_2, c_3, 0, u_1) = 1} 
+		\left\{
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_1 \rightarrow w}(u_1)
+		\right\} = \\
+	\min
+		\bigg\{
+			\frac{1}{2\sigma_w^2}\left[(r_0+1)^2 + (r_1-1)^2 + (r_2+1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_1 = 0), \\
+			\frac{1}{2\sigma_w^2}\left[(r_0+1)^2 + (r_1+1)^2 + (r_2-1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_1 = 1)
+		\bigg\} \\
+	 - \min
+		\bigg\{
+			\frac{1}{2\sigma_w^2}\left[(r_0+1)^2 + (r_1+1)^2 + (r_2+1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_1 = 0), \\
+			\frac{1}{2\sigma_w^2}\left[(r_0-1)^2 + (r_1+1)^2 + (r_2+1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_1 = 1)
+		\bigg\}
+\end{multline}
+Note that also for the min-sum LLRs it is possible to exploit a relation similar to~\eqref{eq:power}, i.e.
+\begin{equation}
+	\min\{a+b+c, a+b+d\} = a+b+\min\{c,d\}
+\end{equation}
+Then $4\alpha$ and $(r_3+1)^2$ can be simplified and~\eqref{eq:LLR1} becomes
+\begin{multline}\label{eq:LLR1semifinal}
+	LLR_{w \rightarrow u_0} = \frac{1}{2\sigma_w^2}\left[ (r_0+1)^2 + r_1^2 + 1 + r_2^2+1 \right] + \min\left\{ \frac{1}{2\sigma_w^2}(-2r_1 + 2r_2) + \hat{p}(u_1=0), \frac{1}{2\sigma_w^2}(2r_1 - 2r_2) + \hat{p}(u_1=1) \right\} \\
+	- \frac{1}{2\sigma_w^2}\left[ (r_1+1)^2 + (r_2+1)^2 +r_0^2 + 1 \right] -
+	\min\left\{ \frac{1}{2\sigma_w^2}(2r_0) + \hat{p}(u_1=0), \frac{1}{2\sigma_w^2}(- 2r_0) + \hat{p}(u_1=1) \right\} = \\
+	\frac{1}{\sigma_w^2}\left[r_0 - r_1 - r_2 \right] + \min\left\{ \frac{r_2-r_1}{\sigma_w^2} + \hat{p}(u_1=0), \frac{r_1-r_2}{\sigma_w^2} + \hat{p}(u_1=1) \right\} \\ -
+	\min\left\{ \frac{r_0}{\sigma_w^2} + \hat{p}(u_1=0), \frac{-r_0}{\sigma_w^2} + \hat{p}(u_1=1) \right\}
+\end{multline}
+Eventually in case of equally likely input symbols~\eqref{eq:LLR1semifinal} becomes
+\begin{equation}\label{eq:llrmin0}
+	LLR_{w \rightarrow u_0} = \frac{1}{\sigma_w^2}\left\{ r_0 - r_1 - r_2 + |r_0| - |r_2 - r_1| \right\}
+\end{equation}
+by observing that 
+\begin{equation}
+	\min\{x, -x\} = 
+	\begin{cases}
+		-x & \mbox{ if } x \ge 0 \\
+		x & \mbox{ if } x < 0
+	\end{cases} = 
+	- |x|
+\end{equation}
+The same computation can be carried out for 
+\begin{equation}
+	\hat{\mu}_{w \rightarrow u_1}(u_1) = \min_{c_0, c_1, c_2, c_3, u_0 | w(c_0, c_1, c_2, c_3, u_0, u_1) = 1} 
+		\left\{
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_0 \rightarrow w}(u_0)
+		\right\}
+\end{equation}
+Once again the LLR can be computed as
+\begin{equation}
+	LLR_{w \rightarrow u_1} = \hat{\mu}_{w \rightarrow u_1}(1) - \hat{\mu}_{w \rightarrow u_1}(0)
+\end{equation}
+\begin{multline}\label{eq:LLR2}
+	LLR_{w \rightarrow u_1} = 
+	\min_{c_0, c_1, c_2, c_3, u_0 | w(c_0, c_1, c_2, c_3, u_0, 1) = 1} 
+		\left\{
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_0 \rightarrow w}(u_0)
+		\right\}
+	- \\
+	\min_{c_0, c_1, c_2, c_3, u_0 | w(c_0, c_1, c_2, c_3, u_0, 0) = 1}  
+		\left\{
+			\sum_{i=0}^{3} \hat{\mu}_{c_i \rightarrow w}(c_i) + \hat{\mu}_{u_0 \rightarrow w}(u_0)
+		\right\} = \\
+	 = \min
+		\bigg\{
+			\frac{1}{2\sigma_w^2}\left[(r_0-1)^2 + (r_1+1)^2 + (r_2+1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_0 = 0), \\
+			\frac{1}{2\sigma_w^2}\left[(r_0+1)^2 + (r_1+1)^2 + (r_2-1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_0 = 1)
+		\bigg\} \\
+	 - \min
+		\bigg\{
+			\frac{1}{2\sigma_w^2}\left[(r_0+1)^2 + (r_1+1)^2 + (r_2+1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_0 = 0), \\
+			\frac{1}{2\sigma_w^2}\left[(r_0+1)^2 + (r_1-1)^2 + (r_2+1)^2 + (r_3+1)^2\right] + 4\alpha + \hat{p}(u_0 = 1)
+		\bigg\} = \\
+	 = \frac{1}{2\sigma_w^2}\left[ (r_1+1)^2 + r_0^2 + 1 + r_2^2+1 \right] + \min\left\{ \frac{1}{2\sigma_w^2}(-2r_0 + 2r_2) + \hat{p}(u_0=0), \frac{1}{2\sigma_w^2}(2r_0 - 2r_2) + \hat{p}(u_0=1) \right\} \\
+	- \frac{1}{2\sigma_w^2}\left[ (r_0+1)^2 + (r_2+1)^2 +r_1^2 + 1 \right] - \min\left\{ \frac{1}{2\sigma_w^2}(2r_1) + \hat{p}(u_0=0), \frac{1}{2\sigma_w^2}(- 2r_1) + \hat{p}(u_0=1) \right\}
+\end{multline}
+and eventually
+\begin{multline}
+LLR_{w \rightarrow u_1} = 
+		\frac{1}{\sigma_w^2}\left[r_1 - r_0 - r_2 \right] + \min\left\{ \frac{r_2-r_0}{\sigma_w^2} + \hat{p}(u_0=0), \frac{r_0-r_2}{\sigma_w^2} + \hat{p}(u_0=1) \right\} \\ -
+		\min\left\{ \frac{r_1}{\sigma_w^2} + \hat{p}(u_0=0), \frac{-r_1}{\sigma_w^2} + \hat{p}(u_0=1) \right\}
+\end{multline}
+which in case of equally likely input symbols becomes
+\begin{equation}\label{eq:llrmin1}
+	LLR_{w \rightarrow u_1} = \frac{1}{\sigma_w^2}\left\{ r_1 - r_0 - r_2 + |r_1| - |r_2 - r_0| \right\}
+\end{equation}
+
+Finally the decision rule on $u_i$ is
+\begin{equation}
+\hat{u}_i = \begin{cases}
+				0 & \mbox{ if } LLR_{w\rightarrow u_i} + LLR_{p\rightarrow u_i} \ge 0 \\
+				1 & \mbox{ otherwise } \\
+			\end{cases}
+\end{equation}
+with
+\begin{equation}
+LLR_{p\rightarrow u_i} = \ln \left( \frac{p(u_i = 0)}{p(u_i=1)} \right) = \hat{p}(u_i = 1) - \hat{p}(u_i = 0)
+\end{equation}
+
+\subsection*{Sum-product and min-sum with LLRs}
+Let's consider the case in which the node in Fig.~\ref{fig:factornode} is part of a more complex factor graph, i.e. the case in which the messages $\mu_{c_i \rightarrow w}$ are not necessarily given by $g(r_i|c_i)$ and $\mu_{u_i \rightarrow w}$ by $p(u_i)$. Let's consider generically their LLR and remark that
+\begin{equation}
+	\mu(0) = \frac{e^{LLR}}{1+e^{LLR}}, \quad \quad \mu(1) = \frac{1}{1+e^{LLR}}
+\end{equation}
+Then~\eqref{eq:u0form1} becomes
+\begin{equation}
+	\mu_{w\rightarrow u_0} (u_0) = \sum_{c_0, c_1, c_2, c_3, u_1} w(c_0, c_1, c_2, c_3, u_0, u_1) \Pi_{i=0}^{3} \frac{e^{(1\oplus c_i)LLR_{c_i\rightarrow w}}}{1+e^{LLR_{c_i\rightarrow w}}} \frac{e^{(1\oplus u_1)LLR_{u_1\rightarrow w}}}{1+e^{LLR_{u_1\rightarrow w}}}
+\end{equation}
+The LLR is derived as follows, by reporting just the terms of the summation which are different from 0 and simplifying the common denominator given by the $1+e^{LLR_i}$ terms.
+\begin{multline}
+	LLR_{w\rightarrow u_0} = \ln \left(
+				\frac{e^{LLR_{c_0 \rightarrow w}}e^{LLR_{c_1 \rightarrow w}}e^{LLR_{c_2 \rightarrow w}}e^{LLR_{c_3 \rightarrow w}}e^{LLR_{u_1 \rightarrow w}} + e^{LLR_{c_1 \rightarrow w}}e^{LLR_{c_2 \rightarrow w}}e^{LLR_{c_3 \rightarrow w}}}
+				{e^{LLR_{c_0 \rightarrow w}}e^{LLR_{c_2 \rightarrow w}}e^{LLR_{c_3 \rightarrow w}}e^{LLR_{u_1 \rightarrow w}} + e^{LLR_{c_0 \rightarrow w}}e^{LLR_{c_1 \rightarrow w}}e^{LLR_{c_3 \rightarrow w}}}
+				\right) \\
+ 		= \ln \left(
+			\frac{e^{LLR_{c_1 \rightarrow w}+ LLR_{c_2 \rightarrow w}}(e^{LLR_{c_0 \rightarrow w} + LLR_{u_1 \rightarrow w}} + 1)}
+			{e^{LLR_{c_0 \rightarrow w}}(e^{LLR_{c_2 \rightarrow w}+LLR_{u_1 \rightarrow w}} + e^{LLR_{c_1 \rightarrow w}})}	
+		\right)
+\end{multline}
+\begin{multline}\label{eq:LLRmin0}
+	LLR_{w\rightarrow u_0} = \ln \left(
+						\frac{e^{\frac{LLR_{c_1 \rightarrow w}+ LLR_{c_2 \rightarrow w}}{2}}(e^{\frac{LLR_{c_0 \rightarrow w}}{2} + LLR_{u_1 \rightarrow w}} + e^{-\frac{LLR_{c_0 \rightarrow w}}{2}})}
+						{e^{\frac{LLR_{c_0 \rightarrow w}}{2}}(e^{\frac{-LLR_{c_1 \rightarrow w}+ LLR_{c_2 \rightarrow w}}{2}+LLR_{u_1 \rightarrow w}} + e^{\frac{LLR_{c_1 \rightarrow w}- LLR_{c_2 \rightarrow w}}{2}})}								
+							\right) = \\
+						\frac{1}{2}(LLR_{c_1 \rightarrow w} + LLR_{c_2 \rightarrow w} - LLR_{c_0 \rightarrow w}) + \ln \left(
+						\frac{e^{\frac{LLR_{c_0 \rightarrow w}}{2} + LLR_{u_1 \rightarrow w}} + e^{-\frac{LLR_{c_0 \rightarrow w}}{2}}}
+						{e^{\frac{-LLR_{c_1 \rightarrow w}+ LLR_{c_2 \rightarrow w}}{2}+LLR_{u_1 \rightarrow w}} + e^{\frac{LLR_{c_1 \rightarrow w}- LLR_{c_2 \rightarrow w}}{2}}}								
+							\right)
+\end{multline}
+In case of $\mu_{u_i \rightarrow w}(a) = p(u_i = a)$ and equally likely input symbols (i.e. $LLR_{u_1 \rightarrow w} = 0$) we have
+\begin{equation}
+	LLR_{w\rightarrow u_0} = \frac{1}{2}(LLR_{c_1 \rightarrow w} + LLR_{c_2 \rightarrow w} - LLR_{c_0 \rightarrow w}) + \ln \left(
+						\frac{\cosh(LLR_{c_0 \rightarrow w}/2)}
+						{\cosh((LLR_{c_1 \rightarrow w}-LLR_{c_2 \rightarrow w})/2)}								
+							\right)
+\end{equation}
+Equation~\eqref{eq:LLRmin0} is exactly equal to~\eqref{eq:llru0final} if applied to the node $w$ when it is in the factor graph of Fig.~\ref{fig:FFG}, and
+\begin{equation}\label{eq:LLR_leaf}
+	LLR_{c_i \rightarrow w} = -\frac{2r_i}{\sigma_w^2}
+\end{equation}
+It is possible to derive a similar expression also for $LLR_{w\rightarrow u_1}$, by repeating the same procedure, and we get 
+\begin{equation}
+	LLR_{w\rightarrow u_1} = 
+						\frac{1}{2}(LLR_{c_0 \rightarrow w} + LLR_{c_2 \rightarrow w} - LLR_{c_1 \rightarrow w}) + \ln \left(
+						\frac{e^{\frac{LLR_{c_1 \rightarrow w}}{2} + LLR_{u_0 \rightarrow w}} + e^{-\frac{LLR_{c_1 \rightarrow w}}{2}}}
+						{e^{\frac{-LLR_{c_0 \rightarrow w}+ LLR_{c_2 \rightarrow w}}{2}+LLR_{u_0 \rightarrow w}} + e^{\frac{LLR_{c_0 \rightarrow w}- LLR_{c_2 \rightarrow w}}{2}}}								
+							\right)
+\end{equation}
+which is equal to~\eqref{eq:llru1final} in the same condition as above.
+
+By considering min-sum, we have that the relation among messages and LLRs is
+\begin{equation}
+	\hat{\mu}(0) = -LLR + \ln(1+e^{LLR}), \quad \quad \hat{\mu}(1) = \ln(1+e^{LLR})
+\end{equation}
+Therefore~\eqref{eq:minsum2} can be written as 
+\begin{multline}~\label{eq:minsumapproach}
+	\hat{\mu}_{w \rightarrow u_0}(u_0) = \min_{c_0, c_1, c_2, c_3, u_1 | w(c_0, c_1, c_2, c_3, u_0, u_1) = 1} 
+		\bigg\{
+			\sum_{i=0}^{3} (-(1\oplus c_i)LLR_{c_i \rightarrow w} + \ln(1+e^{LLR_{c_i \rightarrow w} })) \\ -(1\oplus u_1)LLR_{u_1 \rightarrow w} + \ln(1+e^{LLR_{u_1 \rightarrow w} })
+		\bigg\}
+\end{multline}
+and the LLR expressed as follows, by simplifying all the $\ln(1+e^{LLR})$ terms:
+\begin{multline}\label{eq:minsumapproachfinal}
+	LLR_{w \rightarrow u_0} = \min \bigg\{ -LLR_{c_0 \rightarrow w}-LLR_{c_2 \rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_1 \rightarrow w}, -LLR_{c_0 \rightarrow w}-LLR_{c_1 \rightarrow w}-LLR_{c_3 \rightarrow w}\bigg\} + \\
+	- \min \bigg\{ -LLR_{c_0 \rightarrow w}-LLR_{c_1 \rightarrow w}-LLR_{c_2 \rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_1 \rightarrow w}, -LLR_{c_1 \rightarrow w}-LLR_{c_2 \rightarrow w}-LLR_{c_3 \rightarrow w}\bigg\} = \\
+	= -LLR_{c_0 \rightarrow w} + \min \bigg\{-LLR_{c_2 \rightarrow w}-LLR_{u_1 \rightarrow w},-LLR_{c_1 \rightarrow w}\bigg\} +LLR_{c_1 \rightarrow w}+LLR_{c_2 \rightarrow w}-\min\bigg\{-LLR_{c_0 \rightarrow w}-LLR_{u_1 \rightarrow w}, 0\bigg\}
+\end{multline}
+and finally
+\begin{multline}
+	LLR_{w \rightarrow u_0}	= \frac{LLR_{c_1 \rightarrow w}+LLR_{c_2 \rightarrow w}-LLR_{c_0 \rightarrow w}}{2}
+	+ \min \bigg\{\frac{-LLR_{c_2 \rightarrow w}+LLR_{c_1 \rightarrow w}}{2}-LLR_{u_1 \rightarrow w},\frac{LLR_{c_2 \rightarrow w}-LLR_{c_1 \rightarrow w}}{2}\bigg\} \\ - \min\bigg\{-\frac{LLR_{c_0 \rightarrow w}}{2}-LLR_{u_1 \rightarrow w}, +\frac{LLR_{c_0 \rightarrow w}}{2}\bigg\}
+\end{multline}
+which is equal to~\eqref{eq:llrmin0} if the node is in the factor of Fig.~\ref{fig:FFG} (i.e. equation ~\eqref{eq:LLR_leaf} holds) and input symbols are equally likely. It is possible to derive a similar expression also for $LLR_{w \rightarrow u_1}$:
+\begin{multline}
+	LLR_{w \rightarrow u_1}	= \frac{LLR_{c_0 \rightarrow w}+LLR_{c_2 \rightarrow w}-LLR_{c_1 \rightarrow w}}{2} +\\
+	+ \min \bigg\{\frac{-LLR_{c_2 \rightarrow w}+LLR_{c_0 \rightarrow w}}{2}-LLR_{u_0 \rightarrow w},\frac{LLR_{c_2 \rightarrow w}-LLR_{c_0 \rightarrow w}}{2}\bigg\}-\min\bigg\{-\frac{LLR_{c_1 \rightarrow w}}{2}-LLR_{u_0 \rightarrow w}, +\frac{LLR_{c_1 \rightarrow w}}{2}\bigg\}
+\end{multline}
+
+\subsection*{Sum-product and min-sum on messages to $c_i$ variables}
+For the sake of completeness, let's now consider sum-product and min-sum to compute the LLR exiting from $w$ and going to the $c_i$ variables. As an example, we will compute $LLR_{w \rightarrow c_0}$ with generic LLR messages entering $w$.
+The message is
+\begin{equation}
+	\mu_{w \rightarrow c_0}(c_0) = \sum_{c_1, c_2, c_3, u_0, u_1} w(c_0, c_1, c_2, c_3, u_0, u_1) \mu_{c_1 \rightarrow w}(c_1)\mu_{c_2 \rightarrow w}(c_2)\mu_{c_3 \rightarrow w}(c_3)\mu_{u_0 \rightarrow w}(u_0)\mu_{u_1 \rightarrow w}(u_1)
+\end{equation}
+and the related LLR is
+\begin{multline}
+	LLR_{w \rightarrow c_0} = \ln\left(
+									\frac{e^{LLR{c_1 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR_{c_2 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR{c_1 \rightarrow w}+LLR_{c_3 \rightarrow w}}}
+									{e^{LLR{c_1 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_0 \rightarrow w}}}
+								\right) = \\
+							= \ln\left(
+									\frac{e^{LLR{c_1 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR_{c_2 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR{c_1 \rightarrow w}}}
+									{e^{LLR{c_1 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{u_0 \rightarrow w}}}
+								\right) = \\
+							= \ln\left(e^{LLR_{u_1 \rightarrow w}} + e^{LLR_{u_1 \rightarrow w} - LLR_{u_0 \rightarrow w} - LLR{c_1 \rightarrow w}} + e^{-LLR_{c_2 \rightarrow w}-LLR_{u_0 \rightarrow w}} \right)
+\end{multline}
+where nothing much can be simplified out in the general case. Instead if the node is in the factor graph of Fig.~\ref{fig:FFG}, and IID input symbols ($p(u_i = 0) = p, \; p(u_i = 1) = 1 - p$) we have
+\begin{equation}
+	LLR_{w \rightarrow c_0} = \ln\left(\frac{p}{1-p} + e^{\frac{2r_1}{\sigma_w^2}} + \frac{1-p}{p}e^{\frac{2r_2}{\sigma_w^2}} \right)
+\end{equation}
+Similar expressions can be found for $LLR_{w \rightarrow c_1}$:
+\begin{multline}
+	LLR_{w \rightarrow c_1} = \ln\left(
+									\frac{e^{LLR{c_0 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR_{c_2 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_0 \rightarrow w}}+e^{LLR{c_0 \rightarrow w}+LLR_{c_3 \rightarrow w}}}
+									{e^{LLR{c_0 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_1 \rightarrow w}}}
+								\right) = \\
+								\ln\left(
+									\frac{e^{LLR{c_0 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR_{c_2 \rightarrow w}+LLR_{u_0 \rightarrow w}}+e^{LLR{c_0 \rightarrow w}}}
+									{e^{LLR{c_0 \rightarrow w}+LLR_{c_2 \rightarrow w}+LLR_{u_1 \rightarrow w}}}
+								\right) = \\
+								= \ln\left(e^{LLR_{u_0 \rightarrow w}} + e^{LLR_{u_0 \rightarrow w} - LLR_{u_1 \rightarrow w} - LLR{c_0 \rightarrow w}} + e^{-LLR_{c_2 \rightarrow w}-LLR_{u_1 \rightarrow w}} \right)
+\end{multline}
+Once again if~\eqref{eq:LLR_leaf} and input symbols are IID we have
+\begin{equation}
+	LLR_{w \rightarrow c_1} = \ln\left( \frac{p}{1-p} + e^{\frac{2r_0}{\sigma_w^2}} + \frac{1-p}{p}e^{\frac{2r_2}{\sigma_w^2}} \right)
+\end{equation}
+If we consider $LLR_{w \rightarrow c_2}$, then
+\begin{multline}
+	LLR_{w \rightarrow c_2} = \\ = \ln\left(
+									\frac{e^{LLR{c_0 \rightarrow w}+LLR_{c_1 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR_{c_1 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_0 \rightarrow w}}+e^{LLR{c_0 \rightarrow w}+LLR_{c_3 \rightarrow w}+LLR_{u_1 \rightarrow w}}}
+									{e^{LLR{c_0 \rightarrow w}+LLR_{c_1 \rightarrow w}+LLR_{c_3 \rightarrow w}}}
+								\right) = \\
+								\ln\left(
+									\frac{e^{LLR{c_0 \rightarrow w}+LLR_{c_1 \rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}+e^{LLR_{c_1 \rightarrow w}+LLR_{u_0 \rightarrow w}}+e^{LLR{c_0 \rightarrow w}+LLR_{u_1 \rightarrow w}}}
+									{e^{LLR{c_0 \rightarrow w}+LLR_{c_1 \rightarrow w}}}
+								\right) = \\
+								= \ln\left(e^{LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}} + e^{LLR_{u_0 \rightarrow w} - LLR_{c_0 \rightarrow w}} + e^{LLR_{u_1 \rightarrow w}-LLR_{c_1 \rightarrow w}} \right)
+\end{multline}
+which is simplified to 
+\begin{equation}
+	LLR_{w \rightarrow c_2} = \ln\left( \frac{p^2}{(1-p)^2} + \frac{p}{1-p}e^{\frac{2r_0}{\sigma_w^2}} + \frac{p}{1-p}e^{\frac{2r_1}{\sigma_w^2}} \right)
+\end{equation}
+with IID input symbols and~\eqref{eq:LLR_leaf}.
+
+% min sum
+Let's finally evaluate $LLR_{w \rightarrow c_i}$ when min-sum is used. The approach is the same as the one of equations~\eqref{eq:minsumapproach}-\eqref{eq:minsumapproachfinal}. 
+Note that in the following equations the terms $\ln(1+e^{LLR})$ cancel out. 
+
+The $LLR_{w \rightarrow c_0}$ is
+\begin{multline}\label{eq:minsumleaf}
+	LLR_{w \rightarrow c_0} = \min\left\{-LLR_{c_1 \rightarrow w}-LLR_{c_2\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_0 \rightarrow w}\right\} \\ - \min\{-LLR_{c_1 \rightarrow w}-LLR_{c_2\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_0 \rightarrow w}-LLR_{u_1 \rightarrow w}, \\ -LLR_{c_2\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_1 \rightarrow w}, -LLR_{c_1 \rightarrow w}-LLR_{c_3 \rightarrow w}\}
+	 = \\
+	= - LLR_{c_1 \rightarrow w} - LLR_{c_2\rightarrow w} - LLR_{u_0 \rightarrow w} +  \\ + \min\{LLR_{c_1 \rightarrow w}+LLR_{c_2\rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}, LLR_{c_2\rightarrow w}+LLR_{u_1 \rightarrow w}, LLR_{c_1 \rightarrow w}\}
+\end{multline}
+In case the node is in the factor graph of Fig.~\ref{fig:FFG} then equation~\eqref{eq:LLR_leaf} describes the $LLR_{c_i \rightarrow w}$. Suppose input symbols are equally likely, then equation~\eqref{eq:minsumleaf} assumes a very simple form:
+\begin{equation}
+	LLR_{w \rightarrow c_0} = r_1 + r_2 - \frac{2}{\sigma_w^2} \min\{r_1+r_2, r_2, r_1\} = \frac{2}{\sigma_w^2}\min\{0, r_1, r_2\}
+\end{equation}
+Then for the other $c_i$ edges the computation can be carried out in the same way.
+\begin{multline}
+	LLR_{w \rightarrow c_1} = \min\left\{-LLR_{c_0 \rightarrow w}-LLR_{c_2\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_1 \rightarrow w}\right\} \\ - \min\{-LLR_{c_0 \rightarrow w}-LLR_{c_2\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_0 \rightarrow w}-LLR_{u_1 \rightarrow w}, \\ -LLR_{c_2\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_0 \rightarrow w}, -LLR_{c_0 \rightarrow w}-LLR_{c_3 \rightarrow w}\}
+	 = \\
+	= - LLR_{c_0 \rightarrow w} - LLR_{c_2\rightarrow w} - LLR_{u_1 \rightarrow w}+  \\ + \min\{LLR_{c_0 \rightarrow w}+LLR_{c_2\rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}, LLR_{c_2\rightarrow w}+LLR_{u_0 \rightarrow w}, LLR_{c_0 \rightarrow w}\}
+\end{multline}
+which simplifies to 
+\begin{equation}
+	LLR_{w \rightarrow c_1} =  r_0 + r_2 - \frac{2}{\sigma_w^2} \min\{r_0+r_2, r_2, r_0\}= \frac{2}{\sigma_w^2}\min\{0, r_0, r_2\}
+\end{equation}
+if the conditions mentioned for $LLR_{w \rightarrow c_0}$ hold.
+As for $c_2$, 
+\begin{multline}
+	LLR_{w \rightarrow c_2} = \min\left\{-LLR_{c_0 \rightarrow w}-LLR_{c_1\rightarrow w}-LLR_{c_3 \rightarrow w}\right\} \\ - \min\{-LLR_{c_0 \rightarrow w}-LLR_{c_1\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_0 \rightarrow w}-LLR_{u_1 \rightarrow w}, \\ -LLR_{c_1\rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_0 \rightarrow w}, -LLR_{c_0 \rightarrow w}-LLR_{c_3 \rightarrow w}-LLR_{u_1 \rightarrow w}\}
+	 = \\
+	= - LLR_{c_0 \rightarrow w} - LLR_{c_1\rightarrow w} + \\ + \min\{LLR_{c_0 \rightarrow w}+LLR_{c_1\rightarrow w}+LLR_{u_0 \rightarrow w}+LLR_{u_1 \rightarrow w}, LLR_{c_1\rightarrow w}+LLR_{u_0 \rightarrow w}, LLR_{c_0 \rightarrow w}+LLR_{u_1 \rightarrow w}\}
+\end{multline}
+which once again has a simplified form if the node is as in Fig.~\ref{fig:FFG} and input symbols are equally likely:
+\begin{equation}
+	LLR_{w \rightarrow c_2} = r_0 + r_1 - \frac{2}{\sigma_w^2} \min\{r_0+r_1, r_1, r_0\} = \frac{2}{\sigma_w^2}\min\{0, r_0, r_1\}
+\end{equation}
+Eventually $LLR_{w \rightarrow c_3} = \infty$, both for sum-product and min-sum, since $c_3 = 0$ for each possible uncoded/coded couple.
+
+\section*{Exercise 9 - Capacity of the Binary Erasure Channel}
+A Binary Erasure Channel (BEC) is a channel where the received symbol is received correctly or it is not received (or equivalently is received as an unknown symbol $?$). It is described in Fig~\ref{fig:bec}.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[auto, thick, node distance=1 cm, ->,>=latex',shorten >=1pt]
+	\node[] (0) {$0$};
+	\node[right=4cm of 0] (0r) {$0$};	
+	\node[below=0.75cm of 0r] (un) {$?$};
+	\node[below=0.75cm of un] (1r) {$1$};
+	\node[left=4cm of 1r] (1) {$1$};
+
+
+	\path[every node]
+		(0) edge node[above] {$1-p$} (0r)
+		(1) edge node[below] {$1-p$} (1r)
+		(0) edge node[below] {$p$} (un)
+		(1) edge node[above] {$p$} (un);
+\end{tikzpicture}
+\caption{Binary Erasure Channel}
+\label{fig:bec}
+\end{figure}
+
+The input symbol alphabet is $\mathcal{A}_x = \{0,1\}$ and the probability distribution of input symbols is
+\begin{equation}
+	p_x(a) = 
+	\begin{cases}
+		0 & \mbox{ with probability } q \\
+		1 & \mbox{ with probability } 1- q \\
+	\end{cases}
+\end{equation}
+The output symbol alphabet is $\mathcal{A}_y = \{0,?,1\}$. It is possible to compute the probability distribution of the output of the BEC with the total probability law by conditioning on the input symbol:
+\begin{equation}
+	p_y(b) = \sum_{a= 0}^1 p_x(a) p_{y|x}(b|a) = 
+	\begin{cases}
+		0, &\text{ wp } q(1-p)\\
+		?, &\text{ wp } qp + (1-q)p = p\\
+		1, &\text{ wp } (1-q)(1-p)\\
+	\end{cases}
+\end{equation}
+Note that no transition is allowed from $0$ to $1$ and vice versa. Let $X$ be a random variable that describes the input symbols, i.e. with associated probability density function $p_x(a)$, and $Y$ the channel output random variable, with associated PDF $p_y(b)$. Then the capacity of the BEC is defined as
+\begin{equation}
+	C = \max_{p_x(a)} \, I(X;Y)
+\end{equation}
+In order to compute it is convenient to express the mutual information as
+\begin{equation}
+	I(X;Y) = H(Y) - H(Y|X)
+\end{equation}
+with $H(Y)$ the entropy of random variable $Y$ and $H(Y|X)$ the conditional entropy of $Y$ given $X$. Then
+\begin{equation}
+	H(Y) = \sum_{b\in\mathcal{A}_y} p_y(b) \log_2 \frac{1}{p_y(b)} = q(1-p)\log_2\frac{1}{q(1-p)} + p\log_2\frac{1}{p} + (1-q)(1-p)\log_2\frac{1}{(1-q)(1-p)}
+\end{equation}
+and
+\begin{equation}
+	H(Y|X) = \sum_{a\in\mathcal{A}_x, b\in\mathcal{A}_y} p_{y|x}(b|a)p_x(a)\log_2\frac{1}{p_{y|x}(b|a)p_x(a)} = \sum_{a=0}^1 p_x(a) \sum_{b\in\mathcal{A}_y}p_{y|x}(b|a)\log_2\frac{1}{p_{y|x}(b|a)}
+\end{equation}
+\begin{multline}\label{eq:hyx}
+	H(Y|X) = q\left(p_{y|x}(0|0)\log_2\frac{1}{p_{y|x}(0|0)} + p_{y|x}(?|0)\log_2\frac{1}{p_{y|x}(?|0)}\right) + \\ (1-q)\left(p_{y|x}(1|1)\log_2\frac{1}{p_{y|x}(1|1)} + p_{y|x}(?|1)\log_2\frac{1}{p_{y|x}(?|1)}\right) = \\
+	q\left((1-p)\log_2\frac{1}{1-p} + p\log_2\frac{1}{p} \right) + (1-q)\left((1-p)\log_2\frac{1}{1-p} + p\log_2\frac{1}{p}\right) = h(p)
+\end{multline}
+with 
+\begin{equation}
+	h(x) = (1-x)\log_2\frac{1}{1-x} + x\log_2\frac{1}{x}
+\end{equation}
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+  declare function={
+    func(\x)= and(\x>0, \x<1)*(-\x*log2{\x}-(1-\x)*log2{(1-\x)}) + and(\x==0, \x==1) * 0;
+  },
+]
+\begin{axis}[
+  axis x line=middle, axis y line=middle,
+  ymin=0, ymax=1.1, ytick={0,1}, ylabel=$y$,
+  xmin=0, xmax=1, xtick={0,0.5,1}, xlabel=$x$,
+]
+\addplot[black, domain=0:1, smooth]{func(x)};
+\end{axis}
+\end{tikzpicture} 
+\caption{$h(x)$}
+\label{fig:hx}
+\end{figure}
+
+Note that $p_{y|x}(0|1)\log_2\frac{1}{p_{y|x}(0|1)}$ and $p_{y|x}(1|0)\log_2\frac{1}{p_{y|x}(1|0)}$ were not included the summation in~\eqref{eq:hyx}. This is because $p_{y|x}(0|1) = p_{y|x}(1|0) = 0$, so both these terms are 0. Actually they are indeterminate forms $0\cdot\infty$, but the first factor of each product dominates and forces the result to 0.
+Then let's compute the mutual information:
+\begin{multline}
+	I(X;Y) = H(Y) - H(Y|X) = q(1-p)\log_2\frac{1}{q(1-p)} + p\log_2\frac{1}{p} + (1-q)(1-p)\log_2\frac{1}{(1-q)(1-p)} \\ - (1-p)\log_2\frac{1}{1-p} - p\log_2\frac{1}{p}
+\end{multline}
+\begin{multline}
+	I(X;Y) = (1-p)\left[q\log_2\frac{1}{q(1-p)} + (1-q)\log_2\frac{1}{(1-q)(1-p)} - \log_2\frac{1}{1-p} \right] = \\
+		(1-p)\left[q\log_2\frac{1}{q} + q\log_2\frac{1}{1-p} + (1-q)\log_2\frac{1}{1-q} + (1-q)\log_2\frac{1}{1-p} - \log_2\frac{1}{1-p} \right]
+\end{multline}
+and finally
+\begin{equation}
+	I(X;Y) = (1-p)h(q)
+\end{equation}
+Note that the function $h(x)$ has a maximum equal to $1$ for $x=1/2$ as it can be seen in Fig.~\ref{fig:hx}. Therefore
+\begin{equation}
+	C = \max_{q} \; (1-p)h(q) = (1-p)
+\end{equation}
+
+\section*{Exercise 11 - Capacity of M-ary PAM channel with soft decoding}
+In this exercise we will show some results on the mutual information and capacity that can be achieved on an M-ary PAM channel with soft decoding. 
+Let the input symbols be $d_i \in \{0, \dots, M-1\}$ and the PAM symbols be $s_i \in \mathcal{S} = \{-M+1, -M+3, \dots, M-3, M-1\}$. The input symbols have probability distribution $p_x(a)$. The modulated symbols are sent on AWGN channel with Gaussian noise $w$ with variance
+\begin{equation}
+	\sigma_w^2 = \frac{E_s}{\Gamma}
+\end{equation}
+with $\Gamma$ the SNR and $E_s = \sum_{a \in \mathcal{S}} |a|^2 p_x(a)$ the energy of the constellation. In a AWGN channel transition PDFs have the form
+\begin{equation}\label{eq:fy}
+	f_{y|x}(b|a) = \frac{1}{\sqrt{2\pi}\sigma_w}e^{-\frac{(b-a)^2}{2\sigma_w^2}}
+\end{equation}
+Because the map from input to MAP symbols is invertible and because of the data processing inequality it is possible to compute the mutual information between input and output as the mutual information among random variables $x$ and $y$, describing the modulated symbols and the outputs.
+Then the mutual information from \cite{erseghe} is
+\begin{equation}
+	I(X;Y) = H(y) - \frac{1}{2}\log_2(2\pi e\sigma_w^2)
+\end{equation}
+In particular the differential entropy of $y$ is
+\begin{equation}\label{eq:hy}
+	H(y) = \int f_y(b) \log_2\frac{1}{f_y(b)} db
+\end{equation}
+with
+\begin{equation}
+	f_y(b) = \sum_{a \in \mathcal{S}} f_{y|x}(b|a) p_x(a)
+\end{equation}
+The integral in~\eqref{eq:hy} can be computed only with numerical integration. A MATLAB script was written in order to evaluate it for different input distributions, modulation sizes $M$ and values of $\Gamma$. The script is in the attached listings. Notice that numerical stability problems may arise in performing the numerical integration. Since $\delta = 4.9407e-324$ is the lowest positive number which can be represented in MATLAB and that values below this threshold are approximated to $0$ by MATLAB, for high SNR $\Gamma$ (which corresponds to a small noise variance $\sigma_w^2$) the exponential term in~\eqref{eq:fy} tends rapidly to $\epsilon < \delta$ and therefore it is approximated to 0. Then the integrand of~\eqref{eq:hy} assumes an indeterminate value $0\cdot\infty$. However we remark that this is the product of a sum of exponentials and of a logarithm of the same sum, therefore the first term dominates the second on the limit and the actual value the integrand takes is 0. This was accounted for in the script by detecting \texttt{NaN} values in the integrand and replacing them with 0.
+
+In Fig.~\ref{fig:info_uni} there is the plot of twice the mutual information that can be achieved with uniform input distribution. It does not reach the Shannon bound of $\log_2(1+\Gamma)$ but for SNR high enough it saturates to the maximum number of bits per second per hertz that the specific modulation can carry. 
+
+In Fig.~\ref{fig:info_gauss} there is the plot of the mutual information obtained using an input with Gaussian distribution with a variance $\sigma_x^2 = E_s$ which maximizes the information rate for each SNR. Indeed, if the variance of the input distribution is kept fixed for all the SNRs it is not possible to reach capacity for in each SNR region: we need to design the input distribution in a different way for each SNR $\Gamma$, by keeping however the Gaussian shape. The Gaussian shape is imposed by computing
+\begin{equation}
+	p_x(a) = e^{-\frac{a^2}{2\sigma_{IN}^2}}
+\end{equation}
+and normalizing so that $\sum_{a \in \mathcal{S}} p_x(a) = 1$. The parameter $\sigma_{IN}$ controls the bell shape of the probability mass distribution.
+
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.5\textwidth}
+\setlength\fwidth{0.75\textwidth}
+\input{./figures/info_uniform.tex}
+\caption{Information rate for M-ary PAM, soft decoding, with uniform input probabilities}
+\label{fig:info_uni}
+\end{figure}
+\begin{figure}[t]
+\centering
+\setlength\fheight{0.5\textwidth}
+\setlength\fwidth{0.75\textwidth}
+\input{./figures/info_gauss.tex}
+\caption{Capacity for M-ary PAM, soft decoding, with Gaussian input probabilities}
+\label{fig:info_gauss}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\subfloat[Information rate for 32-ary PAM, soft decoding, with Gaussian input probabilities, different $\sigma_{IN}$ values]{\setlength\fheight{0.45\textwidth}
+\setlength\fwidth{0.4\textwidth}
+\input{./figures/info_gauss_32.tex}
+\label{fig:info_gauss_32}
+}
+\subfloat[Gaussian input probabilities, different $\sigma_{IN}$ values]{\setlength\fheight{0.45\textwidth}
+\setlength\fwidth{0.4\textwidth}
+\input{./figures/pxa.tex}
+\label{fig:pxa}
+}
+\hfil
+\subfloat[$\sigma_{IN}$ that maximizes the information rate for each SNR $\Gamma$]{\setlength\fheight{0.45\textwidth}
+\setlength\fwidth{0.4\textwidth}
+\input{./figures/sigmax.tex}
+\label{fig:sigmax}
+}
+\end{figure*}
+
+\clearpage
+
+The need for a different design for each SNR $\Gamma$ can be seen in Fig.~\ref{fig:info_gauss_32}, where the mutual information with Gaussian inputs with different values for the parameter $\sigma_{IN} \in [0.4, 1, 5]M$ is compared, for $M=32$. We can notice that for SNR $\Gamma < 28$~dB the highest mutual information is achieved for $\sigma_{IN} = 12.8$, but this input distribution does not manage to reach the saturation value for SNR $\Gamma > 35$~dB. This is reached instead by $\sigma_{IN} = 160$. For intermediate values of SNR the value that dominates is $\sigma_{IN} = 32$. The reason behind this behavior is that a distribution with a very high weight for the symbols at the center of the constellation and a low weight (close to 0) for symbols which are close to $\pm(M-1)$ resembles a constellation with a number of symbols $M' < M$ and it is not able to achieve the mutual information of $\log_2(M)$ bit per symbol. However the Gaussian shape improves the performances for lower SNRs, when the mutual information is not in saturation. In order to get to the saturation value of $\log_2(M)$ bit per symbol (or twice this value in the plot) the input distribution should be designed in order to use with equal probability all the symbols, i.e. it should be uniform. This is why for $M = 32$ the saturation value is reached for very high $\sigma_{IN}$ values, ideally for $\sigma_{IN} \rightarrow \infty$, i.e. for a true uniform distribution. The different shapes of the input distribution can be seen in~\ref{fig:pxa}.
+In Fig.~\ref{fig:sigmax} we plot the $\sigma_{IN}$ value that maximizes the mutual information for each $\Gamma \in [20, 36]$ and $M=32$. It can be seen that as the SNR grows $\sigma_{IN}$ tends to $\infty$.
+
+Notice that the higher the value of $M$ the more this behavior can be observed. Indeed for small constellations there is no room of improvement by changing the parameter $\sigma_{IN}$, and thus the shape of the input distribution, up to the degenerate case of $M=2$ where each symmetric distribution (as the Gaussian one) is also uniform.
+
+\begin{thebibliography}{10}
+
+\bibitem{erseghe} Tomaso Erseghe, \emph{Channel Coding}, A graduate course blueprint, 2015
+
+\end{thebibliography}
+
+\end{document}
