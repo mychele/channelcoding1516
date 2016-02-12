@@ -4,8 +4,25 @@
 #include <NTL/GF2.h>
 #include <NTL/mat_GF2.h>
 #include <iostream>
+#include <fstream>
+
 
 using namespace NTL;
+
+void printMatrix(mat_GF2& K, const char *matrixName)
+{
+    std::ofstream output_file (matrixName, std::ios::out);
+    if(output_file.is_open()) {
+	    for(int row_index = 0; row_index < K.NumRows(); row_index++) {
+	    	for(int col_index = 0; col_index < K.NumCols(); col_index++) {
+	    		output_file << K[row_index][col_index] << " "; 
+	    	}
+	    	output_file << "\n";
+	    }
+	}
+	output_file.close();
+}
+
 
 int main(int argc, char const *argv[])
 {
@@ -314,6 +331,9 @@ int main(int argc, char const *argv[])
 
     std::cout << "Is the submatrix on the left (2045x2045) an identity? " << ((IsIdent(maybeEye, maybeEye.NumCols())==1)?"yes\n":"no\n");
     
+    // H_eye is [ I | 	K 	| N_1 ]
+    //			2045 105*293 2045
+
     // let's isolate N^{-1}
     mat_GF2 N_1;
     N_1.SetDims(N.NumRows(), N.NumCols());
@@ -325,7 +345,59 @@ int main(int argc, char const *argv[])
 	}
 	std::cout << "N_1 created, is N_1*N an identity? " << ((IsIdent(N_1*N, N.NumCols())==1)?"yes\n":"no\n");
 
+	// let's create K = N_1*M
+	mat_GF2 K;
+	K.SetDims(H_eye.NumRows(), col_r*info_r);
+	offset = N.NumRows();
+	for(int col_index = offset; col_index < H_toinv.NumCols(); col_index++) {
+		for(int row_index = 0; row_index < K.NumRows(); row_index++) {
+			K[row_index][col_index-offset] = H_eye[row_index][col_index];
+		}
+	}
 
+	// check if K = N_1*M
+	std::cout << "K created, is K=N_1*M? " << (IsZero(N_1*M + K) ? "yes\n":"no\n");
+	printMatrix(K, "K.txt");
+
+
+	// create Hprime
+	mat_GF2 H_prime;
+	H_prime.SetDims(H_toinv.NumRows(), H_toinv.NumCols());
+	std::cout << "H prime is " << H_prime.NumRows() << " x " << H_prime.NumCols() << "\n";
+	for(int col_index = 0; col_index < K.NumCols(); col_index++) {
+		for(int row_index = 0; row_index < K.NumRows(); row_index++) {
+			H_prime[row_index][col_index] = K[row_index][col_index];
+		}
+	}
+	offset = K.NumCols();
+	std::cout << "K copied in H_prime, offset " << offset << "\n";
+	for(int col_index = offset; col_index < H_prime.NumCols(); col_index++) {
+		H_prime[col_index-offset][col_index] = 1;
+	}
+
+	std::cout << "H_prime create\n";
+
+	H_toinv.kill();
+	maybeEye.kill();
+
+	// create G_prime
+	mat_GF2 G_prime;
+	G_prime.SetDims(H_prime.NumCols(), K.NumCols());
+	// identity on top
+	for(int row_index = 0; row_index < K.NumCols(); row_index++) {
+		G_prime[row_index][row_index] = 1;
+	}
+	// K on bottom
+	offset = K.NumCols();
+	for(int row_index = offset; row_index < G_prime.NumRows(); row_index++) {
+		for(int col_index = 0; col_index < G_prime.NumCols(); col_index++) {
+			G_prime[row_index][col_index] = K[row_index - offset][col_index];
+		}
+	}
+
+	// let's check...
+	std::cout << "H_prime x G_prime = 0? " << (IsZero(H_prime*G_prime) ? "yes\n":"no\n");
+	std::cout << "H_fr x G_prime = 0? " << (IsZero(H_fr*G_prime) ? "yes\n":"no\n");
 
 	return 0;
 }
