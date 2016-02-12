@@ -5,6 +5,7 @@
 #include <NTL/mat_GF2.h>
 #include <iostream>
 #include <fstream>
+#include <random>
 
 
 using namespace NTL;
@@ -26,10 +27,15 @@ void printMatrix(mat_GF2& K, const char *matrixName)
 
 int main(int argc, char const *argv[])
 {
+	// rng stuff
+    std::mt19937 m_rng(10); // initialize our mersenne twister with a seed = 10
+
 	// define H
 	int info_r = 105;
 	int red_r = 7;
 	int col_r = 293;
+	int info_bit = 30592;
+	int init_zero_bit = 173;
 	int check_bit = red_r*col_r - 6;
 	mat_GF2 H;
 	H.SetDims(red_r*col_r, (info_r + red_r)*col_r);
@@ -145,57 +151,64 @@ int main(int argc, char const *argv[])
 	H_fr_2.SetDims(H_fr.NumRows() - 6, H_fr.NumCols());
 	// copy the first 292 rows (from 0 to 291)
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index][col_index] = H_fr[row_index][col_index];
-		}
+		H_fr_2[row_index] = H_fr[row_index];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index][col_index] = H_fr[row_index][col_index];
+		// }
 	}
 	// skip row 292, copy 292 rows
 	offset_H_fr = col_r;
 	int offset_H_fr_2 = offset_H_fr - 1; // 1 row was deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		}
+		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
+		// }
 	}
 	// skip row 585, copy 292 rows
 	offset_H_fr = 2*col_r;
 	offset_H_fr_2 = offset_H_fr - 2; // 2 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		}
+		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
+		// }
 	}
 	// skip row 878, copy 292 rows
 	offset_H_fr = 3*col_r;
 	offset_H_fr_2 = offset_H_fr - 3; // 3 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		}
+		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
+		// }
 	}
 	// skip row 1171, copy 292 rows
 	offset_H_fr = 4*col_r;
 	offset_H_fr_2 = offset_H_fr - 4; // 4 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		}
+		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
+		// }
 	}
 	// skip row 1464, copy 292 rows
 	offset_H_fr = 5*col_r;
 	offset_H_fr_2 = offset_H_fr - 5; // 5 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		}
+		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
+		// }
 	}
 	// skip row 1757, copy 293 rows
 	offset_H_fr = 6*col_r;
 	offset_H_fr_2 = offset_H_fr - 6; // 5 rows were deleted
 	for (int row_index = 0; row_index < col_r; row_index++) {
-		for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-			H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		}
+		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
+		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
+		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
+		// }
 	}
 	// remove useless H_fr_2 and keep just H_fr
 	H_fr.kill();
@@ -311,9 +324,10 @@ int main(int argc, char const *argv[])
     	// sum row=pivot to the interested row
     	for (int row_index = pivot_index - 1; row_index >= 0; row_index--) {
     		if(H_eye[row_index][pivot_index] == 1) { // sum
-    			for (int col_index = pivot_index; col_index < H_eye.NumCols(); col_index++) { // just from pivot_index since it is 
-    				H_eye[row_index][col_index] += H_eye[pivot_index][col_index];			  // the first non zero entry of H[pivot_index][:]
-    			}
+    			H_eye[row_index] += H_eye[pivot_index];
+    			// for (int col_index = pivot_index; col_index < H_eye.NumCols(); col_index++) { // just from pivot_index since it is 
+    			// 	H_eye[row_index][col_index] += H_eye[pivot_index][col_index];			  // the first non zero entry of H[pivot_index][:]
+    			// }
     		}
     	}
     }
@@ -375,7 +389,7 @@ int main(int argc, char const *argv[])
 		H_prime[col_index-offset][col_index] = 1;
 	}
 
-	std::cout << "H_prime create\n";
+	std::cout << "H_prime created\n";
 
 	H_toinv.kill();
 	maybeEye.kill();
@@ -398,6 +412,94 @@ int main(int argc, char const *argv[])
 	// let's check...
 	std::cout << "H_prime x G_prime = 0? " << (IsZero(H_prime*G_prime) ? "yes\n":"no\n");
 	std::cout << "H_fr x G_prime = 0? " << (IsZero(H_fr*G_prime) ? "yes\n":"no\n");
+
+	for(int attempt = 0; attempt < 10; attempt ++) {
+
+		std::cout << "attempt " << attempt << "\n";
+
+		// create a random uncoded word
+		mat_GF2 info_word;
+		info_word.SetDims(info_bit, 1); 
+		for(int bit_index = 0; bit_index < info_bit; bit_index++) {
+			info_word[bit_index][0] = m_rng()%2;
+		}
+
+		// fill a matrix as specified in the standard
+		mat_GF2 std_M;
+		std_M.SetDims(info_r+red_r, col_r);
+		clear(std_M); // all 0 for sure
+		int q = 0;
+		int r = 0;
+		for(int bit_index = 0; bit_index < info_bit; bit_index++) {
+			q = bit_index + init_zero_bit; // j + 172, with j from 1 to 30592
+			r = q/col_r; // floor(q/293) since both q and 293 are positive int, the result is the floor
+			int col_index = col_r*r + col_r - 1 - q; // 293*r + 292 - q
+			if(r == 0 && col_index == 120) {std::cout << "q = " << q << " r = " << r << " bit_index " << bit_index << "\n";}
+			std_M[r][col_index] = info_word[bit_index][0];
+		}
+
+		// read the matrix by row, and encode it
+		mat_GF2 inter_info_word;
+		inter_info_word.SetDims(info_bit + init_zero_bit, 1);
+		int read_bit_index = 0;
+		for(int row_index = 0; row_index < info_r; row_index++) {
+			for(int col_index = 0; col_index < std_M.NumCols(); col_index++) {
+				inter_info_word[read_bit_index++][0] = std_M[row_index][col_index];
+			}
+		} 
+		// check if bit (292-172, 292) are 0
+		for(int bit_index = 292 - 172; bit_index < 292; bit_index++) {
+			if(inter_info_word[bit_index][0] != 0) {std::cout << "element " << bit_index << " is not 0\n";}
+		}
+
+		// encode it
+		mat_GF2 code_word = G_prime*inter_info_word;
+
+		// check it with H and H_prime
+		std::cout << "H_prime x c = 0? " << (IsZero(H_prime*code_word) ? "yes\n":"no\n");
+		std::cout << "H_fr x c = 0? " << (IsZero(H_fr*code_word) ? "yes\n":"no\n");
+
+		// put the redundancy bit into std_M
+		read_bit_index = info_r*col_r;
+		for(int row_index = info_r; row_index < info_r + red_r - 1; row_index++) { // 292 bit in each row from 105 to 110
+			for(int col_index = 0; col_index < col_r - 1; col_index++) {
+				std_M[row_index][col_index] = code_word[read_bit_index++][0];
+			}
+		}
+		// 293 bit in row 111
+		for(int col_index = 0; col_index < col_r; col_index++) {
+			std_M[std_M.NumRows()-1][col_index] = code_word[read_bit_index++][0];
+		}
+
+		// check if the 2051 lines sum to 0
+		for(int slope_index = 0; slope_index < red_r; slope_index++) {
+			// cycle on the offsets
+			for(int c = 0; c < col_r; c++) {
+				// cycle on a from 0 to 111
+				int lineValue = 0;
+				for(int a = 0; a < (info_r + red_r); a++) {
+					int col_index = (a*slopes[slope_index] + c)%col_r;
+					if(std_M[a][col_index] == 1) {lineValue++;}
+				}
+				if(lineValue%2 != 0) {std::cout << "s " << slopes[slope_index] << " c " << c << "\n";}
+			}
+		}
+
+		// now read the complete codeword (with also the always 0 redundancy bit) and multiply it by the original H
+		// read the matrix by row, and encode it
+		mat_GF2 complete_code_word;
+		complete_code_word.SetDims(std_M.NumRows()*std_M.NumCols(), 1);
+		int write_bit_index = 0;
+		for(int row_index = 0; row_index < info_r + red_r; row_index++) {
+			for(int col_index = 0; col_index < std_M.NumCols(); col_index++) {
+				complete_code_word[write_bit_index++][0] = std_M[row_index][col_index];
+			}
+		} 
+
+		std::cout << "H x c (complete) = 0? " << (IsZero(H*complete_code_word) ? "yes\n":"no\n");
+
+	}
+
 
 	return 0;
 }
