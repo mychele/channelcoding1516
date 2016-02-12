@@ -12,3 +12,7 @@ viterbi
 *.pdf
 
 *.out
+
+final_project_DWDM/invert_H
+
+*.o
