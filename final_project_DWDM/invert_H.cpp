@@ -28,7 +28,10 @@ void printMatrix(mat_GF2& K, const char *matrixName)
 int main(int argc, char const *argv[])
 {
 	// rng stuff
-    std::mt19937 m_rng(10); // initialize our mersenne twister with a seed = 10
+	std::random_device rd; // device entropy
+    std::mt19937 m_rng(rd()); // initialize our mersenne twister with a random seed
+    std::uniform_int_distribution<int> int_uni_gen(0,1);
+
 
 	// define H
 	int info_r = 105;
@@ -420,8 +423,8 @@ int main(int argc, char const *argv[])
 		// create a random uncoded word
 		mat_GF2 info_word;
 		info_word.SetDims(info_bit, 1); 
-		for(int bit_index = 0; bit_index < info_bit; bit_index++) {
-			info_word[bit_index][0] = m_rng()%2;
+		for(int bit_index = 0; bit_index < info_bit; bit_index++) { 
+			info_word[bit_index][0] = int_uni_gen(m_rng);
 		}
 
 		// fill a matrix as specified in the standard

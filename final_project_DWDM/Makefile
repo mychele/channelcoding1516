@@ -8,5 +8,8 @@ invert_H: invert_H.cpp
 	@g++ -std=c++11 -c -I/Users/Michele/Dev/lib/ntl/include $?
 	@g++ -std=c++11 -o invert_H invert_H.o -L/Users/Michele/Dev/lib/ntl/lib -lntl -lm
 
+rng: normal_rng_test.cpp
+	@g++ -std=c++11 -o rng_test $?
+
 clear:
 	rm invert_H *.o
