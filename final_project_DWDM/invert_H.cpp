@@ -6,9 +6,19 @@
 #include <iostream>
 #include <fstream>
 #include <random>
+#include <bitset>
+#include <array>
 
 
 using namespace NTL;
+
+#define INFO_ROWS 105
+#define PC_ROWS 7
+#define ALL_COLUMNS 293
+#define INFO_BIT 30592
+#define INIT_ZERO_BIT 173
+#define ALL_INFO_BIT 30765
+#define IND_EQ 2045
 
 void printMatrix(mat_GF2& K, const char *matrixName)
 {
@@ -24,6 +34,15 @@ void printMatrix(mat_GF2& K, const char *matrixName)
 	output_file.close();
 }
 
+int mapJtoK(int j) {
+	int init_zero_bit = INIT_ZERO_BIT;
+   	int col_r = ALL_COLUMNS;
+	int q = j + init_zero_bit; // j + 172, with j from 1 to 30592
+	int r = q/col_r; // floor(q/293) since both q and 293 are positive int, the result is the floor
+	int col_index = col_r*r + col_r - 1 - q; // 293*r + 292 - q
+	return col_r*r + col_index;
+}
+
 
 int main(int argc, char const *argv[])
 {
@@ -32,13 +51,13 @@ int main(int argc, char const *argv[])
     std::mt19937 m_rng(rd()); // initialize our mersenne twister with a random seed
     std::uniform_int_distribution<int> int_uni_gen(0,1);
 
+    int info_r = INFO_ROWS;
+    int red_r = PC_ROWS;
+    int col_r = ALL_COLUMNS;
+    int info_bit = INFO_BIT;
+    int init_zero_bit = INIT_ZERO_BIT;
 
 	// define H
-	int info_r = 105;
-	int red_r = 7;
-	int col_r = 293;
-	int info_bit = 30592;
-	int init_zero_bit = 173;
 	int check_bit = red_r*col_r - 6;
 	mat_GF2 H;
 	H.SetDims(red_r*col_r, (info_r + red_r)*col_r);
@@ -328,9 +347,6 @@ int main(int argc, char const *argv[])
     	for (int row_index = pivot_index - 1; row_index >= 0; row_index--) {
     		if(H_eye[row_index][pivot_index] == 1) { // sum
     			H_eye[row_index] += H_eye[pivot_index];
-    			// for (int col_index = pivot_index; col_index < H_eye.NumCols(); col_index++) { // just from pivot_index since it is 
-    			// 	H_eye[row_index][col_index] += H_eye[pivot_index][col_index];			  // the first non zero entry of H[pivot_index][:]
-    			// }
     		}
     	}
     }
@@ -374,7 +390,20 @@ int main(int argc, char const *argv[])
 
 	// check if K = N_1*M
 	std::cout << "K created, is K=N_1*M? " << (IsZero(N_1*M + K) ? "yes\n":"no\n");
-	printMatrix(K, "K.txt");
+
+	// TODO store to file
+	// transform K into a vector<bitset> and (later on..) store it to a file. Then it will be possible to read it, & each row 
+	// with the info word and sum modulo 2
+	if (K.NumCols() != (int)ALL_INFO_BIT || K.NumRows() != (int)IND_EQ) {std::cout << "error, K has not the expected size"; return 1;}
+	std::array< std::bitset<ALL_INFO_BIT>, IND_EQ > K_rows; // 2045
+	for (int row_index = 0; row_index < K.NumRows(); row_index++) {
+		std::bitset<ALL_INFO_BIT> row;
+		for(int col_index = 0; col_index < K.NumCols(); col_index++) {
+			row[col_index] = (K[row_index][col_index]==1); // if the value is 1, it returns true, if the value is 0, it returns false
+		}
+		K_rows[row_index] = row;
+	}
+
 
 
 	// create Hprime
@@ -416,15 +445,23 @@ int main(int argc, char const *argv[])
 	std::cout << "H_prime x G_prime = 0? " << (IsZero(H_prime*G_prime) ? "yes\n":"no\n");
 	std::cout << "H_fr x G_prime = 0? " << (IsZero(H_fr*G_prime) ? "yes\n":"no\n");
 
+	std::cout << "Perform some test: create a random vector, encode it, test on the parity check matrix and on the matrxi defined in the std\n";
 	for(int attempt = 0; attempt < 10; attempt ++) {
 
 		std::cout << "attempt " << attempt << "\n";
 
 		// create a random uncoded word
 		mat_GF2 info_word;
+		mat_GF2 smart_info_word;
 		info_word.SetDims(info_bit, 1); 
+		smart_info_word.SetDims(info_bit + init_zero_bit, 1);
+		clear(smart_info_word); // all 0 for sure
+		// create a bitset word too, in order to test encoding with bitset
+		std::bitset<ALL_INFO_BIT> info_word_bitset;
 		for(int bit_index = 0; bit_index < info_bit; bit_index++) { 
 			info_word[bit_index][0] = int_uni_gen(m_rng);
+			smart_info_word[mapJtoK(bit_index)][0] = info_word[bit_index][0];
+			info_word_bitset[mapJtoK(bit_index)] = (info_word[bit_index][0]==1);
 		}
 
 		// fill a matrix as specified in the standard
@@ -455,8 +492,25 @@ int main(int argc, char const *argv[])
 			if(inter_info_word[bit_index][0] != 0) {std::cout << "element " << bit_index << " is not 0\n";}
 		}
 
+		// check if inter_info_word and smart_info_word are the same
+		std::cout << "inter_info_word == smart_info_word ? " << (IsZero(inter_info_word + smart_info_word) ? "yes\n":"no\n");
+
 		// encode it
 		mat_GF2 code_word = G_prime*inter_info_word;
+
+		// encode using bitset
+		std::bitset<IND_EQ> parity_check_bitset;
+		for(int ar_index = 0; ar_index < (int)IND_EQ; ar_index++) {
+			parity_check_bitset[ar_index] = ((K_rows[ar_index]&info_word_bitset).count()%2==1);
+		}
+
+		// check if this bitset is equal to the last 2045 bit of the codeword in mat_GF2
+		offset = (int)ALL_INFO_BIT;
+		for(int bit_index = offset; bit_index < code_word.NumRows(); bit_index++) {
+			long gf2value = rep(code_word[bit_index][0]);
+			long bitvalue = parity_check_bitset[bit_index-offset];
+			if(gf2value != bitvalue) {std::cout << "bit " << bit_index << " is gf2value=" << gf2value << " bitvalue=" << bitvalue << "\n";}
+		}
 
 		// check it with H and H_prime
 		std::cout << "H_prime x c = 0? " << (IsZero(H_prime*code_word) ? "yes\n":"no\n");
@@ -502,6 +556,13 @@ int main(int argc, char const *argv[])
 		std::cout << "H x c (complete) = 0? " << (IsZero(H*complete_code_word) ? "yes\n":"no\n");
 
 	}
+
+	
+
+
+
+
+
 
 
 	return 0;
