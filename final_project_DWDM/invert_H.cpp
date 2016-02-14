@@ -8,6 +8,7 @@
 #include <random>
 #include <bitset>
 #include <array>
+#include "bit_io.h"
 
 
 using namespace NTL;
@@ -391,11 +392,12 @@ int main(int argc, char const *argv[])
 	// check if K = N_1*M
 	std::cout << "K created, is K=N_1*M? " << (IsZero(N_1*M + K) ? "yes\n":"no\n");
 
-	// TODO store to file
 	// transform K into a vector<bitset> and (later on..) store it to a file. Then it will be possible to read it, & each row 
 	// with the info word and sum modulo 2
 	if (K.NumCols() != (int)ALL_INFO_BIT || K.NumRows() != (int)IND_EQ) {std::cout << "error, K has not the expected size"; return 1;}
 	std::array< std::bitset<ALL_INFO_BIT>, IND_EQ > K_rows; // 2045
+
+	std::cout << "Size of K_rows " << sizeof(K_rows) << "\n";
 	for (int row_index = 0; row_index < K.NumRows(); row_index++) {
 		std::bitset<ALL_INFO_BIT> row;
 		for(int col_index = 0; col_index < K.NumCols(); col_index++) {
@@ -404,7 +406,30 @@ int main(int argc, char const *argv[])
 		K_rows[row_index] = row;
 	}
 
+	std::ofstream bin_out("K.bin", std::ios::out | std::ios::binary);
+	BitIo<ALL_INFO_BIT> bio;
+	for(int row_index = 0; row_index < K.NumRows(); row_index++) {
+		bio.push_back(K_rows[row_index]);
+	}
+	bin_out << bio;
+	bio.clear();
+	bin_out.close(); 
 
+	// once K is stored to file, check if it can be read correctly
+	bool correct = 1;
+	std::ifstream bin_in("K.bin", std::ios::binary);
+	BitIo<ALL_INFO_BIT> bio2;
+	bin_in >> bio2;
+	for(int row_index = 0; row_index < K.NumRows(); row_index++) {
+		std::bitset<ALL_INFO_BIT> row = bio2.pop_front();
+		for (int bit_index = 0; bit_index < (int)ALL_INFO_BIT; bit_index++) {
+			if(K_rows[row_index][bit_index] != row[bit_index]){
+				std::cout << "Row " << row_index << " row bit " << K_rows[row_index][bit_index]
+																	<< " bitset bit " << row[bit_index] << "\n";
+				correct = 0;}
+		}
+	}
+	std::cout << "Matrix K " << ((correct) ? "is":"is not") << " read correctly!\n";
 
 	// create Hprime
 	mat_GF2 H_prime;
@@ -445,7 +470,7 @@ int main(int argc, char const *argv[])
 	std::cout << "H_prime x G_prime = 0? " << (IsZero(H_prime*G_prime) ? "yes\n":"no\n");
 	std::cout << "H_fr x G_prime = 0? " << (IsZero(H_fr*G_prime) ? "yes\n":"no\n");
 
-	std::cout << "Perform some test: create a random vector, encode it, test on the parity check matrix and on the matrxi defined in the std\n";
+	std::cout << "Perform some test: create a random vector, encode it, test on the parity check matrix and on the matrix defined in the std\n";
 	for(int attempt = 0; attempt < 10; attempt ++) {
 
 		std::cout << "attempt " << attempt << "\n";
