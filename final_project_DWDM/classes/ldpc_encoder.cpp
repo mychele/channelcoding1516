@@ -16,7 +16,7 @@ int
 LdpcEncoder::setup() {
 	std::cout << "Setup\n";
 	// read K from K.bin
-	std::ifstream bin_file_in("K.bin", std::ios::binary);
+	std::ifstream bin_file_in("bin_files/K.bin", std::ios::binary);
 
 	// create BitIo object
 	BitIo<ALL_INFO_BIT> bit_io;
