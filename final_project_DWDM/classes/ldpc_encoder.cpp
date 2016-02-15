@@ -5,12 +5,8 @@
 
 LdpcEncoder::LdpcEncoder() {
 	// init private variables
-	EncodingMatrix m_encodingMatrix = EncodingMatrix();
+	m_encodingMatrix = EncodingMatrix(IND_EQ);
 }
-
-// LdpcEncoder::~LdpcEncoder() {
-// 	delete m_encodingMatrix;
-// }
 
 int
 LdpcEncoder::setup() {
@@ -27,7 +23,6 @@ LdpcEncoder::setup() {
 		bin_file_in >> bit_io;
 		bin_file_in.close();
 		// save the bit_io in m_encodingMatrix, splitted into rows
-		m_encodingMatrix.resize(2045);
 		for(int row_index = 0; row_index < (int)IND_EQ; ++row_index) { 
 			m_encodingMatrix[row_index] = bit_io.pop_front();
 		}

@@ -16,17 +16,35 @@
 typedef std::vector< std::bitset<ALL_INFO_BIT> > EncodingMatrix;
 typedef std::bitset< CODE_WORD > CodeWord;
 typedef std::bitset< ALL_INFO_BIT > InfoWord;
+typedef std::pair< int, int > line; // line.first = slope, line.second = c
+typedef std::pair< int, int > coordinates; // (a, b)
 
-const int slopes[7] = {1,2,3,4,5,6,7};
+static const int slopes[7] = {1,2,3,4,5,6,7};
 
-static int mapJtoK(int j) {
-	int init_zero_bit = INIT_ZERO_BIT;
+// map j to the k of the scrambled input vector
+inline static int mapJtoK(int j) {
    	int col_r = ALL_COLUMNS;
-	int q = j + init_zero_bit; // j + 172, with j from 1 to 30592
+	int q = j + (int)INIT_ZERO_BIT; // j + 172, with j from 1 to 30592
 	int r = q/col_r; // floor(q/293) since both q and 293 are positive int, the result is the floor
 	int col_index = col_r*r + col_r - 1 - q; // 293*r + 292 - q
 	return col_r*r + col_index;
 }
+
+// compute x in (sum_term+x)%div = remainder, with x > 0
+inline static int reverseModulo(int div, int sum_term, int remainder)
+{
+   	if(sum_term < remainder) {
+      	return remainder - sum_term;
+   	}
+  	else {
+  		int possible = div + remainder - sum_term;
+  		while (possible < 0) {
+  			possible += div;
+  		}
+  		return possible;
+  	}
+   
+} // TODO add check remainder < div
 
 #endif
 // LDPC_COMMON

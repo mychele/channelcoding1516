@@ -2,7 +2,7 @@
 # Makefile for Channel Coding 1516 final project - code only
 ###################################################
 
-test: invert_H encoder_test rng
+test: invert_H encoder_test rng node_test
 
 invert_H: ./test/invert_H.cpp
 	@clang++ -std=c++11 -c -I/Users/Michele/Dev/lib/ntl/include -I./classes $?
@@ -12,12 +12,20 @@ rng: ./test/rng_test.cpp
 	@clang++ -std=c++11 -o rng_test $?
 
 encoder: ./classes/ldpc_encoder.cpp
-	@clang++ -std=c++11 -c -I. $?
+	@clang++ -std=c++11 -c -I./classes $?
+
+variable_node: ./classes/variable_node.cpp
+	@clang++ -std=c++11 -c -I./classes $?
 
 encoder_test: ./test/encoder_test.cpp
 	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_encoder.cpp
 	@clang++ -std=c++11 -c -I./classes -g $?
 	@clang++ -std=c++11 -o encoder_test encoder_test.o ldpc_encoder.o
+
+node_test: ./test/node_test.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g $?
+	@clang++ -std=c++11 -o node_test node_test.o variable_node.o
 
 
 clean:
