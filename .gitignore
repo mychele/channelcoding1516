@@ -16,3 +16,5 @@ viterbi
 final_project_DWDM/invert_H
 
 *.o
+
+final_project_DWDM/encoder_test
