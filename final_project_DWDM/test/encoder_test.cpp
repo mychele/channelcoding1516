@@ -2,6 +2,7 @@
 #include <bitset>
 #include <iostream>
 #include <random>
+#include <chrono>
 
 
 int main(int argc, char const *argv[])
@@ -15,25 +16,36 @@ int main(int argc, char const *argv[])
 
 
 	// create LdpcEncoder object
+	std::chrono::time_point<std::chrono::system_clock> tic = std::chrono::system_clock::now(); 
 	LdpcEncoder encoder = LdpcEncoder();
 	std::cout << "LdpcEncoder created\n";
 	// import matrix
 	if(encoder.setup() == 0) {std::cout << "File opened and read successfully\n";}
 	else {std::cout << "Error in opening matrix file, abort\n"; return 2;}
+	std::cout << "Elapsed time to read K matrix " << (std::chrono::system_clock::now() - tic).count()/1000 << " ms\n";
 
 	// create a random information word, encode it and test it against the standard specifications
 	// repeat the procedure N times
-	int N = 100;
+	int N = 1000;
 	int tot_line_ok = 0;
-	for (int attempt = 0; attempt < N; attempt++) {
+	std::vector< std::chrono::microseconds > encoding_time;
+	std::chrono::time_point<std::chrono::system_clock> begin_encoding;
+	std::vector< std::chrono::microseconds > unif_generation_time;
+	std::chrono::time_point<std::chrono::system_clock> begin_info_generation;
+	for (int attempt = 0; attempt < N; ++attempt) {
 		// generate random uncoded word
+		begin_info_generation = std::chrono::system_clock::now();
 		InfoWord infoword;
-		for(int bit_index = 0; bit_index < (int)INFO_BIT; bit_index++) { 
+		for(int bit_index = 0; bit_index < (int)INFO_BIT; ++bit_index) { 
 			infoword[mapJtoK(bit_index)] = (int_uni_gen(m_rng)==1);
 		}
+		unif_generation_time.push_back(std::chrono::system_clock::now() - begin_info_generation);
+
 		// encode it
 		// std::cout << "Encode\n";
+		begin_encoding = std::chrono::system_clock::now();
 		CodeWord codeword = encoder.encode(infoword);
+		encoding_time.push_back(std::chrono::system_clock::now() - begin_encoding);
 
 		// std::cout << "Test\n";
 		// test the encoded word by filling the standard matrix and checking every line
@@ -116,7 +128,19 @@ int main(int argc, char const *argv[])
 
 	}
 
+	// print stats
 	std::cout << "Correct encoding in " << (double)tot_line_ok/N*100 << "% of the cases\n";
+    double total_duration_generation;
+    for(auto iter : unif_generation_time) {
+    	total_duration_generation += iter.count();
+    }
+    std::cout << "Average time to generate an infoword (30592 uniform_int (0,1) samples) " << total_duration_generation/(N * 1000) << " ms\n";
+
+    double total_duration_encoding;
+    for(auto iter : encoding_time) {
+    	total_duration_encoding += iter.count();
+    }
+    std::cout << "Average time to encode an infoword " << total_duration_encoding/(N * 1000) << " ms\n";
 
 
 
