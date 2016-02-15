@@ -52,11 +52,11 @@ int main(int argc, char const *argv[])
     std::mt19937 m_rng(rd()); // initialize our mersenne twister with a random seed
     std::uniform_int_distribution<int> int_uni_gen(0,1);
 
-    int info_r = INFO_ROWS;
-    int red_r = PC_ROWS;
-    int col_r = ALL_COLUMNS;
-    int info_bit = INFO_BIT;
-    int init_zero_bit = INIT_ZERO_BIT;
+    const int info_r = INFO_ROWS;
+    const int red_r = PC_ROWS;
+    const int col_r = ALL_COLUMNS;
+    const int info_bit = INFO_BIT;
+    const int init_zero_bit = INIT_ZERO_BIT;
 
 	// define H
 	int check_bit = red_r*col_r - 6;
@@ -82,6 +82,20 @@ int main(int argc, char const *argv[])
 		}
 	}  
 	std::cout << "H filled\n";
+
+	// save H to file
+	std::ofstream bin_H_out("H.bin", std::ios::out | std::ios::binary);
+	BitIo<(info_r + red_r)*col_r> bio_H;
+	for(int row_index = 0; row_index < H.NumRows(); row_index++) {
+		std::bitset<(info_r + red_r)*col_r> row;
+		for(int col_index = 0; col_index < H.NumCols(); col_index++) {
+			row[col_index] = (H[row_index][col_index]==1); // if the value is 1, it returns true, if the value is 0, it returns false
+		}
+		bio_H.push_back(row);
+	}
+	bin_H_out << bio_H;
+	bio_H.clear();
+	bin_H_out.close();
 
 	// this check controls if each row has 112 ones, and each column has 7 ones. It is disabled by default
 	bool checkNumOnes = 0;
@@ -526,7 +540,7 @@ int main(int argc, char const *argv[])
 		// encode using bitset
 		std::bitset<IND_EQ> parity_check_bitset;
 		for(int ar_index = 0; ar_index < (int)IND_EQ; ar_index++) {
-			parity_check_bitset[ar_index] = ((K_rows[ar_index]&info_word_bitset).count()%2==1);
+			parity_check_bitset[ar_index] = ((K_rows[ar_index]&info_word_bitset).count() & 1);
 		}
 
 		// check if this bitset is equal to the last 2045 bit of the codeword in mat_GF2
