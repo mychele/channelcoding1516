@@ -1,4 +1,5 @@
 #include "variable_node.h"
+#include "check_node.h"
 
 VariableNode::VariableNode(int a, int b) {
 	//TODO check intervals!
@@ -8,13 +9,14 @@ VariableNode::VariableNode(int a, int b) {
 	m_checkNodes = std::vector<line>((int)PC_ROWS);	// 7
 	for(int slope_index = 0; slope_index < (int)PC_ROWS; ++slope_index) {
 		int c = reverseModulo((int)ALL_COLUMNS, m_a*slopes[slope_index], m_b);
-		m_checkNodes[slope_index] = line(slopes[slope_index], c);
+		m_checkNodes[slope_index] = line(slope_index, c);
 	}
 }
 
 void
-VariableNode::updateLLR() {
-	
+VariableNode::updateLLR(std::vector<CheckNode> *checkNodeVector) {
+	// sum the LLR of the corresponding check nodes
+
 }
 
 void 
@@ -30,7 +32,7 @@ VariableNode::setCoordinates(int a, int b) {
 	m_checkNodes = std::vector<line>((int)PC_ROWS);	// 7
 	for(int slope_index = 0; slope_index < (int)PC_ROWS; ++slope_index) {
 		int c = reverseModulo((int)ALL_COLUMNS, m_a*slopes[slope_index], m_b);
-		m_checkNodes[slope_index] = line(slopes[slope_index], c);
+		m_checkNodes[slope_index] = line(slope_index, c);
 	}
 }
 

@@ -9,8 +9,8 @@ int main(int argc, char const *argv[])
 		for(int b = 0; b < 293; ++b) {
 			VariableNode node(a, b);
 			for(int i = 0; i < 7; ++i) { // a*slope +    c  		
-				if( ((a*node.getCheckNodes()[i].first  + node.getCheckNodes()[i].second)%293 != b) || node.getCheckNodes()[i].second < 0) {
-					std::cout << "a = " << a << " b = " << b << " s = " << node.getCheckNodes()[i].first << " c = " << node.getCheckNodes()[i].second << "\n";
+				if( ((a*slopes[node.getCheckNodes()[i].first]  + node.getCheckNodes()[i].second)%293 != b) || node.getCheckNodes()[i].second < 0) {
+					std::cout << "a = " << a << " b = " << b << " s = " << slopes[node.getCheckNodes()[i].first] << " c = " << node.getCheckNodes()[i].second << "\n";
 				}
 
 			}

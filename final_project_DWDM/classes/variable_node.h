@@ -1,6 +1,6 @@
 #include "ldpc_common.h"
+#include "check_node.h"
 #include <iostream>
-
 
 #ifndef VARIABLE_NODE
 #define VARIABLE_NODE
@@ -10,7 +10,7 @@ class VariableNode
 public:
 	VariableNode(int a, int b);
 
-	void updateLLR();
+	void updateLLR(std::vector<CheckNode> *checkNodeVector);
 
 	void setLLR(double llr);
 

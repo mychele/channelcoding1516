@@ -16,7 +16,7 @@
 typedef std::vector< std::bitset<ALL_INFO_BIT> > EncodingMatrix;
 typedef std::bitset< CODE_WORD > CodeWord;
 typedef std::bitset< ALL_INFO_BIT > InfoWord;
-typedef std::pair< int, int > line; // line.first = slope, line.second = c
+typedef std::pair< int, int > line; // line.first = slope_index, line.second = c
 typedef std::pair< int, int > coordinates; // (a, b)
 
 static const int slopes[7] = {1,2,3,4,5,6,7};
