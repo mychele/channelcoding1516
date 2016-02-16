@@ -1,7 +1,7 @@
-#include "ldpc_common.h"
-
 #ifndef LDPC_ENCODER
 #define LDPC_ENCODER
+
+#include "ldpc_common.h"
 
 class LdpcEncoder
 {
