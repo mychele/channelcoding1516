@@ -1,9 +1,11 @@
+#ifndef VARIABLE_NODE
+#define VARIABLE_NODE
+
 #include "ldpc_common.h"
 #include "check_node.h"
 #include <iostream>
 
-#ifndef VARIABLE_NODE
-#define VARIABLE_NODE
+class CheckNode;
 
 class VariableNode
 {
