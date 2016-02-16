@@ -1,11 +1,14 @@
 #include <bitset>
 #include <vector>
+#include <iostream>
+#include <cmath>
 
 #ifndef LDPC_COMMON
 #define LDPC_COMMON
 
 #define INFO_ROWS 105
 #define PC_ROWS 7
+#define ALL_ROWS 112
 #define ALL_COLUMNS 293
 #define INFO_BIT 30592
 #define INIT_ZERO_BIT 173
@@ -30,9 +33,8 @@ inline static int mapJtoK(int j) {
 	return col_r*r + col_index;
 }
 
-// compute x in (sum_term+x)%div = remainder, with x > 0
-inline static int reverseModulo(int div, int sum_term, int remainder)
-{
+// compute x in (sum_term+x)%div = remainder, with x >= 0
+inline static int reverseModulo(int div, int sum_term, int remainder) {
    	if(sum_term < remainder) {
       	return remainder - sum_term;
    	}
@@ -41,10 +43,18 @@ inline static int reverseModulo(int div, int sum_term, int remainder)
   		while (possible < 0) {
   			possible += div;
   		}
+  		if(possible == (int)ALL_COLUMNS) {possible = 0;}
   		return possible;
   	}
    
 } // TODO add check remainder < div
+
+// phiTilde function
+inline static double phiTilde(double x) {
+	if (x > 38) return 0;
+	if (x < 1.0e-317) return std::numeric_limits<double>::infinity();
+	return -std::log(std::tanh(0.5*x));
+}
 
 #endif
 // LDPC_COMMON
