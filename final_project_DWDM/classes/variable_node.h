@@ -10,6 +10,7 @@ class CheckNode;
 class VariableNode
 {
 public:
+	VariableNode();
 	VariableNode(int a, int b);
 
 	void updateLLR(std::vector<CheckNode> *checkNodeVector);

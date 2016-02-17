@@ -1,6 +1,10 @@
 #include "variable_node.h"
 #include "check_node.h"
 
+VariableNode::VariableNode() {
+
+}
+
 VariableNode::VariableNode(int a, int b) {
 	//TODO check intervals!
 	m_a = a;
@@ -19,7 +23,7 @@ VariableNode::updateLLR(std::vector<CheckNode> *checkNodeVector) {
 	// sum the LLR of the corresponding check nodes
 	double llr = 0;
 	for(int slope_index = 0; slope_index < (int)PC_ROWS; ++slope_index) {
-		if(m_checkNodes[slope_index].second > -1) {
+		if(m_checkNodes[slope_index].second > -1) { // check if it is a valid check node
 			llr += checkNodeVector->at(slope_index*(int)ALL_COLUMNS + m_checkNodes[slope_index].second).getLLR(); // since all check nodes (even redundant) are in checkNodeVector,
 																								// then the indices will be slope_index*293 + c
 		}
