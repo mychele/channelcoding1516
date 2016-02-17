@@ -14,6 +14,11 @@ rng: ./test/rng_test.cpp
 encoder: ./classes/ldpc_encoder.cpp
 	@clang++ -std=c++11 -c -I./classes $?
 
+decoder: ./classes/ldpc_decoder.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/check_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g $?
+
 variable_node: ./classes/variable_node.cpp
 	@clang++ -std=c++11 -c -I./classes $?
 
@@ -27,6 +32,13 @@ node_test: ./test/node_test.cpp
 	@clang++ -std=c++11 -c -I./classes -g ./classes/check_node.cpp
 	@clang++ -std=c++11 -c -I./classes -g $?
 	@clang++ -std=c++11 -o node_test node_test.o variable_node.o check_node.o
+
+decoder_test: ./test/decoder_test.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/check_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_decoder.cpp
+	@clang++ -std=c++11 -c -I./classes -g $?
+	@clang++ -std=c++11 -o decoder_test decoder_test.o ldpc_decoder.o variable_node.o check_node.o
  
 
 clean:
