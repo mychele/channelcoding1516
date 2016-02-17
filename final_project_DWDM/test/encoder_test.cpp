@@ -70,49 +70,16 @@ int main(int argc, char const *argv[])
 		// skip 3 zeros in the codeword, but not in all_bit
 		cw_bit_index += 3;
 		all_offset -= 3;
-		// copy 292 bit
-		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + (int)ALL_COLUMNS - 1; cw_bit_index++) { // skip bit 31057 in all_bits
-			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
-			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
-			std_M[row_index][col_index] = codeword[cw_bit_index];
+		for(int i = 1; i < 7; ++i) {
+			for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + (i)*(int)ALL_COLUMNS - 1; cw_bit_index++) { 
+			// skip bit 31057, 31350, 31643, 31936, 32229, 32522 in all_bits
+				int row_index = (cw_bit_index + all_offset)/((int)col_r); 
+				int col_index = (cw_bit_index + all_offset) % ((int)col_r);
+				std_M[row_index][col_index] = codeword[cw_bit_index];
+			}
+			all_offset += 1; 
 		}
-
-		all_offset += 1; 
-		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + 2*(int)ALL_COLUMNS - 1; cw_bit_index++) { // skip bit 31350 in all_bits
-			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
-			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
-			std_M[row_index][col_index] = codeword[cw_bit_index];
-		}
-
-		all_offset += 1;
-		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + 3*(int)ALL_COLUMNS - 1; cw_bit_index++) { // skip bit 31643 in all_bits
-			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
-			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
-			std_M[row_index][col_index] = codeword[cw_bit_index];
-		}
-
-		all_offset += 1;
-		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + 4*(int)ALL_COLUMNS - 1; cw_bit_index++) { // skip bit 31936 in all_bits
-			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
-			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
-			std_M[row_index][col_index] = codeword[cw_bit_index];
-		}
-
-		all_offset += 1; 
-		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + 5*(int)ALL_COLUMNS - 1; cw_bit_index++) { // skip bit 32229 in all_bits
-			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
-			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
-			std_M[row_index][col_index] = codeword[cw_bit_index];
-		}
-
-		all_offset += 1; 
-		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + 6*(int)ALL_COLUMNS - 1; cw_bit_index++) { // skip bit 32522 in all_bits
-			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
-			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
-			std_M[row_index][col_index] = codeword[cw_bit_index];
-		}
-
-		all_offset += 1; 
+		// copy the last 293 bit
 		for(; cw_bit_index + all_offset < (int)ALL_INFO_BIT + 7*(int)ALL_COLUMNS; cw_bit_index++) { // up to the last bit 
 			int row_index = (cw_bit_index + all_offset)/((int)col_r); 
 			int col_index = (cw_bit_index + all_offset) % ((int)col_r);
