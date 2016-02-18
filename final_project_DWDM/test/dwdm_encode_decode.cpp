@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
 	CodeWord codeword = encoder.encode(infoword);
 
 	// add noise
-	double ebn0 = 6.5;
+	double ebn0 = 7;
 	double sigma_w = 1/std::sqrt(2*std::pow(10, (ebn0/10)) * INFO_BIT/CODE_WORD);
 	std::cout << "sigma_w " << sigma_w << "\n";
 	std::vector<double> *received_signal = new std::vector<double>;
@@ -62,19 +62,22 @@ int main(int argc, char const *argv[])
 
 	// decode
 	LdpcDecoder decoder = LdpcDecoder();
-	std::vector<bool> decoded_symbols = decoder.decode(received_signal, sigma_w);
+	std::chrono::time_point<std::chrono::system_clock> begin = std::chrono::system_clock::now();
+	std::vector<bool> *decoded_symbols = decoder.decode(received_signal, std::pow(sigma_w, 2));
+	std::chrono::microseconds duration = std::chrono::system_clock::now() - begin;
+	std::cout << "Decoding time " << (double)duration.count()/1000 << " ms\n";
 
 	// check
 	int num_error = 0;
 	for(int i = 0; i < 120; i++) {
-		if(!(decoded_symbols[i] == infoword[i])) {
-			std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i) << "\n";
+		if(!(decoded_symbols->at(i) == infoword[i])) {
+			//std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i) << "\n";
 			num_error++;
 		}
 	}
 	for(int i = 293; i < 30592; i++) {
-		if(!(decoded_symbols[i] == (bool)infoword[i+173])) {
-			std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i+173] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i + 173) << "\n";
+		if(!(decoded_symbols->at(i) == (bool)infoword[i+173])) {
+			//std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i+173] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i + 173) << "\n";
 			num_error++;
 		}
 	}

@@ -12,10 +12,11 @@ int main(int argc, char const *argv[])
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
-    const int N = 100; // attempts
-    const int num_SNR = 5;
-    double ebn0_vec[num_SNR] = {1, 3, 5, 7, 9};
+    const int N = 1000; // attempts
+    const int num_SNR = 4;
+    double ebn0_vec[num_SNR] = {6.6, 6.8, 7, 7.2};
     double BER[N][num_SNR] = {{0}};
+    double decoding_time[N][num_SNR] = {{0}};
 
 	LdpcEncoder encoder = LdpcEncoder();
 	std::cout << "LdpcEncoder created\n";
@@ -78,41 +79,54 @@ int main(int argc, char const *argv[])
 
 			// decode
 	
-			std::vector<bool> decoded_symbols = decoder.decode(received_signal, sigma_w);
+			std::chrono::time_point<std::chrono::system_clock> begin = std::chrono::system_clock::now();
+			std::vector<bool> *decoded_symbols = decoder.decode(received_signal, std::pow(sigma_w,2));
+			std::chrono::microseconds duration = std::chrono::system_clock::now() - begin;
+			decoding_time[attempt][snr_ind] = duration.count();
+
 			// check
 			int num_error = 0;
 			for(int i = 0; i < 120; i++) {
-				if(!(decoded_symbols[i] == infoword[i])) {
+				if(!(decoded_symbols->at(i) == infoword[i])) {
 					//std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i) << "\n";
 					num_error++;
 				}
 			}
 			for(int i = 293; i < 30592; i++) {
-				if(!(decoded_symbols[i] == (bool)infoword[i+173])) {
+				if(!(decoded_symbols->at(i) == (bool)infoword[i+173])) {
 					//std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i+173] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i + 173) << "\n";
 					num_error++;
 				}
 			}
 
 			BER[attempt][snr_ind] = (double)num_error/INFO_BIT;
+			std::cout << "snr = " << ebn0_vec[snr_ind] << " BER = " << BER[attempt][snr_ind] << "\n";
 		}
     }
 
     // elaborate BER
     double mean_BER[num_SNR] = {0};
+    double mean_decoding[num_SNR] = {0};
     for (int snr_ind = 0; snr_ind < num_SNR; snr_ind++) {
     	double BER_sum = 0;
+    	double time_sum = 0;
     	for(int i = 0; i < N; ++i) {
     		BER_sum += BER[i][snr_ind];
+    		time_sum += decoding_time[i][snr_ind];
     		std::cout << BER[i][snr_ind] << " ";
     	}
     	std::cout << "\n";
     	mean_BER[snr_ind] = BER_sum/N;
+    	mean_decoding[snr_ind] = time_sum/N;
     }
 
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
     	std::cout << "eb/N0 " << ebn0_vec[snr_ind] << " mean BER " << mean_BER[snr_ind] << "\n";
+    }
+    for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
+    {
+    	std::cout << "decoding time (avg) for eb/N0 " << ebn0_vec[snr_ind] << " is " << mean_decoding[snr_ind]/1000 << "\n";
     }
 	return 0;
 }
