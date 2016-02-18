@@ -15,7 +15,9 @@
 #define ALL_INFO_BIT 30765
 #define CODE_WORD 32640
 #define IND_EQ 2045
+#define ALL_EQ 2051
 #define MAX_ATTEMPTS 30
+#define L_INFINITY 1000
 
 typedef std::vector< std::bitset<ALL_INFO_BIT> > EncodingMatrix;
 typedef std::bitset< CODE_WORD > CodeWord;
@@ -53,8 +55,8 @@ inline static int reverseModulo(int div, int sum_term, int remainder) {
 // phiTilde function
 inline static double phiTilde(double x) {
 	if (x > 38) return 0;
-	if (x < 1.0e-317) return std::numeric_limits<double>::infinity();
-	return -std::log(std::tanh(0.5*x));
+	if (x < 1.0e-200) return L_INFINITY;
+	return -std::log(std::tanh(x/2));
 }
 
 #endif
