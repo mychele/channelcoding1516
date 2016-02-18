@@ -72,13 +72,13 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 				sumPhiTilde += phiTilde(-llr_var);
 				prodSgn = - prodSgn;
 			} else { // llr_var is equal to 0. Then phiTilde(llr_var) -> inf, and also the sum is inf. Then phiTilde(inf) = 0
-				sumPhiTilde = std::numeric_limits<double>::infinity(); //just a flag now
+				sumPhiTilde = L_INFINITY; //just a flag now
 				break; // no need to compute other variable nodes
 			}
 		}
 
 		// compute the outgoing llr
-		if(isinf(sumPhiTilde)) {
+		if(sumPhiTilde == L_INFINITY) {
 			m_llrVector->at(row_index) = 0;
 		} else {
 			if(prodSgn > 0) {

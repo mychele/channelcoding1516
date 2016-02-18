@@ -12,10 +12,10 @@ LdpcDecoder::LdpcDecoder() {
 	}
 	// set the LLR to +inf for nodes [120, 292] and 293*105-1, ... 293*110-1. This will never be updated!
 	for(int node_index = ALL_COLUMNS - INIT_ZERO_BIT; node_index < ALL_COLUMNS; ++node_index) {
-		m_variableNodeVector->at(node_index).setLLR(std::numeric_limits<double>::infinity());
+		m_variableNodeVector->at(node_index).setLLR(L_INFINITY);
 	}					//105						//111
 	for(int row_index = INFO_ROWS; row_index < INFO_ROWS + PC_ROWS - 1; ++row_index) {
-		m_variableNodeVector->at(row_index*ALL_COLUMNS + ALL_COLUMNS - 1).setLLR(std::numeric_limits<double>::infinity());
+		m_variableNodeVector->at(row_index*ALL_COLUMNS + ALL_COLUMNS - 1).setLLR(L_INFINITY);
 	}
 
 	//initialize the m_checkNodeVector
