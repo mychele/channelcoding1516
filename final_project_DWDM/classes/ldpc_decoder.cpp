@@ -39,19 +39,17 @@ LdpcDecoder::~LdpcDecoder() {
 	delete m_checkNodeVector;
 }
 
-InfoWord
+std::vector<bool>
 LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w) {
 	// initialize variable nodes LLR with the channel LLR
+	initializeVariableNodes(receivedData, sigma_w);
+	// until the maximum number of attempt is reached
 	int attempt_index = 0;
 	do {
-	initializeVariableNodes(receivedData, sigma_w);
-	updateCheckNodes();
-	updateVariableNodes();
-	} while(!marginalizeCheckNodes() && attempt_index++ < MAX_ATTEMPTS);
-
-	std::cout << "Decoding completed" << "\n";
-
-	return 0;
+		updateCheckNodes();
+		updateVariableNodes();
+	} while(attempt_index++ < MAX_ATTEMPTS);
+	return marginalizeVariableNodes(receivedData, sigma_w);
 }
 
 const std::vector<VariableNode>* 
@@ -69,6 +67,7 @@ LdpcDecoder::initializeVariableNodes(std::vector<double> *receivedData, double s
 	// LLRg_>c = -2r_l/sigma_w^2
 	double sigma_w2 = std::pow(sigma_w, 2);
 	double alpha = -2/sigma_w2;
+
 	// LLR for [0, 120-1]
 	int rx_index = 0;
 	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
@@ -76,7 +75,7 @@ LdpcDecoder::initializeVariableNodes(std::vector<double> *receivedData, double s
 	}
 	rx_index = ALL_COLUMNS;
 	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
-		m_variableNodeVector->at(rx_index).setLLR((receivedData->at(rx_index))*alpha);
+		m_variableNodeVector->at(rx_index).setLLR((receivedData->at(rx_index))*alpha);	
 	} // up to 30765 - 1
 
 	for(int pc_row_index = 1; pc_row_index < PC_ROWS; ++pc_row_index) {
@@ -111,7 +110,7 @@ LdpcDecoder::updateVariableNodes() {
 		}
 		rx_index++; 
 	}
-	// copy the last 293 bit
+	// update the last 293 bit
 	for(; rx_index < ALL_INFO_BIT + PC_ROWS*ALL_COLUMNS; rx_index++) { // up to the last bit 
 		m_variableNodeVector->at(rx_index).updateLLR(m_checkNodeVector);
 	}
@@ -135,36 +134,45 @@ LdpcDecoder::updateCheckNodes() {
 
 bool 
 LdpcDecoder::marginalizeCheckNodes() {
-	int block_index = 0;
-	bool all_zero = 1;
-	for(int slope_index = 0; slope_index < PC_ROWS - 1; ++slope_index) {
-		block_index = slope_index*ALL_COLUMNS;
-		for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
-			if(m_checkNodeVector->at(block_index + c).getLLR() < 0) {all_zero = 0; return 0;}
-		}
-	}
-	block_index = (PC_ROWS - 1)*ALL_COLUMNS;
-	for(int c = 0; c < ALL_COLUMNS; ++c) {
-		if(m_checkNodeVector->at(block_index + c).getLLR() < 0) {all_zero = 0; return 0;}
-	}
-	return all_zero;
+	// int block_index = 0;
+	// bool all_zero = 1;
+	// for(int slope_index = 0; slope_index < PC_ROWS - 1; ++slope_index) {
+	// 	block_index = slope_index*ALL_COLUMNS;
+	// 	for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
+	// 		std::cout << "CheckNode " << block_index + c << " LLR " << m_checkNodeVector->at(block_index + c).getLLR() << "\n";
+	// 		if(m_checkNodeVector->at(block_index + c).getLLR() < 0) {
+	// 			all_zero = 0; 
+	// 		}
+	// 	}
+	// }
+	// block_index = (PC_ROWS - 1)*ALL_COLUMNS;
+	// for(int c = 0; c < ALL_COLUMNS; ++c) {
+	// 	std::cout << "CheckNode " << block_index + c << " LLR " << m_checkNodeVector->at(block_index + c).getLLR() << "\n";
+	// 	if(m_checkNodeVector->at(block_index + c).getLLR() < 0) {
+	// 		all_zero = 0; 
+	// 	}
+	// }
+	return 0;
 }
 
 std::vector<bool> 
 LdpcDecoder::marginalizeVariableNodes(std::vector<double> *receivedData, double sigma_w) {
+	bool verb = 0;
 	std::vector<bool> decisionVector;
-	decisionVector.resize(INFO_BIT);
+	decisionVector.resize(INFO_BIT, 0);
 	double alpha = -2/std::pow(sigma_w, 2);
 	int rx_index = 0;
 	bool u = 0;
 	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
+		if(verb) {std::cout << "index " << rx_index << " marg value " << m_variableNodeVector->at(rx_index).getLLR() + receivedData->at(rx_index)*alpha << " receivedData " << receivedData->at(rx_index) << "\n";}
 		u = (m_variableNodeVector->at(rx_index).getLLR() + receivedData->at(rx_index)*alpha > 0) ? 0 : 1;
-		decisionVector.push_back(u);
+		decisionVector[rx_index] = u;
 	}
 	rx_index = ALL_COLUMNS;
 	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
+		if(verb) {std::cout << "index " << rx_index << " marg value " << m_variableNodeVector->at(rx_index).getLLR() + receivedData->at(rx_index)*alpha << " receivedData " << receivedData->at(rx_index) << "\n";}
 		u = (m_variableNodeVector->at(rx_index).getLLR() + receivedData->at(rx_index)*alpha > 0) ? 0 : 1;
-		decisionVector.push_back(u);
+		decisionVector[rx_index - INIT_ZERO_BIT] = u;
 	} // up to 30765 - 1
 	return decisionVector;
 }

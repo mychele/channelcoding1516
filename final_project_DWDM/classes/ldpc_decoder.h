@@ -12,7 +12,7 @@ public:
 	LdpcDecoder();
 	~LdpcDecoder();
 
-	InfoWord decode(std::vector<double> *receivedData, double sigma_w);
+	std::vector<bool> decode(std::vector<double> *receivedData, double sigma_w);
 
 	// this is not a good practice, but it is useful for testing purposes
 	// TODO remove once testing is done
