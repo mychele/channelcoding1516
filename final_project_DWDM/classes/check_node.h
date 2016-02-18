@@ -4,6 +4,8 @@
 #include "ldpc_common.h"
 #include "variable_node.h"
 #include <vector>
+#include <array>
+
 
 class VariableNode;
 
@@ -12,6 +14,7 @@ class CheckNode
 public:
 	CheckNode();
 	CheckNode(line lineEq);
+	~CheckNode();
 
 	void updateLLR(std::vector<VariableNode> *variableNodeVector);
 
@@ -38,7 +41,8 @@ public:
 	
 private:
 	line m_line; // if m_line has both entries negative, the check node is one of the invalid ones
-	// TODO consider if it makes any difference to precompute the variable nodes and store them in an array or compute them on the fly
+	std::vector<int> m_variableNodeColumnIndex;
+
 	/**
 	 * Vector that stores all the LLR, one entry per outgoing branch
 	 */
