@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
 	
 			std::chrono::time_point<std::chrono::system_clock> begin = std::chrono::system_clock::now();
 			std::vector<bool> *decoded_symbols = decoder.decode(received_signal, std::pow(sigma_w,2));
-			std::chrono::microseconds duration = std::chrono::system_clock::now() - begin;
+			std::chrono::nanoseconds duration = std::chrono::system_clock::now() - begin;
 			decoding_time[attempt][snr_ind] = duration.count();
 
 			// check
@@ -128,7 +128,7 @@ int main(int argc, char const *argv[])
     }
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
-    	std::cout << "decoding time (avg) for eb/N0 " << ebn0_vec[snr_ind] << " is " << mean_decoding[snr_ind]/1000 << "\n";
+    	std::cout << "decoding time (avg) for eb/N0 " << ebn0_vec[snr_ind] << " is " << mean_decoding[snr_ind]/1e6 << "ms\n";
     }
 	return 0;
 }

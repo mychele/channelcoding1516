@@ -1,5 +1,6 @@
 #include "ldpc_decoder.h"
 #include <vector>
+#include <algorithm>
 
 LdpcDecoder::LdpcDecoder() {
 	// initialize the m_variableNodeVector
