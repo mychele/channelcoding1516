@@ -84,14 +84,14 @@ int main(int argc, char const *argv[])
 	// init the LLR of the blocks for (10,20) -> 0+10, 293+0, 293*2+283, 293*3+273, 293*4+263, 293*5 + 253, 293*6+243
 	checkNodesVector->at(10).setLLR(3);
 	checkNodesVector->at(293).setLLR(3);
-	checkNodesVector->at(293*2+283).setLLR(4);
-	checkNodesVector->at(293*3+273).setLLR(-3);
-	checkNodesVector->at(293*4+263).setLLR(3);
+	checkNodesVector->at(293*2+283).setLLR(std::numeric_limits<double>::infinity());
+	checkNodesVector->at(293*3+273).setLLR(-std::numeric_limits<double>::infinity());
+	checkNodesVector->at(293*4+263).setLLR(-std::numeric_limits<double>::infinity());
 	checkNodesVector->at(293*5+253).setLLR(3);
 	checkNodesVector->at(293*6+243).setLLR(0);
 
 	node.updateLLR(checkNodesVector);
-	std::cout << "LLR = " << node.getLLR() << " expecting 13 " << "\n";
+	std::cout << "LLR = " << node.getLLR() << " expecting -inf " << "\n";
 
 	delete checkNodesVector;
 
@@ -104,7 +104,7 @@ int main(int argc, char const *argv[])
 		variableNodeVector->at(node_index).setCoordinates(node_index/(int)ALL_COLUMNS, node_index%(int)ALL_COLUMNS);
 	}
 
-	int line_index = 0;
+	int line_index = 2;
 	int node_c = 0;
 	CheckNode check_node(line(node_c,line_index));
 	double all_llr = 5;
@@ -142,6 +142,6 @@ int main(int argc, char const *argv[])
 	exp_llr = (all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
 	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLR() <<"\n";
-	
+
 	return 0;
 }

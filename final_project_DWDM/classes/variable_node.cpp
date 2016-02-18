@@ -22,13 +22,33 @@ void
 VariableNode::updateLLR(std::vector<CheckNode> *checkNodeVector) {
 	// sum the LLR of the corresponding check nodes
 	double llr = 0;
+	int num_llr_plus_inf = 0;
+	int num_llr_minus_inf = 0;
 	for(int slope_index = 0; slope_index < (int)PC_ROWS; ++slope_index) {
 		if(m_checkNodes[slope_index].second > -1) { // check if it is a valid check node
-			llr += checkNodeVector->at(slope_index*(int)ALL_COLUMNS + m_checkNodes[slope_index].second).getLLR(); // since all check nodes (even redundant) are in checkNodeVector,
-																								// then the indices will be slope_index*293 + c
+			// since all check nodes (even redundant) are in checkNodeVector, then the indices will be slope_index*293 + c
+			double incoming_llr = checkNodeVector->at(slope_index*(int)ALL_COLUMNS + m_checkNodes[slope_index].second).getLLR();
+			if(isinf(incoming_llr)) {
+				if(incoming_llr > 0) {
+					num_llr_plus_inf++;
+				} else {
+					num_llr_minus_inf++;
+				}
+			}
+			llr += incoming_llr;
 		}
 	}
-	m_llr = llr;
+	if(isnan(llr)) {
+		if(num_llr_plus_inf > num_llr_minus_inf) {
+			m_llr = std::numeric_limits<double>::infinity();
+		} else if (num_llr_plus_inf < num_llr_minus_inf) {
+			m_llr = - std::numeric_limits<double>::infinity();
+		} else {
+			m_llr = 0;
+		}
+	} else {
+		m_llr = llr;
+	}
 }
 
 void 
