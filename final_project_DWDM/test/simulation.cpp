@@ -3,6 +3,8 @@
 #include <bitset>
 #include <iostream>
 #include <random>
+#include <chrono>
+
 
 int main(int argc, char const *argv[])
 {
