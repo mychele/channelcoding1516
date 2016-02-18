@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
 	}
 
 	// ----------------------------------------- test phiTilde function for very small values -------------------------------------
-	for(int i = 280; i < 320; i++) {
+	for(int i = 300; i < 320; i++) {
 		std::cout << "10^{-" << i << "} = " << std::pow(10, -i) << " phiTilde = " << phiTilde(std::pow(10, -i)) << "\n";
 	}
 
@@ -71,27 +71,27 @@ int main(int argc, char const *argv[])
 	// create checkNodesVector
 	std::vector<CheckNode> *checkNodesVector = new std::vector<CheckNode>;
 	checkNodesVector->resize(2051);
-	for(int slope_index = 0; slope_index < (int)PC_ROWS - 1; ++slope_index) { // fill the first six blocks
+	for(int slope_index = 0; slope_index < (int)PC_ROWS - 1; ++slope_index) { // init the first six blocks
 		for(int c = 0; c < (int)ALL_COLUMNS - 1; ++c) { // with 292 valid nodes each
 			checkNodesVector->at(slope_index*(int)ALL_COLUMNS + c).setLine(line(slope_index, c));
 		}
 	}
-	// fill the last block
+	// init the last block
 	for(int c = 0; c < (int)ALL_COLUMNS; ++c) { // with 293 valid nodes 
 		checkNodesVector->at(((int)PC_ROWS - 1)*(int)ALL_COLUMNS + c).setLine(line((int)PC_ROWS - 1, c));
 	}
 
-	// init the LLR of the blocks for (10,20) -> 0+10, 293+0, 293*2+283, 293*3+273, 293*4+263, 293*5 + 253, 293*6+243
-	checkNodesVector->at(10).setLLR(3);
-	checkNodesVector->at(293).setLLR(3);
-	checkNodesVector->at(293*2+283).setLLR(std::numeric_limits<double>::infinity());
-	checkNodesVector->at(293*3+273).setLLR(-std::numeric_limits<double>::infinity());
-	checkNodesVector->at(293*4+263).setLLR(-std::numeric_limits<double>::infinity());
-	checkNodesVector->at(293*5+253).setLLR(3);
-	checkNodesVector->at(293*6+243).setLLR(0);
+	// fill the LLR of the blocks for (10,20) -> 0+10, 293+0, 293*2+283, 293*3+273, 293*4+263, 293*5 + 253, 293*6+243, each at row 10
+	checkNodesVector->at(10).setLLRat(3, 10);
+	checkNodesVector->at(293).setLLRat(3, 10);
+	checkNodesVector->at(293*2+283).setLLRat(2, 10);
+	checkNodesVector->at(293*3+273).setLLRat(-4, 10);
+	checkNodesVector->at(293*4+263).setLLRat(-1, 10);
+	checkNodesVector->at(293*5+253).setLLRat(3, 10);
+	checkNodesVector->at(293*6+243).setLLRat(0, 10);
 
 	node.updateLLR(checkNodesVector);
-	std::cout << "LLR = " << node.getLLR() << " expecting -inf " << "\n";
+	std::cout << "LLR = " << node.getLLR() << " expecting 6 " << "\n";
 
 	delete checkNodesVector;
 
@@ -99,49 +99,62 @@ int main(int argc, char const *argv[])
 	// Create VariableNode vector
 	std::vector<VariableNode> *variableNodeVector = new std::vector<VariableNode>;
 	variableNodeVector->resize(ALL_COLUMNS*ALL_ROWS);
+	// Init its coordinates
 	for(int node_index = 0; node_index < variableNodeVector->size(); ++node_index) {
 															// row 						// column
 		variableNodeVector->at(node_index).setCoordinates(node_index/(int)ALL_COLUMNS, node_index%(int)ALL_COLUMNS);
 	}
 
-	int line_index = 2;
-	int node_c = 0;
-	CheckNode check_node(line(node_c,line_index));
-	double all_llr = 5;
+	int line_index = 4;
+	int node_c = 29;
+	CheckNode check_node(line(line_index,node_c));
+	double all_llr = -10;
 	// init LLR on the corresponding nodes
 	for(int a = 0; a < (int)ALL_ROWS; ++a) {
 		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLR(all_llr);
 	}
 	double phiTildeNode = phiTilde(std::abs(all_llr));
-	double exp_llr = phiTilde(112*phiTildeNode);
+	double exp_llr = (all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
-	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLR() <<"\n";
+	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
 
 	variableNodeVector->at(110*ALL_COLUMNS + (slopes[line_index]*110 + node_c)%ALL_COLUMNS).setLLR(-all_llr);
 	phiTildeNode = phiTilde(std::abs(all_llr));
-	exp_llr = -phiTilde(112*phiTildeNode);
+	exp_llr = (all_llr > 0) ? -phiTilde(111*phiTildeNode) : phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
-	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLR() <<"\n";
+	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
 
 	variableNodeVector->at(107*ALL_COLUMNS + (slopes[line_index]*107 + node_c)%ALL_COLUMNS).setLLR(-all_llr);
 	phiTildeNode = phiTilde(std::abs(all_llr));
-	exp_llr = phiTilde(112*phiTildeNode);
+	exp_llr = (all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
-	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLR() <<"\n";
+	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << -exp_llr << " computed " << check_node.getLLRat(107) <<"\n";
+
+
 
 	// set one LLR to 0 -> also the resulting llr should be 0
 	variableNodeVector->at(106*ALL_COLUMNS + (slopes[line_index]*106 + node_c)%ALL_COLUMNS).setLLR(0);
 	phiTildeNode = phiTilde(std::abs(all_llr));
-	exp_llr = phiTilde(112*phiTildeNode);
+	exp_llr = (all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
-	std::cout << "Expecting " << 0 << " computed " << check_node.getLLR() <<"\n";
+	std::cout << "Expecting " << 0 << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << 0 << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << 0 << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 106, expecting " << exp_llr << " computed " << check_node.getLLRat(106) <<"\n";
+
 
 	// set one LLR to infinity -> the result is given only by the other ones
 	variableNodeVector->at(106*ALL_COLUMNS + (slopes[line_index]*106 + node_c)%ALL_COLUMNS).setLLR(std::numeric_limits<double>::infinity());
 	phiTildeNode = phiTilde(std::abs(all_llr));
-	exp_llr = (all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
+	exp_llr = phiTilde(110*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
-	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLR() <<"\n";
+	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 106, expecting " << ((all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode)) << " computed " << check_node.getLLRat(106) <<"\n";
 
 	return 0;
 }
