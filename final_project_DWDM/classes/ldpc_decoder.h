@@ -12,7 +12,7 @@ public:
 	LdpcDecoder();
 	~LdpcDecoder();
 
-	std::vector<bool> decode(std::vector<double> *receivedData, double sigma_w);
+	std::vector<bool>* decode(std::vector<double> *receivedData, double sigma_w);
 
 	// this is not a good practice, but it is useful for testing purposes
 	// TODO remove once testing is done
@@ -22,12 +22,15 @@ public:
 private:
 	std::vector<VariableNode> *m_variableNodeVector;
 	std::vector<CheckNode> *m_checkNodeVector;
+	std::vector<double> *m_receivedLLR;
+	double m_sigmaw2;
+	double m_alpha; //-2/sigma_w2
 
-	void initializeVariableNodes(std::vector<double> *receivedData, double sigma_w);
-	inline void updateVariableNodes();
-	inline void updateCheckNodes();
+	inline void initializeVariableNodes();
+	void updateVariableNodes();
+	void updateCheckNodes();
 	bool marginalizeCheckNodes();
-	std::vector<bool> marginalizeVariableNodes(std::vector<double> *receivedData, double sigma_w);
+	inline std::vector<bool>* marginalizeVariableNodes();
 	
 };
 
