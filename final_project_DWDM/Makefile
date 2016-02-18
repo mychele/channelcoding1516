@@ -31,7 +31,7 @@ node_test: ./test/node_test.cpp
 	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
 	@clang++ -std=c++11 -c -I./classes -g ./classes/check_node.cpp
 	@clang++ -std=c++11 -c -I./classes -g $?
-	@clang++ -std=c++11 -o node_test node_test.o variable_node.o check_node.o
+	@clang++ -std=c++11 -o node_test variable_node.o check_node.o node_test.o
 
 decoder_test: ./test/decoder_test.cpp
 	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
@@ -39,7 +39,24 @@ decoder_test: ./test/decoder_test.cpp
 	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_decoder.cpp
 	@clang++ -std=c++11 -c -I./classes -g $?
 	@clang++ -std=c++11 -o decoder_test decoder_test.o ldpc_decoder.o variable_node.o check_node.o
+
+
+dwdm: ./test/dwdm_encode_decode.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/check_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_decoder.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_encoder.cpp
+	@clang++ -std=c++11 -c -I./classes -g $?
+	@clang++ -std=c++11 -o dwdm_encode_decode dwdm_encode_decode.o ldpc_decoder.o variable_node.o check_node.o ldpc_encoder.o
+
+sim: ./test/simulation.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/variable_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/check_node.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_decoder.cpp
+	@clang++ -std=c++11 -c -I./classes -g ./classes/ldpc_encoder.cpp
+	@clang++ -std=c++11 -c -I./classes -g $?
+	@clang++ -std=c++11 -o simulation simulation.o ldpc_decoder.o variable_node.o check_node.o ldpc_encoder.o
  
 
 clean:
-	rm invert_H encoder_test rng_test *.o
+	rm invert_H encoder_test rng_test dwdm_encode_decode simulation decoder_test node_test *.o
