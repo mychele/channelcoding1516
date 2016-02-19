@@ -75,8 +75,8 @@ int main(int argc, char const *argv[])
 			num_error++;
 		}
 	}
-	for(int i = 293; i < 30592; i++) {
-		if(!(decoded_symbols->at(i) == (bool)infoword[i+173])) {
+	for(int i = 293; i < 30765; i++) {
+		if(!(decoded_symbols->at(i) == (bool)infoword[i])) {
 			//std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i+173] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i + 173) << "\n";
 			num_error++;
 		}

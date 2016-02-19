@@ -14,11 +14,12 @@ int main(int argc, char const *argv[])
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
-    const int N = 1000; // attempts
-    const int num_SNR = 4;
-    double ebn0_vec[num_SNR] = {6.6, 6.8, 7, 7.2};
+    const int N = 50; // attempts
+    const int num_SNR = 2;
+    double ebn0_vec[num_SNR] = {6.6, 7.2};
     double BER[N][num_SNR] = {{0}};
     double decoding_time[N][num_SNR] = {{0}};
+    std::vector<double> decoding_time_nocw;
 
 	LdpcEncoder encoder = LdpcEncoder();
 	std::cout << "LdpcEncoder created\n";
@@ -94,8 +95,8 @@ int main(int argc, char const *argv[])
 					num_error++;
 				}
 			}
-			for(int i = 293; i < 30592; i++) {
-				if(!(decoded_symbols->at(i) == (bool)infoword[i+173])) {
+			for(int i = 293; i < 30765; i++) {
+				if(!(decoded_symbols->at(i) == (bool)infoword[i])) {
 					//std::cout << "Index " << i << " " << decoded_symbols[i] << " while info_bit " << infoword[i+173] << " codeword " << codeword[i] << " received_signal " << received_signal->at(i + 173) << "\n";
 					num_error++;
 				}
@@ -103,6 +104,9 @@ int main(int argc, char const *argv[])
 
 			BER[attempt][snr_ind] = (double)num_error/INFO_BIT;
 			std::cout << "snr = " << ebn0_vec[snr_ind] << " BER = " << BER[attempt][snr_ind] << "\n";
+			if(num_error > 0) {
+				decoding_time_nocw.push_back(duration.count());
+			}
 		}
     }
 
@@ -122,6 +126,12 @@ int main(int argc, char const *argv[])
     	mean_decoding[snr_ind] = time_sum/N;
     }
 
+    double mean_nocw = 0;
+    for(int i = 0; i < decoding_time_nocw.size(); ++i) {
+    	mean_nocw += decoding_time_nocw[i];
+    }
+    mean_nocw = mean_nocw/decoding_time_nocw.size();
+
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
     	std::cout << "eb/N0 " << ebn0_vec[snr_ind] << " mean BER " << mean_BER[snr_ind] << "\n";
@@ -130,5 +140,7 @@ int main(int argc, char const *argv[])
     {
     	std::cout << "decoding time (avg) for eb/N0 " << ebn0_vec[snr_ind] << " is " << mean_decoding[snr_ind]/1e6 << "ms\n";
     }
+
+    std::cout << "in case cw is not found " << mean_nocw/1e6 << "ms\n";
 	return 0;
 }

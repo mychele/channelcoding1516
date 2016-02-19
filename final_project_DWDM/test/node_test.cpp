@@ -105,8 +105,8 @@ int main(int argc, char const *argv[])
 		variableNodeVector->at(node_index).setCoordinates(node_index/(int)ALL_COLUMNS, node_index%(int)ALL_COLUMNS);
 	}
 
-	int line_index = 4;
-	int node_c = 29;
+	int line_index = 2;
+	int node_c = 3;
 	CheckNode check_node(line(line_index,node_c));
 	double all_llr = -10;
 	// init LLR on the corresponding nodes
@@ -156,5 +156,14 @@ int main(int argc, char const *argv[])
 	std::cout << "For node 107, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
 	std::cout << "For node 106, expecting " << ((all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode)) << " computed " << check_node.getLLRat(106) <<"\n";
 
+
+	for(int a = 0; a < (int)ALL_ROWS; ++a) {
+		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLR(L_INFINITY);
+	}
+	phiTildeNode = phiTilde(std::abs(L_INFINITY));
+	exp_llr = (L_INFINITY > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
+	check_node.updateLLR(variableNodeVector);
+	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
+	
 	return 0;
 }
