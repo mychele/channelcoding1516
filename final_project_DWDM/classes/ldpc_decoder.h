@@ -23,13 +23,14 @@ private:
 	std::vector<VariableNode> *m_variableNodeVector;
 	std::vector<CheckNode> *m_checkNodeVector;
 	std::vector<double> *m_receivedLLR;
+	std::vector<bool> *m_decisionVector;
 	double m_sigmaw2;
 	double m_alpha; //-2/sigma_w2
 
 	inline void initializeVariableNodes();
 	void updateVariableNodes();
 	void updateCheckNodes();
-	bool marginalizeCheckNodes();
+	bool isCodewordFound();
 	inline std::vector<bool>* marginalizeVariableNodes();
 	
 };

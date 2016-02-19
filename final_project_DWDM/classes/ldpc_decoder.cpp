@@ -30,6 +30,8 @@ LdpcDecoder::LdpcDecoder() {
 	for(int c = 0; c < (int)ALL_COLUMNS; ++c) { // with 293 valid nodes 
 		m_checkNodeVector->at(((int)PC_ROWS - 1)*(int)ALL_COLUMNS + c).setLine(line((int)PC_ROWS - 1, c));
 	}
+
+	m_decisionVector = new std::vector<bool>(ALL_BIT, 0);
 }
 
 LdpcDecoder::~LdpcDecoder() {
@@ -37,8 +39,10 @@ LdpcDecoder::~LdpcDecoder() {
 	delete m_variableNodeVector;
 	delete m_checkNodeVector;
 	delete m_receivedLLR;
+	delete m_decisionVector;
 }
 
+// received data must be ALL_BIT bits
 std::vector<bool>*
 LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w2) {
 	// assign m_sigmaw2
@@ -55,8 +59,8 @@ LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w2) {
 	do {
 		updateCheckNodes();
 		updateVariableNodes();
-	} while(attempt_index++ < MAX_ATTEMPTS);
-	return marginalizeVariableNodes();
+	} while(attempt_index++ < MAX_ATTEMPTS && !isCodewordFound());
+	return m_decisionVector;
 }
 
 const std::vector<VariableNode>* 
@@ -139,26 +143,46 @@ LdpcDecoder::updateCheckNodes() {
 }
 
 bool 
-LdpcDecoder::marginalizeCheckNodes() {
-	// int block_index = 0;
-	// bool all_zero = 1;
-	// for(int slope_index = 0; slope_index < PC_ROWS - 1; ++slope_index) {
-	// 	block_index = slope_index*ALL_COLUMNS;
-	// 	for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
-	// 		std::cout << "CheckNode " << block_index + c << " LLR " << m_checkNodeVector->at(block_index + c).getLLR() << "\n";
-	// 		if(m_checkNodeVector->at(block_index + c).getLLR() < 0) {
-	// 			all_zero = 0; 
-	// 		}
-	// 	}
-	// }
-	// block_index = (PC_ROWS - 1)*ALL_COLUMNS;
-	// for(int c = 0; c < ALL_COLUMNS; ++c) {
-	// 	std::cout << "CheckNode " << block_index + c << " LLR " << m_checkNodeVector->at(block_index + c).getLLR() << "\n";
-	// 	if(m_checkNodeVector->at(block_index + c).getLLR() < 0) {
-	// 		all_zero = 0; 
-	// 	}
-	// }
-	return 0;
+LdpcDecoder::isCodewordFound() {
+	// marginalize, then cycle on the 2045 checkNodes and check if each has an even number of 1
+	int rx_index = 0;
+	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
+		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+	}
+	rx_index = ALL_COLUMNS;
+	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
+		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+	} // up to 30765 - 1
+
+	for(int pc_row_index = 1; pc_row_index < PC_ROWS; ++pc_row_index) {
+		for(; rx_index < ALL_INFO_BIT + pc_row_index*ALL_COLUMNS - 1; ++rx_index) { 
+		// skip bit 31057, 31350, 31643, 31936, 32229, 32522, since they must be left at +inf
+			m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+		}
+		rx_index++; 
+	}
+	// update the last 293 bit
+	for(; rx_index < ALL_INFO_BIT + ALL_EQ; rx_index++) { // up to the last bit 
+		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+	}
+
+	// cycle on the 2045 independet check nodes
+	int block_index = 0;
+	int six_rows = (PC_ROWS - 1)*ALL_COLUMNS;
+	int numNonEvenCheckNodes = 0;
+	for(; block_index < six_rows; block_index+=ALL_COLUMNS) {
+		for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
+			if(m_checkNodeVector->at(block_index+c).areOnesOdd(m_decisionVector)) {
+				++numNonEvenCheckNodes;
+			}
+		}
+	}
+	for(int c = 0; c < ALL_COLUMNS; ++c) {
+		if(m_checkNodeVector->at(block_index+c).areOnesOdd(m_decisionVector)) {
+				++numNonEvenCheckNodes;
+		}
+	}
+	return ((numNonEvenCheckNodes > 0) ? 0 : 1);
 }
 
 std::vector<bool>*
