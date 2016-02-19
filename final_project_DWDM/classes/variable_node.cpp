@@ -22,10 +22,12 @@ void
 VariableNode::updateLLR(std::vector<CheckNode> *checkNodeVector) {
 	// sum the LLR of the corresponding check nodes
 	m_llr = 0;
-	for(int slope_index = 0; slope_index < (int)PC_ROWS; ++slope_index) {
+	int block_index = 0;
+	int slope_index = 0; // at most 2051 check nodes
+	for(; block_index < IND_EQ; block_index += ALL_COLUMNS) {
 		if(m_checkNodes[slope_index].second > -1) { // check if it is a valid check node
 			// since all check nodes (even redundant) are in checkNodeVector, then the indices will be slope_index*293 + c
-			m_llr += checkNodeVector->at(slope_index*(int)ALL_COLUMNS + m_checkNodes[slope_index].second).getLLRat(m_a);
+			m_llr += checkNodeVector->at(block_index + m_checkNodes[slope_index++].second).getLLRat(m_a);
 		}
 	}
 }
