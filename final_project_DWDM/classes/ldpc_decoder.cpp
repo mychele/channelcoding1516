@@ -1,6 +1,7 @@
 #include "ldpc_decoder.h"
 #include <vector>
 #include <algorithm>
+#include <climits>
 
 LdpcDecoder::LdpcDecoder() {
 	// initialize the m_variableNodeVector
@@ -12,10 +13,10 @@ LdpcDecoder::LdpcDecoder() {
 	}
 	// set the LLR to +inf for nodes [120, 292] and 293*105-1, ... 293*110-1. This will never be updated!
 	for(int node_index = ALL_COLUMNS - INIT_ZERO_BIT; node_index < ALL_COLUMNS; ++node_index) {
-		m_variableNodeVector->at(node_index).setLLR(L_INFINITY);
+		m_variableNodeVector->at(node_index).setLLR(std::numeric_limits<double>::infinity());
 	}					//105						//111
 	for(int row_index = INFO_ROWS; row_index < INFO_ROWS + PC_ROWS - 1; ++row_index) {
-		m_variableNodeVector->at(row_index*ALL_COLUMNS + ALL_COLUMNS - 1).setLLR(L_INFINITY);
+		m_variableNodeVector->at(row_index*ALL_COLUMNS + ALL_COLUMNS - 1).setLLR(std::numeric_limits<double>::infinity());
 	}
 
 	//initialize the m_checkNodeVector
@@ -147,23 +148,23 @@ LdpcDecoder::isCodewordFound() {
 	// marginalize, then cycle on the 2045 checkNodes and check if each has an even number of 1
 	int rx_index = 0;
 	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
-		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) >= 0) ? 0 : 1;
 	}
 	rx_index = ALL_COLUMNS;
 	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
-		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) >= 0) ? 0 : 1;
 	} // up to 30765 - 1
 
 	for(int pc_row_index = 1; pc_row_index < PC_ROWS; ++pc_row_index) {
 		for(; rx_index < ALL_INFO_BIT + pc_row_index*ALL_COLUMNS - 1; ++rx_index) { 
 		// skip bit 31057, 31350, 31643, 31936, 32229, 32522, since they must be left at +inf
-			m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+			m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) >= 0) ? 0 : 1;
 		}
 		rx_index++; 
 	}
 	// update the last 293 bit
 	for(; rx_index < ALL_INFO_BIT + ALL_EQ; rx_index++) { // up to the last bit 
-		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
+		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) >= 0) ? 0 : 1;
 	}
 
 	// cycle on the 2045 independet check nodes
@@ -185,17 +186,3 @@ LdpcDecoder::isCodewordFound() {
 	return ((numNonEvenCheckNodes > 0) ? 0 : 1);
 }
 
-std::vector<bool>*
-LdpcDecoder::marginalizeVariableNodes() {
-	bool verb = 0;
-	std::vector<bool> *decisionVector = new std::vector<bool>(INFO_BIT, 0);
-	int rx_index = 0;
-	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
-		decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
-	}
-	rx_index = ALL_COLUMNS;
-	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
-		decisionVector->at(rx_index - INIT_ZERO_BIT) = (m_variableNodeVector->at(rx_index).getLLR() + m_receivedLLR->at(rx_index) > 0) ? 0 : 1;
-	} // up to 30765 - 1
-	return decisionVector;
-}

@@ -1,6 +1,7 @@
 #include "check_node.h"
 #include "variable_node.h"
 #include <cmath>
+#include <climits>
 
 CheckNode::CheckNode() {
 	m_line = line(-1, -1);
@@ -56,13 +57,13 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 			sumPhiTilde += phiTilde(-llr_var);
 			prodSgn = - prodSgn;
 		} else { // llr_var is equal to 0. Then phiTilde(llr_var) -> inf, and also the sum is inf. Then phiTilde(inf) = 0
-			sumPhiTilde = L_INFINITY; //just a flag now
+			sumPhiTilde = std::numeric_limits<double>::infinity(); //just a flag now
 			break; // no need to compute other variable nodes
 		}
 	}
 	block_index += ALL_COLUMNS; // skip row_index row
 	a++;
-	if(sumPhiTilde < L_INFINITY) { // continue to cycle
+	if(sumPhiTilde < std::numeric_limits<double>::infinity()) { // continue to cycle
 		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
 														//(a*s + c)%293
 			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();		
@@ -72,13 +73,13 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 				sumPhiTilde += phiTilde(-llr_var);
 				prodSgn = - prodSgn;
 			} else { // llr_var is equal to 0. Then phiTilde(llr_var) -> inf, and also the sum is inf. Then phiTilde(inf) = 0
-				sumPhiTilde = L_INFINITY; //just a flag now
+				sumPhiTilde = std::numeric_limits<double>::infinity(); //just a flag now
 				break; // no need to compute other variable nodes
 			}
 		}
 
 		// compute the outgoing llr
-		if(sumPhiTilde < L_INFINITY) {
+		if(sumPhiTilde < std::numeric_limits<double>::infinity()) {
 			if(prodSgn > 0) {
 				m_llrVector->at(row_index) = phiTilde(sumPhiTilde);
 			} else {

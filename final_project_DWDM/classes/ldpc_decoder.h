@@ -31,7 +31,6 @@ private:
 	void updateVariableNodes();
 	void updateCheckNodes();
 	bool isCodewordFound();
-	inline std::vector<bool>* marginalizeVariableNodes();
 	
 };
 

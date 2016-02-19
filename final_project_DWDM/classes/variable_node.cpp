@@ -1,5 +1,6 @@
 #include "variable_node.h"
 #include "check_node.h"
+#include <climits>
 
 VariableNode::VariableNode() {
 
@@ -27,8 +28,9 @@ VariableNode::updateLLR(std::vector<CheckNode> *checkNodeVector) {
 	for(; block_index < IND_EQ; block_index += ALL_COLUMNS) {
 		if(m_checkNodes[slope_index].second > -1) { // check if it is a valid check node
 			// since all check nodes (even redundant) are in checkNodeVector, then the indices will be slope_index*293 + c
-			m_llr += checkNodeVector->at(block_index + m_checkNodes[slope_index++].second).getLLRat(m_a);
+			m_llr += checkNodeVector->at(block_index + m_checkNodes[slope_index].second).getLLRat(m_a);
 		}
+		slope_index++;
 	}
 }
 
