@@ -62,14 +62,10 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 	}
 	block_index += ALL_COLUMNS; // skip row_index row
 	a++;
-	if(sumPhiTilde == L_INFINITY) { // don't need to cycle also on the other rows, the sum will be surely +inf, and phiTilde(+inf)=0
-		// save the outgoing llr
-		m_llrVector->at(row_index) = 0;
-	} else { // continue to cycle
+	if(sumPhiTilde < L_INFINITY) { // continue to cycle
 		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
-															//(a*s + c)%293
-		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
-					
+														//(a*s + c)%293
+			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();		
 			if(llr_var > 0) {
 				sumPhiTilde += phiTilde(llr_var);
 			} else if(llr_var < 0) {
@@ -82,15 +78,18 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 		}
 
 		// compute the outgoing llr
-		if(sumPhiTilde == L_INFINITY) {
-			m_llrVector->at(row_index) = 0;
-		} else {
+		if(sumPhiTilde < L_INFINITY) {
 			if(prodSgn > 0) {
 				m_llrVector->at(row_index) = phiTilde(sumPhiTilde);
 			} else {
 				m_llrVector->at(row_index) = - phiTilde(sumPhiTilde);
 			}
+		} else {
+			m_llrVector->at(row_index) = 0;
 		}
+	} else { // don't need to cycle also on the other rows, the sum will be surely +inf, and phiTilde(+inf)=0
+		// save the outgoing llr
+		m_llrVector->at(row_index) = 0;
 	}
 }
 
@@ -126,4 +125,18 @@ CheckNode::getAllLLR() const {
 line 
 CheckNode::getLine() const {
 	return m_line;
+}
+
+bool
+CheckNode::areOnesOdd(std::vector<bool> *decisionVector) {
+	// for rows a from 0 to 111 count the number of 1 in decisionVector
+	int numOnes = 0;
+	int block_index = 0;
+	int a = 0;
+	for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
+															//(a*s + c)%293
+		numOnes += decisionVector->at(block_index + m_variableNodeColumnIndex[a++]);
+	}
+	
+	return numOnes%2; // if numOnes is even, return 0
 }

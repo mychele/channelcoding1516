@@ -38,6 +38,11 @@ public:
 	double getLLRat(int row_index) const;
 
 	line getLine() const;
+
+	/**
+	 * Return 1 if there is an odd number of 1 in the incoming branches
+	 */
+	bool areOnesOdd(std::vector<bool> *decisionVector);
 	
 private:
 	line m_line; // if m_line has both entries negative, the check node is one of the invalid ones
