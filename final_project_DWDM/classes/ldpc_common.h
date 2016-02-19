@@ -10,6 +10,7 @@
 #define PC_ROWS 7
 #define ALL_ROWS 112
 #define ALL_COLUMNS 293
+#define ALL_BIT 32816
 #define INFO_BIT 30592
 #define INIT_ZERO_BIT 173
 #define ALL_INFO_BIT 30765

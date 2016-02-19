@@ -43,9 +43,12 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 	double llr_var;
 
 	// cycle on all the rows, with the exception of row_index
-	for (int a = 0; a < row_index; ++a) {
+	int block_index = 0;
+	int a = 0;
+	int row_block_index = row_index*ALL_COLUMNS;
+	for (; block_index < row_block_index; block_index += ALL_COLUMNS) {
 															//(a*s + c)%293
-		llr_var = variableNodeVector->at(ALL_COLUMNS*a + m_variableNodeColumnIndex[a]).getLLR();
+		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
 				
 		if(llr_var > 0) {
 			sumPhiTilde += phiTilde(llr_var);
@@ -57,14 +60,15 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 			break; // no need to compute other variable nodes
 		}
 	}
-
+	block_index += ALL_COLUMNS; // skip row_index row
+	a++;
 	if(sumPhiTilde == L_INFINITY) { // don't need to cycle also on the other rows, the sum will be surely +inf, and phiTilde(+inf)=0
 		// save the outgoing llr
 		m_llrVector->at(row_index) = 0;
 	} else { // continue to cycle
-		for (int a = row_index + 1; a < ALL_ROWS; ++a) {
+		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
 															//(a*s + c)%293
-		llr_var = variableNodeVector->at(ALL_COLUMNS*a + m_variableNodeColumnIndex[a]).getLLR();
+		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
 					
 			if(llr_var > 0) {
 				sumPhiTilde += phiTilde(llr_var);
