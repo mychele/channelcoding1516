@@ -4,8 +4,7 @@
 
 LdpcDecoder::LdpcDecoder() {
 	// initialize the m_variableNodeVector
-	m_variableNodeVector = new std::vector<VariableNode>;
-	m_variableNodeVector->resize(ALL_COLUMNS*ALL_ROWS);
+	m_variableNodeVector = new std::vector<VariableNode>(ALL_COLUMNS*ALL_ROWS);
 	// set coordinates for each node
 	for(int node_index = 0; node_index < m_variableNodeVector->size(); ++node_index) {
 															// row 						// column
@@ -20,8 +19,7 @@ LdpcDecoder::LdpcDecoder() {
 	}
 
 	//initialize the m_checkNodeVector
-	m_checkNodeVector = new std::vector<CheckNode>;
-	m_checkNodeVector->resize(ALL_EQ);
+	m_checkNodeVector = new std::vector<CheckNode>(ALL_EQ);
 	// set lines in each valid node
 	for(int slope_index = 0; slope_index < (int)PC_ROWS - 1; ++slope_index) { // fill the first six blocks
 		for(int c = 0; c < (int)ALL_COLUMNS - 1; ++c) { // with 292 valid nodes each
@@ -129,13 +127,12 @@ void
 LdpcDecoder::updateCheckNodes() {
 	// update 292 nodes for block [0, 292], [293, 585] ... and 293 nodes for the last block. Redudant check nodes are skipped
 	int block_index = 0;
-	for(int slope_index = 0; slope_index < PC_ROWS - 1; ++slope_index) {
-		block_index = slope_index*ALL_COLUMNS;
+	int six_rows = (PC_ROWS - 1)*ALL_COLUMNS;
+	for(; block_index < six_rows; block_index+=ALL_COLUMNS) {
 		for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
 			m_checkNodeVector->at(block_index + c).updateLLR(m_variableNodeVector);
 		}
 	}
-	block_index = (PC_ROWS - 1)*ALL_COLUMNS;
 	for(int c = 0; c < ALL_COLUMNS; ++c) {
 		m_checkNodeVector->at(block_index + c).updateLLR(m_variableNodeVector);
 	}
