@@ -158,10 +158,10 @@ int main(int argc, char const *argv[])
 
 
 	for(int a = 0; a < (int)ALL_ROWS; ++a) {
-		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLR(L_INFINITY);
+		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLR(std::numeric_limits<double>::infinity());
 	}
-	phiTildeNode = phiTilde(std::abs(L_INFINITY));
-	exp_llr = (L_INFINITY > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
+	phiTildeNode = phiTilde(std::abs(std::numeric_limits<double>::infinity()));
+	exp_llr = (std::numeric_limits<double>::infinity() > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
 	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
 	

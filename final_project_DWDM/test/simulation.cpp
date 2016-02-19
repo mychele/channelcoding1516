@@ -2,6 +2,7 @@
 #include "ldpc_decoder.h"
 #include <bitset>
 #include <iostream>
+#include <fstream>
 #include <random>
 #include <chrono>
 
@@ -14,12 +15,11 @@ int main(int argc, char const *argv[])
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
-    const int N = 50; // attempts
-    const int num_SNR = 2;
-    double ebn0_vec[num_SNR] = {6.6, 7.2};
-    double BER[N][num_SNR] = {{0}};
+    const int N = 10000; // attempts
+    const int num_SNR = 1;
+    double ebn0_vec[num_SNR] = {7.2};
+    double num_error_matrix[N][num_SNR] = {{0}};
     double decoding_time[N][num_SNR] = {{0}};
-    std::vector<double> decoding_time_nocw;
 
 	LdpcEncoder encoder = LdpcEncoder();
 	std::cout << "LdpcEncoder created\n";
@@ -102,45 +102,43 @@ int main(int argc, char const *argv[])
 				}
 			}
 
-			BER[attempt][snr_ind] = (double)num_error/INFO_BIT;
-			std::cout << "snr = " << ebn0_vec[snr_ind] << " BER = " << BER[attempt][snr_ind] << "\n";
-			if(num_error > 0) {
-				decoding_time_nocw.push_back(duration.count());
+			num_error_matrix[attempt][snr_ind] = (double)num_error;
+			std::cout << "snr = " << ebn0_vec[snr_ind] << " num_error_matrix = " << num_error_matrix[attempt][snr_ind] << "\n";
+		}
+		if((attempt+1)%100 == 0) {
+			std::ofstream output_file ("simulation_results_72.txt", std::ios::out | std::ios::app);
+			for(int attempt_index = attempt + 1 - 100; attempt_index < attempt + 1; attempt_index++) {
+				for(int snr_write = 0; snr_write < num_SNR; snr_write++) {
+					output_file << num_error_matrix[attempt_index][snr_write] << " ";
+				}
+				output_file << "\n";
 			}
 		}
     }
 
-    // elaborate BER
+    // elaborate num_error_matrix
     double mean_BER[num_SNR] = {0};
     double mean_decoding[num_SNR] = {0};
     for (int snr_ind = 0; snr_ind < num_SNR; snr_ind++) {
     	double BER_sum = 0;
     	double time_sum = 0;
     	for(int i = 0; i < N; ++i) {
-    		BER_sum += BER[i][snr_ind];
+    		BER_sum += num_error_matrix[i][snr_ind]/INFO_BIT;
     		time_sum += decoding_time[i][snr_ind];
-    		std::cout << BER[i][snr_ind] << " ";
+    		std::cout << num_error_matrix[i][snr_ind] << " ";
     	}
     	std::cout << "\n";
     	mean_BER[snr_ind] = BER_sum/N;
     	mean_decoding[snr_ind] = time_sum/N;
     }
 
-    double mean_nocw = 0;
-    for(int i = 0; i < decoding_time_nocw.size(); ++i) {
-    	mean_nocw += decoding_time_nocw[i];
-    }
-    mean_nocw = mean_nocw/decoding_time_nocw.size();
-
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
-    	std::cout << "eb/N0 " << ebn0_vec[snr_ind] << " mean BER " << mean_BER[snr_ind] << "\n";
+    	std::cout << "eb/N0 " << ebn0_vec[snr_ind] << " mean num_error_matrix " << mean_BER[snr_ind] << "\n";
     }
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
     	std::cout << "decoding time (avg) for eb/N0 " << ebn0_vec[snr_ind] << " is " << mean_decoding[snr_ind]/1e6 << "ms\n";
     }
-
-    std::cout << "in case cw is not found " << mean_nocw/1e6 << "ms\n";
 	return 0;
 }

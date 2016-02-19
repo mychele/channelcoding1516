@@ -10,7 +10,7 @@ int main(int argc, char const *argv[])
 {
 	// rng stuff
 	std::random_device rd; // device entropy
-    std::mt19937 m_rng(rd()); // initialize our mersenne twister with a random seed
+    std::mt19937 m_rng(11); // initialize our mersenne twister with a random seed
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
 	CodeWord codeword = encoder.encode(infoword);
 
 	// add noise
-	double ebn0 = 7;
+	double ebn0 = 6.7;
 	double sigma_w = 1/std::sqrt(2*std::pow(10, (ebn0/10)) * INFO_BIT/CODE_WORD);
 	std::cout << "sigma_w " << sigma_w << "\n";
 	std::vector<double> *received_signal = new std::vector<double>;
