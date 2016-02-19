@@ -1,7 +1,7 @@
 #include "ldpc_decoder.h"
 #include <vector>
 #include <algorithm>
-#include <climits>
+#include <limits>
 
 LdpcDecoder::LdpcDecoder() {
 	// initialize the m_variableNodeVector

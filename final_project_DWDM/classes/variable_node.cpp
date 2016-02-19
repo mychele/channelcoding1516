@@ -1,6 +1,6 @@
 #include "variable_node.h"
 #include "check_node.h"
-#include <climits>
+#include <limits>
 
 VariableNode::VariableNode() {
 

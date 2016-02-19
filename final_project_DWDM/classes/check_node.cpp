@@ -1,7 +1,7 @@
 #include "check_node.h"
 #include "variable_node.h"
 #include <cmath>
-#include <climits>
+#include <limits>
 
 CheckNode::CheckNode() {
 	m_line = line(-1, -1);

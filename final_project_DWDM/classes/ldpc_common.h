@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
-#include <climits>
+#include <limits>
 
 #ifndef LDPC_COMMON
 #define LDPC_COMMON
