@@ -11,11 +11,11 @@ int main(int argc, char const *argv[])
 {
 	// rng stuff
 	std::random_device rd; // device entropy
-    std::mt19937 m_rng(10); // initialize our mersenne twister with a random seed
+    std::mt19937 m_rng(11); // initialize our mersenne twister with a random seed
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
-    const int N = 10000; // attempts
+    const int N = 20000; // attempts
     const int num_SNR = 1;
     double ebn0_vec[num_SNR] = {7.2};
     double num_error_matrix[N][num_SNR] = {{0}};

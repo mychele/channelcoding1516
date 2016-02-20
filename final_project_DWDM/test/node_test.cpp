@@ -60,8 +60,8 @@ int main(int argc, char const *argv[])
 	std::cout << "Average time to compute phiTilde(x) " << (double)duration.count()/N << " ns\n";
 
 	// ----------------------------------------- test the update LLR function on variableNode --------------------------------------
-	int a = 10;
-	int b = 20;
+	int a = 1;
+	int b = 0;
 	VariableNode node(a, b);
 	node.setLLR(3.4);
 	std::cout << "LLR = " << node.getLLR() << "\n";
@@ -69,8 +69,7 @@ int main(int argc, char const *argv[])
 		std::cout << slopes[node.getCheckNodes()[i].first] << " c " << node.getCheckNodes()[i].second << "\n";
 	}
 	// create checkNodesVector
-	std::vector<CheckNode> *checkNodesVector = new std::vector<CheckNode>;
-	checkNodesVector->resize(2051);
+	std::vector<CheckNode> *checkNodesVector = new std::vector<CheckNode>(2051);
 	for(int slope_index = 0; slope_index < (int)PC_ROWS - 1; ++slope_index) { // init the first six blocks
 		for(int c = 0; c < (int)ALL_COLUMNS - 1; ++c) { // with 292 valid nodes each
 			checkNodesVector->at(slope_index*(int)ALL_COLUMNS + c).setLine(line(slope_index, c));
@@ -81,17 +80,17 @@ int main(int argc, char const *argv[])
 		checkNodesVector->at(((int)PC_ROWS - 1)*(int)ALL_COLUMNS + c).setLine(line((int)PC_ROWS - 1, c));
 	}
 
-	// fill the LLR of the blocks for (10,20) -> 0+10, 293+0, 293*2+283, 293*3+273, 293*4+263, 293*5 + 253, 293*6+243, each at row 10
-	checkNodesVector->at(10).setLLRat(3, 10);
-	checkNodesVector->at(293).setLLRat(3, 10);
-	checkNodesVector->at(293*2+283).setLLRat(2, 10);
-	checkNodesVector->at(293*3+273).setLLRat(-4, 10);
-	checkNodesVector->at(293*4+263).setLLRat(-1, 10);
-	checkNodesVector->at(293*5+253).setLLRat(3, 10);
-	checkNodesVector->at(293*6+243).setLLRat(0, 10);
+	// fill the LLR of the blocks for (1,0) -> 0+293, 293+291, 293*2+290, 293*3+289, 293*4+288, 293*5 + 287, 293*6+286, each at row 1
+	checkNodesVector->at(293).setLLRat(3, 1);
+	checkNodesVector->at(293+291).setLLRat(3, 1);
+	checkNodesVector->at(293*2+290).setLLRat(2, 1);
+	checkNodesVector->at(293*3+289).setLLRat(-4, 1);
+	checkNodesVector->at(293*4+288).setLLRat(-1, 1);
+	checkNodesVector->at(293*5+287).setLLRat(3, 1);
+	checkNodesVector->at(293*6+286).setLLRat(0, 1);
 
 	node.updateLLR(checkNodesVector);
-	std::cout << "LLR = " << node.getLLR() << " expecting 6 " << "\n";
+	std::cout << "LLR = " << node.getLLR() << " expecting 3 " << "\n";
 
 	delete checkNodesVector;
 

@@ -28,7 +28,6 @@ void
 CheckNode::updateLLR(std::vector<VariableNode> *variableNodeVector) {
 	// cycle on all the outgoing branch, one per line, and update the LLR of each one
 	for(int row_index = 0; row_index < ALL_ROWS; ++row_index) {
-		//std::cout << "Updating LLR for outgoing branch " << row_index << "\n";
 		updateLLRat(row_index, variableNodeVector);
 	}
 }
@@ -61,12 +60,15 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 			break; // no need to compute other variable nodes
 		}
 	}
+	
 	block_index += ALL_COLUMNS; // skip row_index row
 	a++;
-	if(sumPhiTilde < std::numeric_limits<double>::infinity()) { // continue to cycle
+
+	if(!isinf(sumPhiTilde)) { // continue to cycle
 		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
 														//(a*s + c)%293
-			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();		
+			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+		
 			if(llr_var > 0) {
 				sumPhiTilde += phiTilde(llr_var);
 			} else if(llr_var < 0) {
@@ -77,7 +79,6 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 				break; // no need to compute other variable nodes
 			}
 		}
-
 		// compute the outgoing llr
 		if(sumPhiTilde < std::numeric_limits<double>::infinity()) {
 			if(prodSgn > 0) {

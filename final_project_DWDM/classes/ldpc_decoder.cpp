@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <cstring>
 
 LdpcDecoder::LdpcDecoder() {
 	// initialize the m_variableNodeVector
@@ -39,7 +40,7 @@ LdpcDecoder::~LdpcDecoder() {
 	// clean up
 	delete m_variableNodeVector;
 	delete m_checkNodeVector;
-	delete m_receivedLLR;
+	//delete m_receivedLLR;
 	delete m_decisionVector;
 }
 
@@ -50,17 +51,23 @@ LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w2) {
 	m_sigmaw2 = sigma_w2;
 	m_alpha = -2/m_sigmaw2;
 	// initialize variable nodes LLR with the channel LLR
-	m_receivedLLR = receivedData; // point to receivedData
+	m_receivedLLR = new std::vector<double>();
+	m_receivedLLR->insert(m_receivedLLR->begin(), receivedData->begin(), receivedData->end());
 	std::transform(m_receivedLLR->begin(), m_receivedLLR->end(), m_receivedLLR->begin(),
                std::bind1st(std::multiplies<double>(),m_alpha));
-
 	initializeVariableNodes();
 	// until the maximum number of attempt is reached
 	int attempt_index = 0;
 	do {
 		updateCheckNodes();
 		updateVariableNodes();
+		// int zero_llr = 0;
+		// for (int i = 0; i < m_variableNodeVector->size(); i++) {
+		// 	if(m_variableNodeVector->at(i).getLLR()==0) {zero_llr++;}
+		// }
+		// std::cout << zero_llr << "\n";
 	} while(attempt_index++ < MAX_ATTEMPTS && !isCodewordFound());
+	delete m_receivedLLR;
 	return m_decisionVector;
 }
 
@@ -83,7 +90,6 @@ LdpcDecoder::initializeVariableNodes() {
 	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
 		m_variableNodeVector->at(rx_index).setLLR(m_receivedLLR->at(rx_index));
 	}
-	// use insert
 
 	rx_index = ALL_COLUMNS;
 	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
@@ -132,6 +138,7 @@ void
 LdpcDecoder::updateCheckNodes() {
 	// update 292 nodes for block [0, 292], [293, 585] ... and 293 nodes for the last block. Redudant check nodes are skipped
 	int block_index = 0;
+	int index = 0;
 	int six_rows = (PC_ROWS - 1)*ALL_COLUMNS;
 	for(; block_index < six_rows; block_index+=ALL_COLUMNS) {
 		for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
