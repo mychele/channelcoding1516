@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
 
 				num_error_matrix[snr_ind].push_back(num_error);
 				decoding_time[snr_ind].push_back(duration.count());
-				std::cout << "snr = " << ebn0_vec[snr_ind] << " num_error_matrix = " << num_error_matrix[snr_ind].at(attempt) << "\n";
+				//std::cout << "snr = " << ebn0_vec[snr_ind] << " num_error_matrix = " << num_error_matrix[snr_ind].at(attempt) << "\n";
 			}
 		}
 		if((attempt+1)%100 == 0) {
