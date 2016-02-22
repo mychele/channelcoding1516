@@ -18,7 +18,6 @@ int main(int argc, char const *argv[])
 
     const int num_SNR = 9;
     double ebn0_vec[num_SNR] = 				{6.7,  6.75,   6.8, 6.85, 6.9,  6.95,  7,    7.05, 	7.1};
-    const int num_attempt_per_snr[num_SNR] = {1000, 1000, 1000, 1000, 1000, 10000, 40000, 40000, 40000};
 
     const int N = 40000; // attempts
     std::vector< std::vector<double> > num_error_matrix = std::vector< std::vector<double> >(num_SNR);
@@ -93,6 +92,7 @@ int main(int argc, char const *argv[])
 					std::stringstream conc_filename;
 					conc_filename << "simulation_results_" << ebn0_vec[snr_write] << ".txt";
 					std::ofstream output_file (conc_filename.str().c_str(), std::ios::out | std::ios::app);
+					for(int attempt_index = attempt + 1 - 100; attempt_index < attempt + 1; attempt_index++) {
 						output_file << num_error_matrix[snr_write].at(attempt_index) << "\n";
 					}
 					output_file.close();
