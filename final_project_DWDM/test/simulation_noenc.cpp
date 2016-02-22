@@ -84,17 +84,19 @@ int main(int argc, char const *argv[])
 				num_error_matrix[snr_ind].push_back(num_error);
 				decoding_time[snr_ind].push_back(duration.count());
 				//std::cout << "snr = " << ebn0_vec[snr_ind] << " num_error_matrix = " << num_error_matrix[snr_ind].at(attempt) << "\n";
+				delete received_signal;
 			}
 		}
 		if((attempt+1)%100 == 0) {
 			for(int snr_write = 0; snr_write < num_SNR; snr_write++) {
-				std::stringstream conc_filename;
-				conc_filename << "simulation_results_" << ebn0_vec[snr_write] << ".txt";
-				std::ofstream output_file (conc_filename.str().c_str(), std::ios::out | std::ios::app);
-				for(int attempt_index = attempt + 1 - 100; attempt_index < attempt + 1; attempt_index++) {
-					output_file << num_error_matrix[snr_write].at(attempt_index) << "\n";
+				if(num_attempt_per_snr[snr_write] >= attempt + 1) {
+					std::stringstream conc_filename;
+					conc_filename << "simulation_results_" << ebn0_vec[snr_write] << ".txt";
+					std::ofstream output_file (conc_filename.str().c_str(), std::ios::out | std::ios::app);
+						output_file << num_error_matrix[snr_write].at(attempt_index) << "\n";
+					}
+					output_file.close();
 				}
-				output_file.close();
 			}
 		}
     }
