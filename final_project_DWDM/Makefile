@@ -56,6 +56,13 @@ sim: ./test/simulation.cpp
 	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/ldpc_encoder.cpp
 	@clang++ -std=c++11 -O3 -c -I./classes -g $?
 	@clang++ -std=c++11 -O3 -o simulation simulation.o ldpc_decoder.o variable_node.o check_node.o ldpc_encoder.o
+
+sim_noenc: ./test/simulation_noenc.cpp
+	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/variable_node.cpp
+	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/check_node.cpp
+	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/ldpc_decoder.cpp
+	@clang++ -std=c++11 -O3 -c -I./classes -g $?
+	@clang++ -std=c++11 -O3 -o simulation_noenc simulation_noenc.o ldpc_decoder.o variable_node.o check_node.o
  
 
 clean:
