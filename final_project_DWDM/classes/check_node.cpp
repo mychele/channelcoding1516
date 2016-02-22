@@ -96,6 +96,85 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 }
 
 void 
+CheckNode::updateLLRminSum(std::vector<VariableNode> *variableNodeVector) {
+	// cycle on all the outgoing branch, one per line, and update the LLR of each one
+	for(int row_index = 0; row_index < ALL_ROWS; ++row_index) {
+		updateLLRatMinSum(row_index, variableNodeVector);
+	}
+}
+
+void
+CheckNode::updateLLRatMinSum(int row_index, std::vector<VariableNode> *variableNodeVector) {
+	// cycle on the other incoming branches, compute phiTilde(sum(phiTilde(|x|)) and prod(sgn(x)))
+
+	// variables
+	double minLLR = std::numeric_limits<double>::infinity();
+	int prodSgn = 1;
+	int slope = slopes[m_line.first];
+	double llr_var;
+
+	// cycle on all the rows, with the exception of row_index
+	int block_index = 0;
+	int a = 0;
+	int row_block_index = row_index*ALL_COLUMNS;
+	for (; block_index < row_block_index; block_index += ALL_COLUMNS) {
+															//(a*s + c)%293
+		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+				
+		if(llr_var > 0) {
+			if(llr_var < minLLR) {
+				minLLR = llr_var;
+			}
+		} else if(llr_var < 0) {
+			if(-llr_var < minLLR) {
+				minLLR = -llr_var;
+			}
+			prodSgn = - prodSgn;
+		} else { // llr_var is equal to 0. Then min(|llr|)=0
+			minLLR = 0; //just a flag now
+			break; // no need to compute other variable nodes
+		}
+	}
+	
+	block_index += ALL_COLUMNS; // skip row_index row
+	a++;
+
+	if(minLLR > 0) { // continue to cycle
+		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
+														//(a*s + c)%293
+			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+				
+			if(llr_var > 0) {
+				if(llr_var < minLLR) {
+					minLLR = llr_var;
+				}
+			} else if(llr_var < 0) {
+				if(-llr_var < minLLR) {
+					minLLR = -llr_var;
+				}
+				prodSgn = - prodSgn;
+			} else { // llr_var is equal to 0. Then min(|llr|)=0
+				minLLR = 0; //just a flag now
+				break; // no need to compute other variable nodes
+			}
+		}
+		// compute the outgoing llr
+		if(minLLR > 0) {
+			if(prodSgn > 0) {
+				m_llrVector->at(row_index) = minLLR;
+			} else {
+				m_llrVector->at(row_index) = - minLLR;
+			}
+		} else {
+			m_llrVector->at(row_index) = 0;
+		}
+	} else { // don't need to cycle also on the other rows, the LLR will surely be 0
+		// save the outgoing llr
+		m_llrVector->at(row_index) = 0;
+	}
+}
+
+void 
 CheckNode::setLine(line lineEq) {
 	m_line = lineEq;
 	int slope = slopes[m_line.first];

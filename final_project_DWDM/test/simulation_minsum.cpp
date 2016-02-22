@@ -42,7 +42,7 @@ void simulate(int snr_ind, double sigma_w, LdpcDecoder *decoder,
 
 	// decode
 	std::chrono::time_point<std::chrono::system_clock> begin = std::chrono::system_clock::now();
-	std::vector<bool> *decoded_symbols = decoder->decode(received_signal, std::pow(sigma_w,2));
+	std::vector<bool> *decoded_symbols = decoder->decodeMinSum(received_signal, std::pow(sigma_w,2));
 	std::chrono::nanoseconds duration = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - begin);
 
 	// check
@@ -114,7 +114,7 @@ int main(int argc, char const *argv[])
 			for(int snr_write = 0; snr_write < num_SNR; snr_write++) {
 				if(num_attempt_per_snr[snr_write] >= attempt + 1) {
 					std::stringstream conc_filename;
-					conc_filename << "simulation_results_" << ebn0_vec[snr_write] << ".txt";
+					conc_filename << "simulation_results_minsum" << ebn0_vec[snr_write] << ".txt";
 					std::ofstream output_file (conc_filename.str().c_str(), std::ios::out | std::ios::app);
 					for(int attempt_index = attempt + 1 - 100; attempt_index < attempt + 1; attempt_index++) {
 						output_file << num_error_matrix->at(snr_write).at(attempt_index) << "\n";
@@ -141,7 +141,7 @@ int main(int argc, char const *argv[])
     }
 
 	
-	std::ofstream output_file ("BER_and_time.txt", std::ios::out | std::ios::app);
+	std::ofstream output_file ("BER_and_time_minsum.txt", std::ios::out | std::ios::app);
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
     	output_file << ebn0_vec[snr_ind] << " " << mean_BER[snr_ind] << "\n";

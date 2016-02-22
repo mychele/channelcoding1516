@@ -71,6 +71,33 @@ LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w2) {
 	return m_decisionVector;
 }
 
+// received data must be ALL_BIT bits
+std::vector<bool>*
+LdpcDecoder::decodeMinSum(std::vector<double> *receivedData, double sigma_w2) {
+	// assign m_sigmaw2
+	m_sigmaw2 = sigma_w2;
+	m_alpha = -2/m_sigmaw2;
+	// initialize variable nodes LLR with the channel LLR
+	m_receivedLLR = new std::vector<double>();
+	m_receivedLLR->insert(m_receivedLLR->begin(), receivedData->begin(), receivedData->end());
+	std::transform(m_receivedLLR->begin(), m_receivedLLR->end(), m_receivedLLR->begin(),
+               std::bind1st(std::multiplies<double>(),m_alpha));
+	initializeVariableNodes();
+	// until the maximum number of attempt is reached
+	int attempt_index = 0;
+	do {
+		updateCheckNodesMinSum();
+		updateVariableNodes();
+		// int zero_llr = 0;
+		// for (int i = 0; i < m_variableNodeVector->size(); i++) {
+		// 	if(m_variableNodeVector->at(i).getLLR()==0) {zero_llr++;}
+		// }
+		// std::cout << zero_llr << "\n";
+	} while(attempt_index++ < MAX_ATTEMPTS && !isCodewordFound());
+	delete m_receivedLLR;
+	return m_decisionVector;
+}
+
 const std::vector<VariableNode>* 
 LdpcDecoder::getVariableNodeVector() const {
 	return m_variableNodeVector;
@@ -147,6 +174,22 @@ LdpcDecoder::updateCheckNodes() {
 	}
 	for(int c = 0; c < ALL_COLUMNS; ++c) {
 		m_checkNodeVector->at(block_index + c).updateLLR(m_variableNodeVector);
+	}
+}
+
+void 
+LdpcDecoder::updateCheckNodesMinSum() {
+	// update 292 nodes for block [0, 292], [293, 585] ... and 293 nodes for the last block. Redudant check nodes are skipped
+	int block_index = 0;
+	int index = 0;
+	int six_rows = (PC_ROWS - 1)*ALL_COLUMNS;
+	for(; block_index < six_rows; block_index+=ALL_COLUMNS) {
+		for(int c = 0; c < ALL_COLUMNS - 1; ++c) {
+			m_checkNodeVector->at(block_index + c).updateLLRminSum(m_variableNodeVector);
+		}
+	}
+	for(int c = 0; c < ALL_COLUMNS; ++c) {
+		m_checkNodeVector->at(block_index + c).updateLLRminSum(m_variableNodeVector);
 	}
 }
 

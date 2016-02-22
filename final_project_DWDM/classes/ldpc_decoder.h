@@ -13,6 +13,7 @@ public:
 	~LdpcDecoder();
 
 	std::vector<bool>* decode(std::vector<double> *receivedData, double sigma_w);
+	std::vector<bool>* decodeMinSum(std::vector<double> *receivedData, double sigma_w);
 
 	// this is not a good practice, but it is useful for testing purposes
 	// TODO remove once testing is done
@@ -30,6 +31,7 @@ private:
 	inline void initializeVariableNodes();
 	void updateVariableNodes();
 	void updateCheckNodes();
+	void updateCheckNodesMinSum();
 	bool isCodewordFound();
 	
 };

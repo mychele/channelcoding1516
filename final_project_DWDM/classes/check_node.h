@@ -17,6 +17,7 @@ public:
 	~CheckNode();
 
 	void updateLLR(std::vector<VariableNode> *variableNodeVector);
+	void updateLLRminSum(std::vector<VariableNode> *variableNodeVector);
 
 	void setLine(line lineEq);
 
@@ -54,7 +55,7 @@ private:
 	std::vector<double> *m_llrVector;
 
 	void updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVector);
-
+	void updateLLRatMinSum(int row_index, std::vector<VariableNode> *variableNodeVector);
 
 };
 
