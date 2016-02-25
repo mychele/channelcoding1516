@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
 	std::cout << "H is " << H.NumRows() << " x " << H.NumCols() << "\n";
 
 	// define the slopes
-	int slopes[7] = {1,2,3,4,5,6,7};
+	int slopes[7] = {1,2,3,5,7,13,17};
 
 	// fill H
 	int row_index = 0;
@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
 	std::cout << "H filled\n";
 
 	// save H to file
-	std::ofstream bin_H_out("H.bin", std::ios::out | std::ios::binary);
+	std::ofstream bin_H_out("./bin_files/H.bin", std::ios::out | std::ios::binary);
 	BitIo<(info_r + red_r)*col_r> bio_H;
 	for(int row_index = 0; row_index < H.NumRows(); row_index++) {
 		std::bitset<(info_r + red_r)*col_r> row;
@@ -420,7 +420,7 @@ int main(int argc, char const *argv[])
 		K_rows[row_index] = row;
 	}
 
-	std::ofstream bin_out("K.bin", std::ios::out | std::ios::binary);
+	std::ofstream bin_out("./bin_files/K.bin", std::ios::out | std::ios::binary);
 	BitIo<ALL_INFO_BIT> bio;
 	for(int row_index = 0; row_index < K.NumRows(); row_index++) {
 		bio.push_back(K_rows[row_index]);
@@ -431,7 +431,7 @@ int main(int argc, char const *argv[])
 
 	// once K is stored to file, check if it can be read correctly
 	bool correct = 1;
-	std::ifstream bin_in("K.bin", std::ios::binary);
+	std::ifstream bin_in("./bin_files/K.bin", std::ios::binary);
 	BitIo<ALL_INFO_BIT> bio2;
 	bin_in >> bio2;
 	for(int row_index = 0; row_index < K.NumRows(); row_index++) {
