@@ -26,7 +26,7 @@ typedef std::bitset< ALL_INFO_BIT > InfoWord;
 typedef std::pair< int, int > line; // line.first = slope_index, line.second = c
 typedef std::pair< int, int > coordinates; // (a, b)
 
-static const int slopes[7] = {1,2,3,5,7,13,17};
+static const int slopes[7] = {1,2,3,4,5,6,7};
 
 // map j to the k of the scrambled input vector
 inline static int mapJtoK(int j) {
