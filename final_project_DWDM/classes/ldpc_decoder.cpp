@@ -66,7 +66,7 @@ LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w2) {
 		// 	if(m_variableNodeVector->at(i).getLLR()==0) {zero_llr++;}
 		// }
 		// std::cout << zero_llr << "\n";
-	} while(attempt_index++ < MAX_ATTEMPTS && !isCodewordFound());
+	} while(!isCodewordFound() && attempt_index++ < MAX_ATTEMPTS);
 	delete m_receivedLLR;
 	return m_decisionVector;
 }
@@ -93,7 +93,7 @@ LdpcDecoder::decodeMinSum(std::vector<double> *receivedData, double sigma_w2) {
 		// 	if(m_variableNodeVector->at(i).getLLR()==0) {zero_llr++;}
 		// }
 		// std::cout << zero_llr << "\n";
-	} while(attempt_index++ < MAX_ATTEMPTS && !isCodewordFound());
+	} while(!isCodewordFound() && attempt_index++ < MAX_ATTEMPTS);
 	delete m_receivedLLR;
 	return m_decisionVector;
 }
