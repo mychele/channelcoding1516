@@ -1,0 +1,367 @@
+\documentclass[pdf]
+          {beamer}
+\mode<presentation>{}
+\usetheme{Pittsburgh}
+\usecolortheme{beaver}
+
+% Various useful packages and commands from different sources
+
+%\usepackage[applemac]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{cite, url,color} % Citation numbers being automatically sorted and properly "compressed/ranged".
+
+
+% Compact lists
+%\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{fancyvrb}
+
+% Tikz
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,chains,shapes,arrows}
+\usepackage{pgfplots}
+\usetikzlibrary{plotmarks}
+\newlength\fheight
+\newlength\fwidth
+\pgfplotsset{compat=newest}
+\pgfplotsset{plot coordinates/math parser=false}
+\usetikzlibrary{calc}
+
+\usepackage{array}
+\usepackage{kbordermatrix}
+% http://www.ctan.org/tex-archive/macros/latex/required/tools/
+\usepackage{mdwmath}
+\usepackage{mdwtab}
+%mdwtab.sty	-- A complete ground-up rewrite of LaTeX's `tabular' and  `array' environments.  Has lots of advantages over
+%		   the standard version, and over the version in `array.sty'.
+% *** SUBFIGURE PACKAGES ***
+% \usepackage[tight,footnotesize]{subfigure}
+\usepackage{subfig}
+%\usepackage{indentfirst}
+
+
+%\setlength\parindent{0pt}
+\linespread{1}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\M} {\mathtt{M}}
+\newcommand{\dB} {\mathrm{dB}}
+\newcommand{\tr} {\mathrm{tr}}
+\newcommand{\lmod}[1] {_{\,\mathrm{mod}\,#1}}
+\newcommand{\outf}[1] {\mathcal{O}(#1)}
+\newcommand{\SU}[1] {\mathcal{S}(#1)}
+\newcommand{\s} {\mathbf{s}}
+\newcommand{\y} {\mathbf{y}}
+
+
+\graphicspath{ {figures/} }
+\setcounter{MaxMatrixCols}{20}
+
+%% preamble
+\title{Implementation and performance evaluation of ITU-T G.975.1 LDPC binary code}
+\subtitle{Channel Coding 15/16 Final Project}
+\author{Michele Polese}
+\begin{document}
+
+% For tikz
+% Definition of blocks:
+\tikzstyle{block} = [draw, rectangle, 
+    minimum height=1em, minimum width=1em]
+\tikzstyle{circlenode} = [draw, circle, minimum height=1em, minimum width=3em]
+\tikzstyle{trellisnode} = [draw, circle, minimum height=2em, minimum width=2em]
+\tikzstyle{sum} = [draw, circle, node distance=1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+
+%% title frame
+\begin{frame}
+    \titlepage
+\end{frame}
+%% normal frame 
+\begin{frame}{Outline}
+    \begin{itemize}
+    	\item Field of application: DWDM submarine systems
+ 		\item Encoder: encoding matrix and implementation
+ 		\item Message passing decoder
+ 		\item C++ implementation: the flexibility of OOP
+ 		\item Performance evaluation
+ 		\item Conclusions
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{DWDM Submarine Optical Systems}
+	\begin{columns}
+		\column{0.6\textwidth}
+			\begin{figure}
+				\centering
+				\includegraphics[width = 0.9\textwidth]{dwdm}
+			\end{figure}
+		\column{0.4\textwidth}
+			\begin{itemize}
+				\item DWDM interfaces with different optical transport networks
+				\item Coding is performed in the electrical domain
+			\end{itemize}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{ITU-T G.975.1}
+	\begin{center}
+	Forward error correction for high bit-rate DWDM submarine systems 
+	\end{center}
+	\begin{itemize}
+		\item \textit{Super FEC} schemes for coding in submarine optical systems
+		\item More robust than ITU-T G.975 FEC - RS (255, 239)
+		\item Concatenate RS or BCH with different options
+		\item LDPC (32640, 30592)
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{LDPC (32640, 30592)}
+	\begin{itemize}
+		\item Information word with $K=30592$, it fits a RS (255,239) frame
+		\item High coding rate $\eta = \frac{K}{N} = 0.9374$
+		\item Hardware implementation suitable for application with 10G and 40G fibers
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}{Encoding procedure 1/2}
+	\begin{itemize}
+		\item The information bit are placed in a $112\times 293$ matrix $\mathbf{S}$
+		\item Bit $j$, $j\in[1, 30592]$, is inserted in position $(r, 293r + 292 - q)$ with
+		\begin{equation*}
+			r = \floor{\frac{j}{293}}
+		\end{equation*}
+		\begin{equation*}
+			q = j + 172
+		\end{equation*}
+		\item Entries in $(0, 292-d), d \in [0, 172]$ are set to 0 and never transmitted
+		\item 7 slopes $s_i, \, i \in \{1 \dots 7\}$ are chosen
+		\item For each slope $s_i$ 293 lines are defined by
+		\begin{equation*}
+			(a, b) | b = (s_ia + c)\%293, \quad c \in [0, 292]
+		\end{equation*}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Encoding procedure 2/2}
+	\begin{itemize}
+		\item A total of 2051 lines are defined
+		\item The sum (modulo 2) of the bits in the line must be 0
+		\item The parity check equations define a system of 2051 equations in 2051 unknowns
+		\item 6 parity check bit are redundant, and removed from the linear system, as well as the last equation ($c=292$) for the first 6 slopes
+		\item This system can be written as 
+		\begin{equation*}
+			\mathbf{H} \mathbf{c} = \mathbf{0}
+		\end{equation*}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Matrix $\mathbf{H}$}
+	\begin{equation*}
+		\mathbf{H} = 
+			\kbordermatrix{%
+					& 105\times293 & 7\times293 - 6 \\
+				2045 & \mathbf{M} & \mathbf{N}
+			}
+	\end{equation*}
+	Each row $i$ of $\mathbf{H}$ is defined by a valid couple $(s_i, c_i)$, and column $j$ corresponds to bit $(\floor{j/293}, j\%293)$ in matrix $\mathbf{S}$. Then
+	\begin{equation*}
+		h_{i,j} = \begin{cases}
+			1, &\text{ if }j\%293 == (s_i\floor{\frac{j}{293}} + c_i)\\
+			0, &\text{ otherwise}\\
+		\end{cases}
+	\end{equation*}
+	In particular a column of $\mathbf{M}$ contains a 1 if the information bit in the related position belongs to line $(s_i, c_i)$, $\mathbf{N}$ if a parity check bit belongs to line $(s_i, c_i)$.
+\end{frame}
+
+\begin{frame}{From $\mathbf{H}$ to $\mathbf{G}$}
+	$\mathbf{H}$ is transformed to compute the encoding matrix $\mathbf{G}$
+	\begin{equation*}
+		\mathbf{H}_{inv} = 
+			\kbordermatrix{%
+					 & 2045 	  & 30765 \\
+				2045 & \mathbf{N} & \mathbf{M}
+			}
+	\end{equation*}
+	\begin{equation*}
+		\mathbf{H}_{inv} | \mathbf{I}_{2045} = 
+			\kbordermatrix{%
+					 & 2045 	  & 30765  & 2045\\
+				2045 & \mathbf{N} & \mathbf{M} & \mathbf{I}_{2045}
+			}
+	\end{equation*}
+	\small{Gauss elimination is applied to bring $\mathbf{H}_{inv} | \mathbf{I}_{2045}$ in a row echelon form, then Jordan algorithm is used to isolate an identity matrix in first 2045 columns. The result is}
+	\begin{equation*}
+			\kbordermatrix{%
+					 & 2045 	  & 30765  & 2045\\
+				2045 & \mathbf{I}_{2045} & \mathbf{N}^{-1}\mathbf{M} & \mathbf{N}^{-1}
+			}
+	\end{equation*}
+	\small{and finally}
+	\begin{equation*}
+			\mathbf{\tilde{H}} = 
+			\kbordermatrix{%
+					 & 30765  & 2045\\
+				2045 & \mathbf{N}^{-1}\mathbf{M} & \mathbf{I}_{2045} 
+			}
+	\end{equation*}
+\end{frame}
+\renewcommand{\arraystretch}{1.5}
+\begin{frame}{Matrix $\mathbf{G}$}
+	Matrix $\mathbf{G}$ is obtained as 
+	\begin{equation*}
+			\mathbf{G} = 
+			\kbordermatrix{%
+					 & 30765 \\
+				30765 & \mathbf{I}_{30765} \\ 
+				2045 &  \mathbf{N}^{-1}\mathbf{M}  
+			}
+	\end{equation*}
+	For the Gauss elimination NTL\footnote{\url{http://www.shoup.net/ntl/}} library is used. Then each row of matrix $\mathbf{K} = \mathbf{N}^{-1}\mathbf{M}$ is saved into a \texttt{std::bitset} and stored to file. 
+\end{frame}
+
+\begin{frame}{Encoder}
+\begin{itemize}
+	\item The encoder is implemented as a \texttt{C++} object. Upon initialization, matrix $\mathbf{K}$ is read from file and loaded in memory. 
+	\item Both infoword and codeword are \texttt{std::bitset}
+	\item Encoding is performed by filling the first 30592 bit of the codeword with the information word, and by computing the 2045 parity check bit with an \texttt{and} operation between the infoword and the corresponding row of matrix $\mathbf{K}$
+	\item Three bit set to 0 are inserted between the information word and the parity check bits
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Message Passing Decoder}
+	\begin{columns}
+	\column{0.7\framewidth}
+		\begin{figure}
+		\centering
+		\begin{tikzpicture}[auto, thick, node distance=1 cm]
+			\node [block] (u0) {};
+			\node [block, below of=u0] (u1) {};
+			\node [block, below of=u1] (u2) {};
+			\node [block, below of=u2] (u3) {};
+			\node [block, below of=u3, yshift=-1cm] (ck) {};
+			\draw[densely dotted](u3) -- node[name=u] {} (ck);
+
+			\node [block, right of=u0] (v0) {=};
+			\node [block, right of=u1] (v1) {=};
+			\node [block, right of=u2] (v2) {=};
+			\node [block, right of=u3] (v3) {=};
+			\node [block, right of=ck] (vk) {=};
+
+			\node [draw, rectangle, minimum height=16em, minimum width=3em, right of=v2, xshift=1cm, yshift=-0.5cm] (perm) {\huge{$\mathbf{\pi}$}};
+
+			\node [block, right of=perm, xshift=1.5cm] (c1) {+};
+			\node [block, above of=c1, yshift=1cm] (c0) {+};
+			\node [block, below of=c1, yshift=-1cm] (c2) {+};
+
+			\draw [solid](u0) -- node[name=l0] {} (v0);
+			\draw [solid](u1) -- node {} (v1);
+			\draw [solid](u2) -- node {} (v2);
+			\draw [solid](u3) -- node {} (v3);
+			\draw [solid](ck) -- node[name=lk] {} (vk);
+
+			\foreach \y in {2.1,2.5,2.9}{
+	    		\draw [-] (v0) -- ($(perm.west) + (0,\y)$);
+	  		}
+	  		\foreach \y in {1.9,1.5,1.1}{
+	    		\draw [-] (v1) -- ($(perm.west) + (0,\y)$);
+	  		}
+			\foreach \y in {0.9,0.5,0.1}{
+	    		\draw [-] (v2) -- ($(perm.west) + (0,\y)$);
+	  		}
+			\foreach \y in {-0.9,-0.5,-0.1}{
+	    		\draw [-] (v3) -- ($(perm.west) + (0,\y)$);
+	  		}
+	  		\foreach \y in {-2.9,-2.5,-2.1}{
+	    		\draw [-] (vk) -- ($(perm.west) + (0,\y)$);
+	  		}
+
+	  		\foreach \y in {1.1, 1.5, 2, 2.5, 2.9}{
+	    		\draw [-] (c0) -- ($(perm.east) + (0,\y)$);
+	  		}
+	  		\foreach \y in {-0.9, -0.5, 0, 0.5, 0.9}{
+	    		\draw [-] (c1) -- ($(perm.east) + (0,\y)$);
+	  		}
+			\foreach \y in {-1.1, -1.5, -2, -2.5, -2.9}{
+	    		\draw [-] (c2) -- ($(perm.east) + (0,\y)$);
+	  		}
+
+	  		\node[above of=l0, xshift=0.5cm, yshift=-0.5cm] (vn) {Variable nodes};
+	  		\node[right of=vn, xshift=3.5cm] (cn) {Check nodes};
+	  		\node[below of=lk, xshift=-0.7cm, yshift=0.4cm] (ln) {Leaf nodes};
+
+
+		\end{tikzpicture}
+		\caption{Factor graph for LDPC decoding}
+		\label{fig:mp}
+		\end{figure}
+	\column{0.3\framewidth}
+	\begin{itemize}
+		\item The decoder is based on the factor graph of Fig.~\ref{fig:mp}
+		\item Decoding is performed in the LLR domain
+	\end{itemize}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{LLR and Leaf nodes messages}
+	The LDPC code under analysis is a binary code. Therefore the LLR associated to message $\mu$ is expressed as
+	$$
+		LLR_{\mu} = \ln \left( \frac{\mu(0)}{\mu(1)} \right)
+	$$
+	Leaf nodes are initialized with received values, and under the hypothesis of equally probable input symbols the LLR are
+	$$
+		LLR_{g_l \rightarrow c_l} = \ln \left( \frac{\frac{1}{\sqrt{2\pi\sigma_w^2}} e^{-\frac{1}{2\sigma_w^2}(r_l+1)}}{\frac{1}{\sqrt{2\pi\sigma_w^2}}e^{-\frac{1}{2\sigma_w^2}(r_l-1)}} \right) = -\frac{2r_l}{\sigma_w^2}
+	$$
+\end{frame}
+
+\begin{frame}{Variable Node}
+	A variable node is represented by the node in Fig.~\ref{fig:vn}. It represents a delta function, therefore the LLR on each branch is
+	$$
+		LLR_{=\rightarrow j} = \sum_{i \ne j} LLR_{i \rightarrow =}
+	$$
+	This LDPC code has variable nodes with 7 branches connected to check nodes, with the exception of variables figuring in linearly dependent parity check equations, which have 6 outgoing branches.
+	\begin{figure}
+	\centering
+	\begin{tikzpicture}[auto, thick, node distance=1 cm]
+		\node [block] (vn) {=};
+		\foreach \y in {-0.5,0,0.5}{%
+   			\draw [-] (vn) -- ($(vn.east) + (1,\y)$);
+  		}
+  		\draw [-] (vn) -- ($(vn.west) + (-1,0)$);
+		\draw [gray, <-] ($(vn.center) + (0.8,-0.7)$) arc [radius=2, start angle=-20, end angle= 20] node[name=countline] {};	
+		\node [above of=countline, yshift=-0.7cm] (ul) {7};
+
+	\end{tikzpicture}
+	\caption{Variable Node}
+	\label{fig:vn}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Check Node}
+	Each check node is connected to 112 variable nodes, and there are 2045 check nodes. 
+
+	\begin{figure}
+	\centering
+	\begin{tikzpicture}[auto, thick, node distance=1 cm]
+		\node [block] (cn) {+};
+		\foreach \y in {-0.1,-0.2,-0.3,-0.4,-0.5,-1,0,0.1,0.2,0.3,0.4,0.5,1}{%
+   			\draw [-] (cn) -- ($(cn.east) + (1,\y)$);
+  		}
+		\draw [gray, <-] ($(cn.center) + (0.8,-0.8)$) arc [radius=2, start angle=-25, end angle= 25] node[name=countline] {};	
+		\node [above of=countline, yshift=-0.7cm] (ul) {112};
+
+	\end{tikzpicture}
+	\caption{Check Node}
+	\label{fig:vn}
+	\end{figure}
+\end{frame}
+
+\end{document}
