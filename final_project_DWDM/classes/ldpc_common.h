@@ -18,7 +18,7 @@
 #define CODE_WORD 32640
 #define IND_EQ 2045
 #define ALL_EQ 2051
-#define MAX_ATTEMPTS 51
+#define MAX_ATTEMPTS 49
 
 typedef std::vector< std::bitset<ALL_INFO_BIT> > EncodingMatrix;
 typedef std::bitset< CODE_WORD > CodeWord;

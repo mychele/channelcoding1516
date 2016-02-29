@@ -118,7 +118,7 @@ int main(int argc, char const *argv[])
 	int line_index = 2;
 	int node_c = 3;
 	CheckNode check_node(line(line_index,node_c));
-	double all_llr = -10;
+	double all_llr = -11;
 	// init LLR on the corresponding nodes
 	for(int a = 0; a < (int)ALL_ROWS; ++a) {
 		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLRat(all_llr, line_index);
@@ -128,13 +128,17 @@ int main(int argc, char const *argv[])
 
 	double phiTildeNode = phiTilde(std::abs(all_llr));
 	double exp_llr = (all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
+	begin = std::chrono::system_clock::now();
 	check_node.updateLLR(variableNodeVector);
+	std::cout << "updateLLR time " << (double)(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - begin)).count()/1000 << " ms\n";
 	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
 
 	variableNodeVector->at(110*ALL_COLUMNS + (slopes[line_index]*110 + node_c)%ALL_COLUMNS).setLLRat(-all_llr, line_index);
 	phiTildeNode = phiTilde(std::abs(all_llr));
 	exp_llr = (all_llr > 0) ? -phiTilde(111*phiTildeNode) : phiTilde(111*phiTildeNode);
+	begin = std::chrono::system_clock::now();
 	check_node.updateLLR(variableNodeVector);
+	std::cout << "updateLLR time " << (double)(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - begin)).count()/1000 << " ms\n";
 	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
 	std::cout << "For node 110, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
 
