@@ -48,13 +48,23 @@ public:
 private:
 	line m_line; // if m_line has both entries negative, the check node is one of the invalid ones
 	std::vector<int> m_variableNodeColumnIndex;
+	// store the incoming LLR
+	std::vector<double> *m_incomingLlrArray;
+	// store phiTilde of the abs of incoming LLR
+	std::vector<double> *m_phiArray;
+	// store the sign of the incoming LLR
+	std::vector<int> *m_signArray;
+	// sum of the elements in m_phiArray
+	double m_phiSum;
+	// product of the sign in m_signArray
+	int m_signProd;
 
 	/**
 	 * Vector that stores all the LLR, one entry per outgoing branch
 	 */
 	std::vector<double> *m_llrVector;
 
-	void updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVector);
+	inline void updateLLRat(int row_index);
 	void updateLLRatMinSum(int row_index, std::vector<VariableNode> *variableNodeVector);
 
 };
