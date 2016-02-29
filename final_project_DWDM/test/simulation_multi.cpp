@@ -73,11 +73,11 @@ int main(int argc, char const *argv[])
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
-    const int num_SNR = 6;
-    double ebn0_vec[num_SNR] = {6.7,  6.75, 6.8, 6.85, 6.9,  6.95,  7,    7.05, 	7.1};
-    const int num_attempt_per_snr[num_SNR] = {1000, 1000, 1000, 1000, 1000, 10000, 40000, 40000, 40000};
+    const int num_SNR = 3;
+    double ebn0_vec[num_SNR] = {4.6, 4.8, 5};
+    const int num_attempt_per_snr[num_SNR] = {100, 100, 100};
 
-    const int N = 40000; // attempts
+    const int N = 100; // attempts
     std::vector< std::vector<double> > *num_error_matrix = new std::vector< std::vector<double> >(num_SNR);
     std::vector< std::vector<double> > *decoding_time = new std::vector< std::vector<double> >(num_SNR);
     std::vector< std::thread > snr_thread_vec;
@@ -114,7 +114,7 @@ int main(int argc, char const *argv[])
 			for(int snr_write = 0; snr_write < num_SNR; snr_write++) {
 				if(num_attempt_per_snr[snr_write] >= attempt + 1) {
 					std::stringstream conc_filename;
-					conc_filename << "simulation_results_multi_os" << ebn0_vec[snr_write] << ".txt";
+					conc_filename << "simulation_results_multi_" << ebn0_vec[snr_write] << ".txt";
 					std::ofstream output_file (conc_filename.str().c_str(), std::ios::out | std::ios::app);
 					for(int attempt_index = attempt + 1 - 100; attempt_index < attempt + 1; attempt_index++) {
 						output_file << num_error_matrix->at(snr_write).at(attempt_index) << "\n";
@@ -141,7 +141,7 @@ int main(int argc, char const *argv[])
     }
 
 	
-	std::ofstream output_file ("BER_and_time_multi_os.txt", std::ios::out | std::ios::app);
+	std::ofstream output_file ("BER_and_time_multi.txt", std::ios::out | std::ios::app);
     for (int snr_ind = 0; snr_ind < num_SNR; ++snr_ind)
     {
     	output_file << ebn0_vec[snr_ind] << " " << mean_BER[snr_ind] << "\n";
