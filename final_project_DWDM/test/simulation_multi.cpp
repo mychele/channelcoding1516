@@ -73,11 +73,14 @@ int main(int argc, char const *argv[])
     std::uniform_int_distribution<int> bit_generator(0,1);
     std::normal_distribution<double> noise_generator(0,1);
 
-    const int num_SNR = 3;
-    double ebn0_vec[num_SNR] = {4.6, 4.8, 5};
-    const int num_attempt_per_snr[num_SNR] = {100, 100, 100};
+    const int num_SNR = 6;
+    double ebn0_vec[num_SNR] = {4.78, 4.80, 4.82, 4.84, 4.86, 4.88};
+    int num_attempt_per_snr[num_SNR] = {1000, 1000, 1000, 1000, 10000, 10000};
+    int total_error_per_snr[num_SNR] = {0};
+    int skipped_snr = 0;
 
-    const int N = 100; // attempts
+    const int N = 10000; // attempts
+    const int history = 100; // how many SNR are saved
     std::vector< std::vector<double> > *num_error_matrix = new std::vector< std::vector<double> >(num_SNR);
     std::vector< std::vector<double> > *decoding_time = new std::vector< std::vector<double> >(num_SNR);
     std::vector< std::thread > snr_thread_vec;
@@ -87,6 +90,7 @@ int main(int argc, char const *argv[])
 
     for(int attempt = 0; attempt < N; ++attempt) {
     	std::cout << attempt << "\n";
+    	skipped_snr = 0;
     	// Use the all 0 information word
 
 		// generate the same noise for all the SNR, with random N(0,1) variables
@@ -97,29 +101,42 @@ int main(int argc, char const *argv[])
 
 		for(int snr_ind = 0; snr_ind < num_SNR; ++snr_ind) {
 			if(num_attempt_per_snr[snr_ind] >= attempt) { 
-
 				// ---------------------------------------- add noise and decode --------------------------------------
 				double sigma_w = 1/std::sqrt(2*std::pow(10, (ebn0_vec[snr_ind]/10)) * INFO_BIT/CODE_WORD);
 				snr_thread_vec.push_back(std::thread(simulate, snr_ind, sigma_w, &(decoder_vector->at(snr_ind)), num_error_matrix, decoding_time, noise_vector));
-			}
+			} else {
+				skipped_snr++;
+			} 
+		}
+
+		if(skipped_snr == num_SNR) {
+			attempt = N;
 		}
 
 		for(std::vector<std::thread>::iterator th_iter = snr_thread_vec.begin(); th_iter != snr_thread_vec.end(); ++th_iter) {
 			th_iter->join();
 		}
+		for(int snr_ind = 0; snr_ind < num_SNR; ++snr_ind) {
+			if(num_attempt_per_snr[snr_ind] >= attempt) {
+				total_error_per_snr[snr_ind] += num_error_matrix->at(snr_ind).at(attempt);
+			}
+		}
 		// remove the threads that just joined
 		snr_thread_vec.clear();
 
-		if((attempt+1)%100 == 0) {
+		if((attempt+1)%history == 0) {
 			for(int snr_write = 0; snr_write < num_SNR; snr_write++) {
 				if(num_attempt_per_snr[snr_write] >= attempt + 1) {
 					std::stringstream conc_filename;
 					conc_filename << "simulation_results_multi_" << ebn0_vec[snr_write] << ".txt";
 					std::ofstream output_file (conc_filename.str().c_str(), std::ios::out | std::ios::app);
-					for(int attempt_index = attempt + 1 - 100; attempt_index < attempt + 1; attempt_index++) {
+					for(int attempt_index = attempt + 1 - history; attempt_index < attempt + 1; attempt_index++) {
 						output_file << num_error_matrix->at(snr_write).at(attempt_index) << "\n";
 					}
 					output_file.close();
+				}
+				if(total_error_per_snr[snr_write] >= 1000) {
+					num_attempt_per_snr[snr_write] = attempt; // stop the simulations for that snr
 				}
 			}
 		}
