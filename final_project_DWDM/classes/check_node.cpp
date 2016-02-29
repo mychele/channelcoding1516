@@ -7,7 +7,6 @@ CheckNode::CheckNode() {
 	m_line = line(-1, -1);
 	m_llrVector = new std::vector<double>(ALL_ROWS, 0);
 	m_variableNodeColumnIndex = std::vector<int>(ALL_ROWS, 0);
-
 }
 
 CheckNode::CheckNode(line lineEq) {
@@ -48,7 +47,7 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 	int row_block_index = row_index*ALL_COLUMNS;
 	for (; block_index < row_block_index; block_index += ALL_COLUMNS) {
 															//(a*s + c)%293
-		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLRat(m_line.first);
 				
 		if(llr_var > 0) {
 			sumPhiTilde += phiTilde(llr_var);
@@ -67,7 +66,7 @@ CheckNode::updateLLRat(int row_index, std::vector<VariableNode> *variableNodeVec
 	if(!isinf(sumPhiTilde)) { // continue to cycle
 		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
 														//(a*s + c)%293
-			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLRat(m_line.first);
 		
 			if(llr_var > 0) {
 				sumPhiTilde += phiTilde(llr_var);
@@ -119,7 +118,7 @@ CheckNode::updateLLRatMinSum(int row_index, std::vector<VariableNode> *variableN
 	int row_block_index = row_index*ALL_COLUMNS;
 	for (; block_index < row_block_index; block_index += ALL_COLUMNS) {
 															//(a*s + c)%293
-		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+		llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLRat(m_line.first);
 				
 		if(llr_var > 0) {
 			if(llr_var < minLLR) {
@@ -142,7 +141,7 @@ CheckNode::updateLLRatMinSum(int row_index, std::vector<VariableNode> *variableN
 	if(minLLR > 0) { // continue to cycle
 		for (; block_index < ALL_BIT; block_index += ALL_COLUMNS) {
 														//(a*s + c)%293
-			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLR();
+			llr_var = variableNodeVector->at(block_index + m_variableNodeColumnIndex[a++]).getLLRat(m_line.first);
 				
 			if(llr_var > 0) {
 				if(llr_var < minLLR) {
