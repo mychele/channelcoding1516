@@ -40,7 +40,6 @@ LdpcDecoder::~LdpcDecoder() {
 	// clean up
 	delete m_variableNodeVector;
 	delete m_checkNodeVector;
-	//delete m_receivedLLR;
 	delete m_decisionVector;
 }
 
@@ -50,23 +49,25 @@ LdpcDecoder::decode(std::vector<double> *receivedData, double sigma_w2) {
 	// assign m_sigmaw2
 	m_sigmaw2 = sigma_w2;
 	m_alpha = -2/m_sigmaw2;
+
 	// initialize variable nodes LLR with the channel LLR
 	m_receivedLLR = new std::vector<double>();
+	// copy received data
 	m_receivedLLR->insert(m_receivedLLR->begin(), receivedData->begin(), receivedData->end());
+	// multiply it by m_alpha = -2/sigma_w^2
 	std::transform(m_receivedLLR->begin(), m_receivedLLR->end(), m_receivedLLR->begin(),
                std::bind1st(std::multiplies<double>(),m_alpha));
+
+	// initialize variable nodes
 	initializeVariableNodes();
-	// until the maximum number of attempt is reached
+
+	// cycle and perform the updates until the maximum number of attempt is reached or the codeword is not found
 	int attempt_index = 0;
 	do {
 		updateCheckNodes();
 		updateVariableNodes();
-		// int zero_llr = 0;
-		// for (int i = 0; i < m_variableNodeVector->size(); i++) {
-		// 	if(m_variableNodeVector->at(i).getLLR()==0) {zero_llr++;}
-		// }
-		// std::cout << zero_llr << "\n";
-	} while(!isCodewordFound() && attempt_index++ < MAX_ATTEMPTS);
+	} while(!isCodewordFound() && attempt_index++ < MAX_ATTEMPTS); // isCodewordFound performs marginalization too
+	
 	delete m_receivedLLR;
 	return m_decisionVector;
 }
@@ -77,23 +78,25 @@ LdpcDecoder::decodeMinSum(std::vector<double> *receivedData, double sigma_w2) {
 	// assign m_sigmaw2
 	m_sigmaw2 = sigma_w2;
 	m_alpha = -2/m_sigmaw2;
+
 	// initialize variable nodes LLR with the channel LLR
 	m_receivedLLR = new std::vector<double>();
+	// copy received data
 	m_receivedLLR->insert(m_receivedLLR->begin(), receivedData->begin(), receivedData->end());
+	// multiply it by m_alpha = -2/sigma_w^2
 	std::transform(m_receivedLLR->begin(), m_receivedLLR->end(), m_receivedLLR->begin(),
                std::bind1st(std::multiplies<double>(),m_alpha));
+
+	// initialize variable nodes
 	initializeVariableNodes();
-	// until the maximum number of attempt is reached
+
+	// cycle and perform the updates until the maximum number of attempt is reached or the codeword is not found
 	int attempt_index = 0;
 	do {
 		updateCheckNodesMinSum();
 		updateVariableNodes();
-		// int zero_llr = 0;
-		// for (int i = 0; i < m_variableNodeVector->size(); i++) {
-		// 	if(m_variableNodeVector->at(i).getLLR()==0) {zero_llr++;}
-		// }
-		// std::cout << zero_llr << "\n";
 	} while(!isCodewordFound() && attempt_index++ < MAX_ATTEMPTS);
+
 	delete m_receivedLLR;
 	return m_decisionVector;
 }
@@ -118,17 +121,18 @@ LdpcDecoder::initializeVariableNodes() {
 		m_variableNodeVector->at(rx_index).setChannelLLR(m_receivedLLR->at(rx_index));
 	}
 
+	// LLR for [293, 30765 - 1]
 	rx_index = ALL_COLUMNS;
 	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
 		m_variableNodeVector->at(rx_index).setChannelLLR(m_receivedLLR->at(rx_index));
 	} // up to 30765 - 1
 
+	// LLR of parity check variable nodes
 	for(int pc_row_index = 1; pc_row_index < PC_ROWS; ++pc_row_index) {
 		for(; rx_index < ALL_INFO_BIT + pc_row_index*ALL_COLUMNS - 1; ++rx_index) { 
-		// skip bit 31057, 31350, 31643, 31936, 32229, 32522, since they must be left at +inf
 			m_variableNodeVector->at(rx_index).setChannelLLR(m_receivedLLR->at(rx_index));
 		}
-		rx_index++; 
+		rx_index++; // skip bit 31057, 31350, 31643, 31936, 32229, 32522, since they must be left at +inf
 	}
 	// copy the last 293 bit
 	for(; rx_index < ALL_INFO_BIT + ALL_EQ; rx_index++) { // up to the last bit 
@@ -143,17 +147,19 @@ LdpcDecoder::updateVariableNodes() {
 	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
 		m_variableNodeVector->at(rx_index).updateLLR(m_checkNodeVector);
 	}
+
+	// update nodes from 293 to 30765
 	rx_index = ALL_COLUMNS;
 	for(; rx_index < ALL_INFO_BIT; ++rx_index) {
 		m_variableNodeVector->at(rx_index).updateLLR(m_checkNodeVector);
 	} // up to 30765 - 1
 
+	// update parity check variable nodes
 	for(int pc_row_index = 1; pc_row_index < PC_ROWS; ++pc_row_index) {
 		for(; rx_index < ALL_INFO_BIT + pc_row_index*ALL_COLUMNS - 1; ++rx_index) { 
-		// skip bit 31057, 31350, 31643, 31936, 32229, 32522, since they must be left at +inf
 			m_variableNodeVector->at(rx_index).updateLLR(m_checkNodeVector);
 		}
-		rx_index++; 
+		rx_index++; // skip bit 31057, 31350, 31643, 31936, 32229, 32522, since they must be left at +inf
 	}
 	// update the last 293 bit
 	for(; rx_index < ALL_INFO_BIT + ALL_EQ; rx_index++) { // up to the last bit 
@@ -197,7 +203,7 @@ bool
 LdpcDecoder::isCodewordFound() {
 	// marginalize, then cycle on the 2045 checkNodes and check if each has an even number of 1
 	int rx_index = 0;
-	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {
+	for(; rx_index < ALL_COLUMNS - INIT_ZERO_BIT; ++rx_index) {	// LLR at PC_ROWS is the LLR going to leaf node
 		m_decisionVector->at(rx_index) = (m_variableNodeVector->at(rx_index).getLLRat(PC_ROWS) + m_receivedLLR->at(rx_index) >= 0) ? 0 : 1;
 	}
 	rx_index = ALL_COLUMNS;
@@ -233,6 +239,6 @@ LdpcDecoder::isCodewordFound() {
 				++numNonEvenCheckNodes;
 		}
 	}
-	return ((numNonEvenCheckNodes > 0) ? 0 : 1);
+	return ((numNonEvenCheckNodes > 0) ? 0 : 1); // return 0 is the codeword is not found
 }
 

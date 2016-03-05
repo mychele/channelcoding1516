@@ -8,7 +8,6 @@ VariableNode::VariableNode() {
 }
 
 VariableNode::VariableNode(int a, int b) {
-	//TODO check intervals!
 	m_a = a;
 	m_b = b;
 	m_j = a*(int)ALL_COLUMNS + b;	

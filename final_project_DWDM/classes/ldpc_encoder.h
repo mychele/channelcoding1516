@@ -3,6 +3,10 @@
 
 #include "ldpc_common.h"
 
+/**
+ * An LdpcEncoder object represents the encoder, once setup its method encode
+ * accepts and InfoWord and returns a CodeWord
+ */
 class LdpcEncoder
 {
 public:
@@ -15,7 +19,6 @@ public:
 	 */
 	int setup();
 
-	// TODO condider if it is a valuable improvement encoding without the all 0 bit
 	/**
 	 * Encode the given information word
 	 * @ InfoWord, a bitset with the information bit and the 173 0 bit in (292-d, 292) 0<=d<=172

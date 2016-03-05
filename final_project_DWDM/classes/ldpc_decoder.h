@@ -6,18 +6,45 @@
 #include "ldpc_common.h"
 #include <vector>
 
+
+/**
+ * This class represents the decoder, either Sum Product or Min Sum. It assumes equally likely input symbols.
+ */
 class LdpcDecoder
 {
 public:
+	/**
+	 * Public constructor
+	 */ 
 	LdpcDecoder();
+	/**
+	 * Public destructor
+	 */ 
 	~LdpcDecoder();
 
-	std::vector<bool>* decode(std::vector<double> *receivedData, double sigma_w);
-	std::vector<bool>* decodeMinSum(std::vector<double> *receivedData, double sigma_w);
+	/**
+	 * Decode receivedData using Sum Product decoder, given the estimate of sigma_w^2
+	 * @param a pointer to the vector of received data, whose length is ALL_BITS
+	 * @param the value of sigma_w^2
+	 * @return a pointer to a vector of bool with the decisions
+	 */
+	std::vector<bool>* decode(std::vector<double> *receivedData, double sigma_w2);
 
-	// this is not a good practice, but it is useful for testing purposes
-	// TODO remove once testing is done
+	/**
+	 * Decode receivedData using Min Sum decoder, given the estimate of sigma_w^2
+	 * @param a pointer to the vector of received data, whose length is ALL_BITS
+	 * @param the value of sigma_w^2
+	 * @return a pointer to a vector of bool with the decisions
+	 */
+	std::vector<bool>* decodeMinSum(std::vector<double> *receivedData, double sigma_w2);
+
+	/**
+	 * Get a pointer to VariableNode vector
+	 */
 	const std::vector<VariableNode>* getVariableNodeVector() const; 
+	/**
+	 * Get a pointer to CheckNode vector
+	 */
 	const std::vector<CheckNode>* getCheckNodeVector() const; 
 
 private:
