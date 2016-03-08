@@ -12,7 +12,7 @@
 \definecolor{mycolor6}{rgb}{0.30100,0.74500,0.93300}%
 %
 \begin{tikzpicture}
-
+\tikzstyle{every node}=[font=\small]
 \begin{axis}[%
 grid style={line width=.1pt, draw=gray!10},
 width=0.951\fwidth,
@@ -21,7 +21,7 @@ at={(0\fwidth,0\fheight)},
 scale only axis,
 xmin=4.5,
 xmax=4.95,
-xlabel={$\dfrac{E_b}{N_O}$ [dB]},
+xlabel={\scriptsize{$\dfrac{E_b}{N_0}$ [dB]}},
 xmajorgrids,
 ymode=log,
 ymin=5e-08,

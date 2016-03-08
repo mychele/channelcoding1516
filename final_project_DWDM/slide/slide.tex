@@ -88,7 +88,7 @@
     	\item Field of application: DWDM submarine systems
  		\item LDPC Encoder: encoding matrix and implementation
  		\item Message passing decoder
- 		\item LDPC Decoder C++ implementation: the flexibility of OOP
+ 		\item LDPC Decoder \texttt{C++} implementation: the flexibility of OOP
  		\item Performance evaluation
  		\item Conclusions
 	\end{itemize}
@@ -103,8 +103,8 @@
 			\end{figure}
 		\column{0.4\textwidth}
 			\begin{itemize}
-				\item DWDM interfaces with different optical transport networks
-				\item The channel can be modeled as a Gaussian channel
+				\item DWDM interfaces with different optical transport networks,
+				\item The channel can be modeled as a Gaussian channel.
 			\end{itemize}
 	\end{columns}
 \end{frame}
@@ -114,27 +114,27 @@
 	Forward error correction for high bit-rate DWDM submarine systems 
 	\end{center}
 	\begin{itemize}
-		\item \textit{Super FEC} schemes for coding in submarine optical systems
-		\item More robust than ITU-T G.975 FEC - RS (255, 239)
-		\item Concatenate RS or BCH with different options
-		\item LDPC (32640, 30592)
+		\item \textit{Super FEC} schemes for coding in submarine optical systems,
+		\item More robust than ITU-T G.975 FEC - RS (255, 239),
+		\item Concatenate RS or BCH with different options,
+		\item \textbf{Low Density Parity Check} code LDPC (32640, 30592).
 	\end{itemize}
 	
 \end{frame}
 
 \begin{frame}{LDPC (32640, 30592)}
 	\begin{itemize}
-		\item Information word with $K=30592$, it fits a RS (255,239) frame
-		\item High coding rate $R = \frac{K}{N} = 0.9374$
-		\item Spectral efficiency $\rho = \dfrac{R \log_2(M)}{BT} = 2R = 1.8748$
-		\item Hardware implementation suitable for application with 10G and 40G fibers
+		\item Information word with $K=30592$, it fits a RS (255,239) frame,
+		\item High coding rate $R = \frac{K}{N} = 0.9374$,
+		\item Spectral efficiency $\rho = \dfrac{R \log_2(M)}{BT} = 2R = 1.8748$,
+		\item Hardware implementation suitable for application with 10G and 40G fibers,
 	\end{itemize}
 	
 \end{frame}
 
-\begin{frame}{Encoding procedure 1/2}
+\begin{frame}{Encoding Procedure 1/2}
 	\begin{itemize}
-		\item The information bit are placed in a $112\times 293$ matrix $\mathbf{S}$
+		\item The information bit are placed in a $112\times 293$ matrix $\mathbf{S}$,
 		\item Bit $j$, $j\in[1, 30592]$, is inserted in position $(r, 293r + 292 - q)$ with
 		\begin{equation*}
 			r = \left\lfloor\dfrac{j}{293}\right\rfloor
@@ -142,21 +142,21 @@
 		\begin{equation*}
 			q = j + 172
 		\end{equation*}
-		\item Entries in $(0, 292-d), d \in [0, 172]$ are set to 0 and never transmitted
-		\item 7 slopes $s_i, \, i \in \{1 \dots 7\}$ are chosen
+		\item Entries in $(0, 292-d), d \in [0, 172]$ are set to 0 and never transmitted,
+		\item 7 slopes $s_i, \, i \in \{1 \dots 7\}$ are chosen,
 		\item For each slope $s_i$ 293 lines are defined by
 		\begin{equation*}
-			(a, b) | b = (s_ia + c)\mod_{293}, \quad c \in [0, 292]
+			(a, b) | b = (s_ia + c)\lmod{293}, \quad c \in [0, 292]
 		\end{equation*}
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Encoding procedure 2/2}
+\begin{frame}{Encoding Procedure 2/2}
 	\begin{itemize}
-		\item A total of 2051 lines are defined
-		\item The sum (modulo 2) of the bits in each line must be 0
-		\item The parity check equations define a system of 2051 equations in 2051 unknowns
-		\item 6 parity check bit are redundant, and removed from the linear system, as well as the last equation ($c=292$) for the first 6 slopes
+		\item $293 \times 7 = 2051$ lines are defined,
+		\item The sum (modulo 2) of the bits in each line must be 0,
+		\item The parity check equations define a system of 2051 equations in 2051 unknowns,
+		\item 6 parity check bit are redundant, and removed from the linear system, as well as the last equation ($c=292$) for the first 6 slopes,
 		\item This system can be written as 
 		\begin{equation*}
 			\mathbf{H} \mathbf{c} = \mathbf{0}
@@ -172,10 +172,10 @@
 				2045 & \mathbf{M} & \mathbf{N}
 			}
 	\end{equation*}
-	Each row $i$ of $\mathbf{H}$ is defined by a valid couple $(s_i, c_i)$, and column $j$ corresponds to bit $(\floor{j/293}, j\mod_{293})$ in matrix $\mathbf{S}$. Then
+	Row $i$ of $\mathbf{H}$ is defined by a valid couple $(s_i, c_i)$, and column $j$ corresponds to bit $(\left\lfloor j/293 \right\rfloor, j\lmod{293})$ in matrix $\mathbf{S}$. Then
 	\begin{equation*}
 		h_{i, j} = \begin{cases}
-			1, &\text{ if }j\mod{293} == s_i\floor{\frac{j}{293}} + c_i\\
+			1, &\text{ if }j\lmod{293} == s_i\left\lfloor\dfrac{j}{293}\right\rfloor + c_i\\
 			0, &\text{ otherwise}\\
 		\end{cases}
 	\end{equation*}
@@ -228,12 +228,12 @@
 	For the Gauss elimination NTL\footnote{\url{http://www.shoup.net/ntl/}} library is used. Then each row of matrix $\mathbf{K} = \mathbf{N}^{-1}\mathbf{M}$ is saved into a \texttt{std::bitset} and stored to file. 
 \end{frame}
 
-\begin{frame}{Encoder}
+\begin{frame}{LDPC Encoder}
 \begin{itemize}
-	\item The encoder is implemented as a \texttt{C++} object. Upon initialization, matrix $\mathbf{K}$ is read from file and loaded in memory. 
-	\item Both infoword and codeword are \texttt{std::bitset}
-	\item Encoding is performed by filling the first 30592 bit of the codeword with the information word, and by computing the 2045 parity check bit with an \texttt{and} operation between the infoword and the corresponding row of matrix $\mathbf{K}$
-	\item Three bit set to 0 are inserted between the information word and the parity check bits
+	\item The encoder is implemented as a \texttt{C++} object. Upon initialization, matrix $\mathbf{K}$ is read from file and loaded in memory, 
+	\item Both infoword and codeword are \texttt{std::bitset},
+	\item The first 30592 bit of the codeword are filled with the information word, then 2045 parity check bit are computed with an \texttt{and} operation between the infoword and the corresponding row of matrix $\mathbf{K}$,
+	\item Three zero bit are inserted between the information word and the parity check bits.
 \end{itemize}
 \end{frame}
 
@@ -248,7 +248,6 @@
 			\node [block, below of=u1] (u2) {};
 			\node [block, below of=u2] (u3) {};
 			\node [block, below of=u3, yshift=-1cm] (ck) {};
-			\draw[densely dotted](u3) -- node[name=u] {} (ck);
 
 			\node [block, right of=u0] (v0) {=};
 			\node [block, right of=u1] (v1) {=};
@@ -265,8 +264,11 @@
 			\draw [solid](u0) -- node[name=l0] {} (v0);
 			\draw [solid](u1) -- node {} (v1);
 			\draw [solid](u2) -- node {} (v2);
-			\draw [solid](u3) -- node {} (v3);
+			\draw [solid](u3) -- node[name=l3] {} (v3);
 			\draw [solid](ck) -- node[name=lk] {} (vk);
+			\node [circle, radius=0.01cm, below of=l3, yshift=0.3cm] (dot) {$\vdots$};
+			\node [circle, radius=0.01cm, below of=dot, yshift=0.3cm] (dot2) {$\vdots$};
+
 
 			\foreach \y in {2.1,2.5,2.9}{
 	    		\draw [-] (v0) -- ($(perm.west) + (0,\y)$);
@@ -305,25 +307,25 @@
 		\end{figure}
 	\column{0.4\framewidth}
 	\begin{itemize}
-		\item The decoder is based on this factor graph.
+		\item The decoder is based on this factor graph,
 		\item Decoding is performed in the LLR domain.
 	\end{itemize}
 	\end{columns}
 \end{frame}
 
-\begin{frame}{LLR and Leaf nodes messages}
+\begin{frame}{LLR and Leaf Nodes Messages}
 	The LDPC code under analysis is a binary code. Therefore the LLR associated to message $\mu$ is expressed as
 	$$
 		LLR_{\mu} = \ln \left( \frac{\mu(0)}{\mu(1)} \right)
 	$$
-	Leaf nodes are initialized with received values, and under the hypothesis of equally probable input symbols the LLR are
+	\textbf{Leaf nodes} are initialized with received values, and under the hypothesis of equally probable input symbols the LLR are
 	$$
-		LLR_{g_l \rightarrow c_l} = \ln \left( \frac{\frac{1}{\sqrt{2\pi\sigma_w^2}} e^{-\frac{1}{2\sigma_w^2}(r_l+1)}}{\frac{1}{\sqrt{2\pi\sigma_w^2}}e^{-\frac{1}{2\sigma_w^2}(r_l-1)}} \right) = -\frac{2r_l}{\sigma_w^2}
+		LLR_{g_l \rightarrow =_l} = \ln \left( \frac{\frac{1}{\sqrt{2\pi\sigma_w^2}} e^{-\frac{1}{2\sigma_w^2}(r_l+1)}}{\frac{1}{\sqrt{2\pi\sigma_w^2}}e^{-\frac{1}{2\sigma_w^2}(r_l-1)}} \right) = -\frac{2r_l}{\sigma_w^2}
 	$$
 \end{frame}
 
 \begin{frame}{Variable Node}
-	A variable node represents a delta function, therefore the LLR on each branch is
+	A \textbf{variable node} represents a delta function, therefore the LLR on each branch is
 	$$
 		LLR_{=\rightarrow j} = \sum_{i \ne j} LLR_{i \rightarrow =}
 	$$
@@ -345,8 +347,8 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Check Node}
-	Each check node is connected to 112 variable nodes, and there are 2045 check nodes. The LLR of outgoing branch $j$ is given by
+\begin{frame}{Check Node 1/2}
+	Each \textbf{check node} is connected to 112 variable nodes, and there are 2045 check nodes. With Sum Product algorithm, the LLR of outgoing branch $j$ is given by
 	$$
 		LLR_{+\rightarrow j} = \tilde{\Phi} \left( \sum_{i \ne j} \tilde{\Phi}\left( |LLR_{i \rightarrow +}|\right) \right) \Pi_{i \ne j} \mbox{sign} \left( LLR_{i \rightarrow +} \right)
 	$$
@@ -368,7 +370,7 @@
 \end{frame}
 
 
-\begin{frame}{Check Node}
+\begin{frame}{Check Node 2/2}
 	\begin{columns}
 	\column{0.5\textwidth}
 	The function $\tilde{\Phi} (x) $ is given by
@@ -386,7 +388,7 @@
 	\end{figure}
 	\end{columns}
 	\vfill
-	Min Sum update was implemented too, by changing the function in the check node
+	Min Sum algorithm was implemented too, by changing the update function in the check node
 	$$
 		LLR_{+\rightarrow j} = \min_{i \ne j} \left\{ |LLR_{i \rightarrow +}| \right\} \Pi_{i \ne j} \mbox{sign} \left( LLR_{i \rightarrow +} \right)
 	$$
@@ -394,7 +396,7 @@
 \end{frame}
 
 \begin{frame}{Marginalization}
-	The marginalization is carried out between leaf nodes $g_l$ and variable nodes $=_l$, thus
+	The \textbf{marginalization} is carried out between leaf nodes $g_l$ and variable nodes $=_l$, thus
 	$$
 		\hat{x} =
 		\begin{cases}
@@ -417,7 +419,7 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{C++ implementation 1/3}
+\begin{frame}{\texttt{C++} Implementation 1/3}
 	The message passing decoder was implemented using the \textbf{flexibility} offered by \textit{Object Oriented Programming} (OOP). 
 	\begin{itemize}
 		\item \textbf{\texttt{VariableNode} class} represents a single variable node, and it is initialized with a position in the standard matrix $\mathbf{S}$ and the index of its 7 check nodes,
@@ -426,7 +428,7 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{C++ implementation 2/3} 
+\begin{frame}{\texttt{C++} Implementation 2/3} 
 	\begin{itemize}
 		\item \texttt{LdpcDecoder} is initialized once per simulation campaign,
 		\item The $\tilde{\Phi}(x)$ function is clipped to \texttt{infinity()} for $x < 10^{-300}$ and to 0 for $x > 38$,
@@ -435,13 +437,13 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{C++ implementation 3/3} 
+\begin{frame}{\texttt{C++} Implementation 3/3} 
 	\begin{itemize}
 		\item For each simulation, a single noise vector is generated, and scaled by $\sigma_w$ for each $\frac{E_b}{N_0}$ with
 		$$
 			\sigma_w = \sqrt{\frac{1}{\sqrt{2 \frac{E_b}{N_0} R}}}
 		$$
-		\item The decoding for each $\frac{E_b}{N_0}$ is launched in a separate thread, to parallelize computations
+		\item The decoding for each $\frac{E_b}{N_0}$ is launched in a separate thread, to parallelize computations.
 	\end{itemize}
 \end{frame}
 
@@ -455,17 +457,17 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{The waterfall behavior}
+\begin{frame}{Results: the waterfall behavior}
 	\begin{figure}[t]
 		\centering
 		\setlength\fheight{0.5\textwidth}
 		\setlength\fwidth{0.8\textwidth}
 		\input{./figures/iter_water.tex}
-		\caption{\small{BER for 50 iterations}}
+		\caption{\small{Waterfall is reached with 50 iterations}}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Packet Error Rate for 50 iterations}
+\begin{frame}{Results: PER for 50 iterations}
 	\begin{figure}[t]
 		\centering
 		\setlength\fheight{0.5\textwidth}
@@ -475,7 +477,7 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Comparison with a different choice of slopes}
+\begin{frame}{Results: comparison with a different choice of slopes}
 	\begin{figure}[t]
 		\centering
 		\setlength\fheight{0.5\textwidth}
@@ -485,17 +487,17 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Comparison with Min Sum}
+\begin{frame}{Results: comparison with Min Sum algorithm}
 	\begin{figure}[t]
 		\centering
 		\setlength\fheight{0.5\textwidth}
 		\setlength\fwidth{0.8\textwidth}
 		\input{./figures/ms.tex}
-		\caption{\small{Comparison with Min Sum}}
+		\caption{\small{Sum Product vs Min Sum algorithm, 50 iterations}}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Time to decode a packet}
+\begin{frame}{Results: time to decode a packet}
 	\begin{figure}[t]
 		\centering
 		\setlength\fheight{0.5\textwidth}
@@ -507,11 +509,11 @@
 
 \begin{frame}{Conclusions}
     \begin{itemize}
-    	\item LDPC code for DWDM submarine systems was presented
- 		\item Encoding and message passing decoding were described
- 		\item The C++ implementation was detailed
- 		\item Results show that Sum Product algorithm exhibits a waterfall between $4.6$ and $4.9$ dB
- 		\item The code is available on Github \url{https://github.com/mychele/channelcoding1516}
+    	\item LDPC code for DWDM submarine systems was presented,
+ 		\item Encoding and message passing decoding were described,
+ 		\item The \texttt{C++} implementation was detailed,
+ 		\item Results show that Sum Product algorithm exhibits a waterfall between $4.6$ and $4.9$ dB,
+ 		\item The code is available on Github \url{https://github.com/mychele/channelcoding1516}.
 	\end{itemize}
 \end{frame}
 
