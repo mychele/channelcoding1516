@@ -86,13 +86,5 @@ sim_minsum: ./test/simulation_minsum.cpp
 	@clang++ -std=c++11 -O3 -c -I./classes -g $?
 	@clang++ -std=c++11 -O3 -o simulation_minsum simulation_minsum.o ldpc_decoder.o variable_node.o check_node.o
 
-swsens: ./test/simulation_sigmaw.cpp
-	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/variable_node.cpp
-	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/check_node.cpp
-	@clang++ -std=c++11 -O3 -c -I./classes -g ./classes/ldpc_decoder.cpp
-	@clang++ -std=c++11 -O3 -c -I./classes -g $?
-	@clang++ -std=c++11 -O3 -o simulation_sigmaw simulation_sigmaw.o ldpc_decoder.o variable_node.o check_node.o
- 
-
 clean:
-	rm invert_H encoder_test rng_test dwdm_encode_decode simulation decoder_test node_test simulation_multi simulation_noenc *.o
+	rm invert_H encoder_test rng_test dwdm_encode_decode simulation decoder_test node_test simulation_multi simulation_noenc simulation_minsum *.o

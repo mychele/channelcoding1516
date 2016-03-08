@@ -3,7 +3,6 @@
 \mode<presentation>{}
 \usetheme{Pittsburgh}
 \usecolortheme{beaver}
-\usefonttheme{professionalfonts}
 % Various useful packages and commands from different sources
 
 %\usepackage[applemac]{inputenc}
@@ -127,7 +126,7 @@
 	\begin{itemize}
 		\item Information word with $K=30592$, it fits a RS (255,239) frame
 		\item High coding rate $R = \frac{K}{N} = 0.9374$
-		\item Spectral efficiency $\rho = \frac{R \log_2(M)}{BT} = 2R = 1.8748$
+		\item Spectral efficiency $\rho = \dfrac{R \log_2(M)}{BT} = 2R = 1.8748$
 		\item Hardware implementation suitable for application with 10G and 40G fibers
 	\end{itemize}
 	
@@ -496,12 +495,23 @@
 	\end{figure}
 \end{frame}
 
+\begin{frame}{Time to decode a packet}
+	\begin{figure}[t]
+		\centering
+		\setlength\fheight{0.5\textwidth}
+		\setlength\fwidth{0.8\textwidth}
+		\input{./figures/time_log.tex}
+		\caption{\small{Average time to decode a packet}}
+	\end{figure}
+\end{frame}
+
 \begin{frame}{Conclusions}
     \begin{itemize}
     	\item LDPC code for DWDM submarine systems was presented
  		\item Encoding and message passing decoding were described
  		\item The C++ implementation was detailed
- 		\item Results show that with 50 iterations of Sum Product algorithm the code is close to the Shannon bound
+ 		\item Results show that Sum Product algorithm exhibits a waterfall between $4.6$ and $4.9$ dB
+ 		\item The code is available on Github \url{https://github.com/mychele/channelcoding1516}
 	\end{itemize}
 \end{frame}
 

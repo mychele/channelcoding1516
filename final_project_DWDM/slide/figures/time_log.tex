@@ -1,0 +1,85 @@
+% This file was created by matlab2tikz.
+%
+%The latest updates can be retrieved from
+%  http://www.mathworks.com/matlabcentral/fileexchange/22022-matlab2tikz-matlab2tikz
+%where you can also make suggestions and rate matlab2tikz.
+%
+\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+\definecolor{mycolor2}{rgb}{0.85000,0.32500,0.09800}%
+\definecolor{mycolor3}{rgb}{0.92900,0.69400,0.12500}%
+%
+\begin{tikzpicture}
+\begin{axis}[%
+grid style={line width=.1pt, draw=gray!10},
+width=0.951\fwidth,
+height=\fheight,
+at={(0\fwidth,0\fheight)},
+scale only axis,
+xmin=0,
+xmax=14,
+xtick={1,2,3,4,5,6,7,8,9,10,11,12,13},
+xticklabels={\scriptsize{$3$}, \scriptsize{$4$}, \scriptsize{$4.5$}, \scriptsize{$4.6$}, \scriptsize{$4.7$}, \scriptsize{$4.8$}, \scriptsize{$4.9$}, \scriptsize{$5$}, \scriptsize{$5.1$}, \scriptsize{$5.2$}, \scriptsize{$5.3$}, \scriptsize{$5.4$}, \scriptsize{$5.5$}},
+xticklabel style={text width=20, align=center},
+xlabel={$\dfrac{E_b}{N_0}$ [dB]},
+xmajorgrids,
+ymin=-1,
+ymax=1.2,
+ylabel={\scriptsize{$\log_{10}(T)$ [s]}},
+ymajorgrids,
+axis background/.style={fill=white},
+legend style={at={(0.01,0.01)},legend cell align=left,align=left,anchor=south west,draw=white!15!black}
+]
+
+\addplot[ycomb,color=mycolor1,solid,mark=triangle,mark options={solid}] plot table[row sep=crcr] {%
+1	0.793423663017207\\
+2	0.790471652412111\\
+3	0.780498050504772\\
+4	0.703206230854036\\
+5	0.415997741996035\\
+6	0.145339385769271\\
+7	0.0321269804141671\\
+8	-0.219649558864475\\
+9	-0.428858566594214\\
+10	-0.467108094972219\\
+11	-0.514538376343639\\
+12	-0.548558988941547\\
+13	-0.574583172253337\\
+};
+\addlegendentry{Sum Product, 50};
+
+\addplot[ycomb,color=mycolor2,solid,mark=x,mark options={solid}] plot table[row sep=crcr] {%
+1	1.02860378289606\\
+2	1.02298480237231\\
+3	1.00818270785765\\
+4	0.883259313759986\\
+5	0.422111951568296\\
+6	0.101317377184387\\
+7	-0.000926033822958971\\
+8	-0.19449098615326\\
+9	-0.421812507788377\\
+10	-0.465971354217479\\
+11	-0.502181925747704\\
+12	-0.544252441498908\\
+13	-0.571941376235028\\
+};
+\addlegendentry{Sum Product, 100};
+
+\addplot[ycomb,color=mycolor3,solid,mark=asterisk,mark options={solid}] plot table[row sep=crcr] {%
+1	0.62167159363734\\
+2	0.622411949805117\\
+3	0.621882215495736\\
+4	0.624057153512902\\
+5	0.621439064706215\\
+6	0.62375257346202\\
+7	0.623147943194489\\
+8	0.603713672381667\\
+9	0.534211467061886\\
+10	0.249186123571427\\
+11	-0.128759333409464\\
+12	-0.325867579225017\\
+13	-0.39873114478154\\
+};
+\addlegendentry{Min Sum, 50};
+
+\end{axis}
+\end{tikzpicture}%
