@@ -36,7 +36,6 @@ VariableNode::updateLLR(std::vector<CheckNode> *checkNodeVector) {
 
 void
 VariableNode::updateLLRat(int branch_index, std::vector<CheckNode> *checkNodeVector) {
-	
 	double llr = 0;
 	int slope_index = 0;
 	int block_index = 0;

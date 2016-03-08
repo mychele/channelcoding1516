@@ -5,6 +5,9 @@
 #include <random>
 #include <array>
 
+/**
+ * Script to test operations on variable and check nodes
+ */
 
 int main(int argc, char const *argv[])
 {
@@ -159,7 +162,7 @@ int main(int argc, char const *argv[])
 	check_node.updateLLR(variableNodeVector);
 	std::cout << "Expecting " << 0 << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
 	std::cout << "For node 110, expecting " << 0 << " computed " << check_node.getLLRat(110) <<"\n";
-	std::cout << "For node 107, expecting " << 0 << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << 0 << " computed " << check_node.getLLRat(107) <<"\n";
 	std::cout << "For node 106, expecting " << exp_llr << " computed " << check_node.getLLRat(106) <<"\n";
 
 
@@ -170,7 +173,7 @@ int main(int argc, char const *argv[])
 	check_node.updateLLR(variableNodeVector);
 	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
 	std::cout << "For node 110, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
-	std::cout << "For node 107, expecting " << -exp_llr << " computed " << check_node.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << -exp_llr << " computed " << check_node.getLLRat(107) <<"\n";
 	std::cout << "For node 106, expecting " << ((all_llr > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode)) << " computed " << check_node.getLLRat(106) <<"\n";
 
 
@@ -181,6 +184,67 @@ int main(int argc, char const *argv[])
 	exp_llr = (std::numeric_limits<double>::infinity() > 0) ? phiTilde(111*phiTildeNode) : -phiTilde(111*phiTildeNode);
 	check_node.updateLLR(variableNodeVector);
 	std::cout << "Expecting " << exp_llr << " computed " << check_node.getLLRat(1) << " " <<  check_node.getLLRat(2) <<"\n";
+
+	// ----------------------------------------- test the min sum update LLR function on checkNode ----------------------------------------
+
+	std::cout << "Min Sum test\n";
+	line_index = 2;
+	node_c = 3;
+	CheckNode check_node_ms = CheckNode(line(line_index,node_c));
+	all_llr = -11;
+	// init LLR on the corresponding nodes
+	for(int a = 0; a < (int)ALL_ROWS; ++a) {
+		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLRat(all_llr, line_index);
+	}
+	// set an LLR on a different branch to 0 and check that it does not change the results
+	variableNodeVector->at(106*ALL_COLUMNS + (slopes[line_index]*106 + node_c)%ALL_COLUMNS).setLLRat(0, line_index+1);
+
+	begin = std::chrono::system_clock::now();
+	check_node_ms.updateLLRminSum(variableNodeVector);
+	std::cout << "updateLLR time " << (double)(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - begin)).count()/1000 << " ms\n";
+	std::cout << "Expecting " << all_llr << " computed " << check_node_ms.getLLRat(1) << " " <<  check_node_ms.getLLRat(2) <<"\n";
+
+	variableNodeVector->at(110*ALL_COLUMNS + (slopes[line_index]*110 + node_c)%ALL_COLUMNS).setLLRat(-all_llr, line_index);
+	exp_llr = -all_llr;
+	begin = std::chrono::system_clock::now();
+	check_node_ms.updateLLRminSum(variableNodeVector);
+	std::cout << "updateLLR time " << (double)(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - begin)).count()/1000 << " ms\n";
+	std::cout << "Expecting " << exp_llr << " computed " << check_node_ms.getLLRat(1) << " " <<  check_node_ms.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << -exp_llr << " computed " << check_node_ms.getLLRat(110) <<"\n";
+
+
+	variableNodeVector->at(107*ALL_COLUMNS + (slopes[line_index]*107 + node_c)%ALL_COLUMNS).setLLRat((all_llr > 0 ? -(all_llr - 1) : -(all_llr + 1)), line_index);
+	exp_llr = (all_llr > 0) ? all_llr-1 : -(all_llr-1);
+	check_node_ms.updateLLRminSum(variableNodeVector);
+	std::cout << "Expecting " << (all_llr > 0 ? (all_llr - 1) : (all_llr + 1)) << " computed " << check_node_ms.getLLRat(1) << " " <<  check_node_ms.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << (all_llr < 0 ? -(all_llr + 1) : -(all_llr - 1))   << " computed " << check_node_ms.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << -all_llr << " computed " << check_node_ms.getLLRat(107) <<"\n";
+
+
+
+	// set one LLR to 0 -> also the resulting llr should be 0
+	variableNodeVector->at(106*ALL_COLUMNS + (slopes[line_index]*106 + node_c)%ALL_COLUMNS).setLLRat(0, line_index);
+	check_node_ms.updateLLRminSum(variableNodeVector);
+	std::cout << "Expecting " << 0 << " computed " << check_node_ms.getLLRat(1) << " " <<  check_node_ms.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << 0 << " computed " << check_node_ms.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << 0 << " computed " << check_node_ms.getLLRat(107) <<"\n";
+	std::cout << "For node 106, expecting " << (all_llr > 0 ? (all_llr - 1) : (all_llr + 1)) << " computed " << check_node_ms.getLLRat(106) <<"\n";
+
+
+	// set one LLR to infinity -> the result is given only by the other ones
+	variableNodeVector->at(106*ALL_COLUMNS + (slopes[line_index]*106 + node_c)%ALL_COLUMNS).setLLRat(std::numeric_limits<double>::infinity(), line_index);
+	check_node_ms.updateLLRminSum(variableNodeVector);
+	std::cout << "Expecting " << (all_llr > 0 ? (all_llr - 1) : -(all_llr + 1)) << " computed " << check_node_ms.getLLRat(1) << " " <<  check_node_ms.getLLRat(2) <<"\n";
+	std::cout << "For node 110, expecting " << -(all_llr > 0 ? (all_llr - 1) : -(all_llr + 1)) << " computed " << check_node_ms.getLLRat(110) <<"\n";
+	std::cout << "For node 107, expecting " << (all_llr > 0 ? -all_llr : all_llr) << " computed " << check_node_ms.getLLRat(107) <<"\n";
+	std::cout << "For node 106, expecting " << (all_llr > 0 ? (all_llr - 1) : (all_llr + 1)) << " computed " << check_node_ms.getLLRat(106) <<"\n";
+
+
+	for(int a = 0; a < (int)ALL_ROWS; ++a) {
+		variableNodeVector->at(a*ALL_COLUMNS + (slopes[line_index]*a + node_c)%ALL_COLUMNS).setLLRat(std::numeric_limits<double>::infinity(), line_index);
+	}
+	check_node_ms.updateLLRminSum(variableNodeVector);
+	std::cout << "Expecting " << std::numeric_limits<double>::infinity() << " computed " << check_node_ms.getLLRat(1) << " " <<  check_node_ms.getLLRat(2) <<"\n";
 	
 	return 0;
 }

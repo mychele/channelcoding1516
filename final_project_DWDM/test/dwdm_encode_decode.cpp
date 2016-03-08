@@ -6,6 +6,10 @@
 #include <chrono>
 
 
+/**
+ * Basic script to launch a single encoding/decoding operation
+ */
+
 int main(int argc, char const *argv[])
 {
 	// rng stuff

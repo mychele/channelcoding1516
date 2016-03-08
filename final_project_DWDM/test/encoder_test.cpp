@@ -4,6 +4,9 @@
 #include <random>
 #include <chrono>
 
+/**
+ * Script to test the encoder
+ */ 
 
 int main(int argc, char const *argv[])
 {

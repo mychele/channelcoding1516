@@ -2,6 +2,9 @@
 #include <random>
 #include <chrono>
 
+/**
+ * Test the performances of C++ random number generation, compare it with MATLAB
+ */
 
 int main(int argc, char const *argv[])
 {

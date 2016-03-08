@@ -44,6 +44,9 @@ int mapJtoK(int j) {
 	return col_r*r + col_index;
 }
 
+/**
+ * This script computes matrix H, G, performs some tests and saves to file what is needed for encoding
+ */ 
 
 int main(int argc, char const *argv[])
 {
@@ -189,63 +192,43 @@ int main(int argc, char const *argv[])
 	// copy the first 292 rows (from 0 to 291)
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
 		H_fr_2[row_index] = H_fr[row_index];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index][col_index] = H_fr[row_index][col_index];
-		// }
 	}
 	// skip row 292, copy 292 rows
 	offset_H_fr = col_r;
 	int offset_H_fr_2 = offset_H_fr - 1; // 1 row was deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
 		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		// }
+	
 	}
 	// skip row 585, copy 292 rows
 	offset_H_fr = 2*col_r;
 	offset_H_fr_2 = offset_H_fr - 2; // 2 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
 		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		// }
 	}
 	// skip row 878, copy 292 rows
 	offset_H_fr = 3*col_r;
 	offset_H_fr_2 = offset_H_fr - 3; // 3 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
 		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		// }
 	}
 	// skip row 1171, copy 292 rows
 	offset_H_fr = 4*col_r;
 	offset_H_fr_2 = offset_H_fr - 4; // 4 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
 		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		// }
 	}
 	// skip row 1464, copy 292 rows
 	offset_H_fr = 5*col_r;
 	offset_H_fr_2 = offset_H_fr - 5; // 5 rows were deleted
 	for (int row_index = 0; row_index < col_r - 1; row_index++) {
 		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		// }
 	}
 	// skip row 1757, copy 293 rows
 	offset_H_fr = 6*col_r;
 	offset_H_fr_2 = offset_H_fr - 6; // 5 rows were deleted
 	for (int row_index = 0; row_index < col_r; row_index++) {
 		H_fr_2[row_index + offset_H_fr_2] = H_fr[row_index + offset_H_fr];
-		// for (int col_index = 0; col_index < H_fr_2.NumCols(); col_index++) {
-		// 	H_fr_2[row_index + offset_H_fr_2][col_index] = H_fr[row_index + offset_H_fr][col_index];
-		// }
 	}
 	// remove useless H_fr_2 and keep just H_fr
 	H_fr.kill();
@@ -595,14 +578,6 @@ int main(int argc, char const *argv[])
 		std::cout << "H x c (complete) = 0? " << (IsZero(H*complete_code_word) ? "yes\n":"no\n");
 
 	}
-
-	
-
-
-
-
-
-
 
 	return 0;
 }
