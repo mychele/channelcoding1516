@@ -4,7 +4,6 @@ K = 30592;
 N = 32640;
 
 Pbit_uncoded = @(x) qfunc(sqrt(2*x));
-PER_uncoded = @(x) 1 - (1 - Pbit_uncoded(x)).^K;
 
 %% Read simulation_results_multi files for SumProduct
 ebno_dB_sumproduct = [3, 3.5, 4, 4.2, 4.6, 4.7:0.02:4.94];
@@ -15,7 +14,7 @@ num_err_bit_sp = zeros(length(ebno_dB_sumproduct), 1);
 num_attempt_per_snr_sp = zeros(length(ebno_dB_sumproduct), 1);
 
 for i = 1:length(ebno_dB_sumproduct)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/blade50/simulation_results_multi_', num2str(ebno_dB_sumproduct(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/blade50/simulation_results_multi_', num2str(ebno_dB_sumproduct(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_sp(i) = length(vec);
@@ -56,7 +55,7 @@ num_err_bit_1sp = zeros(length(ebno_dB_1sp), 1);
 num_attempt_per_snr_1sp = zeros(length(ebno_dB_1sp), 1);
 
 for i = 1:length(ebno_dB_1sp)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/blade1/simulation_results_multi_1_', num2str(ebno_dB_1sp(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/blade1/simulation_results_multi_1_', num2str(ebno_dB_1sp(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_1sp(i) = length(vec);
@@ -88,7 +87,7 @@ num_err_bit_10sp = zeros(length(ebno_dB_10sp), 1);
 num_attempt_per_snr_10sp = zeros(length(ebno_dB_10sp), 1);
 
 for i = 1:length(ebno_dB_10sp)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/blade10/simulation_results_multi_10_', num2str(ebno_dB_10sp(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/blade10/simulation_results_multi_10_', num2str(ebno_dB_10sp(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_10sp(i) = length(vec);
@@ -121,7 +120,7 @@ num_err_bit_20sp = zeros(length(ebno_dB_20sp), 1);
 num_attempt_per_snr_20sp = zeros(length(ebno_dB_20sp), 1);
 
 for i = 1:length(ebno_dB_20sp)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/blade20/simulation_results_multi_20_', num2str(ebno_dB_20sp(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/blade20/simulation_results_multi_20_', num2str(ebno_dB_20sp(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_20sp(i) = length(vec);
@@ -155,7 +154,7 @@ num_err_bit_100sp = zeros(length(ebno_dB_100sp), 1);
 num_attempt_per_snr_100sp = zeros(length(ebno_dB_100sp), 1);
 
 for i = 1:length(ebno_dB_100sp)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/blade100/simulation_results_multi_100_', num2str(ebno_dB_100sp(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/blade100/simulation_results_multi_100_', num2str(ebno_dB_100sp(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_100sp(i) = length(vec);
@@ -206,7 +205,7 @@ num_err_bit_ms = zeros(length(ebno_dB_minsum), 1);
 num_attempt_per_snr_ms = zeros(length(ebno_dB_minsum), 1);
 
 for i = 1:length(ebno_dB_minsum)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/bladems50/simulation_results_minsum_', num2str(ebno_dB_minsum(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/bladems50/simulation_results_minsum_', num2str(ebno_dB_minsum(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_ms(i) = length(vec);
@@ -241,7 +240,7 @@ num_err_bit_ossp = zeros(length(ebno_dB_ossp), 1);
 num_attempt_per_snr_ossp = zeros(length(ebno_dB_ossp), 1);
 
 for i = 1:length(ebno_dB_ossp)
-    fileID = fopen(strcat('/Users/Michele/Dev/git/channelcoding1516/final_project_DWDM/results/results_blade/bladeos/simulation_results_os100_', num2str(ebno_dB_ossp(i)), '.txt'), 'r');
+    fileID = fopen(strcat('./results_blade/bladeos/simulation_results_os100_', num2str(ebno_dB_ossp(i)), '.txt'), 'r');
     vec = fscanf(fileID, '%d');
     fclose(fileID);
     num_attempt_per_snr_ossp(i) = length(vec);
@@ -264,7 +263,7 @@ xlabel('EBN0 [dB]')
 ylabel('BER')
 legend('1,2,3,4,5,6,7', '1,2,3,5,7,11,13', 'Uncoded')
 
-% 
+%% Time
 ebno_sp = [3, 4, 4.5, 4.6, 4.7, 4.8, 4.9, 5, 5.1, 5.2, 5.3, 5.4, 5.5];
 time_sp_50 = [6.21475e+09, 6.17265e+09, 6.03251e+09, 5.04901e+09, 2.60614e+09,  1.39746e+09, 1.07678e+09, 6.03046e+08, 3.72513e+08, 3.41108e+08, 3.05817e+08, 2.82775e+08, 2.66328e+08]./1e9;
 time_sp_100 = [1.06808e+10, 1.05435e+10, 1.01902e+10, 7.64292e+09, 2.64309e+09, 1.26275e+09, 9.9787e+08, 6.39012e+08, 3.78606e+08, 3.42002e+08, 3.14643e+08, 2.85593e+08, 2.67953e+08]./1e9;
