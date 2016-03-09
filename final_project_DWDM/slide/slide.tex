@@ -9,6 +9,7 @@
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage{cite, url,color} % Citation numbers being automatically sorted and properly "compressed/ranged".
+\usepackage[yyyymmdd]{datetime}
 
 
 % Compact lists
@@ -57,14 +58,16 @@
 \newcommand{\s} {\mathbf{s}}
 \newcommand{\y} {\mathbf{y}}
 
+\renewcommand{\dateseparator}{-}
 
 \graphicspath{ {figures/} }
 \setcounter{MaxMatrixCols}{20}
 
 %% preamble
-\title{Implementation and performance evaluation of ITU-T G.975.1 LDPC binary code}
+\title{Implementation and Performance Evaluation of ITU-T G.975.1 LDPC Binary Code}
 \subtitle{Channel Coding 15/16 Final Project}
 \author{Michele Polese}
+\date{2016-03-11}
 \begin{document}
 
 % For tikz
@@ -87,9 +90,9 @@
     \begin{itemize}
     	\item Field of application: DWDM submarine systems
  		\item LDPC Encoder: encoding matrix and implementation
- 		\item Message passing decoder
- 		\item LDPC Decoder \texttt{C++} implementation: the flexibility of OOP
- 		\item Performance evaluation
+ 		\item Message Passing Decoder
+ 		\item LDPC Decoder \texttt{C++} Implementation: the flexibility of OOP
+ 		\item Performance Evaluation
  		\item Conclusions
 	\end{itemize}
 \end{frame}
@@ -127,7 +130,7 @@
 		\item Information word with $K=30592$, it fits a RS (255,239) frame,
 		\item High coding rate $R = \frac{K}{N} = 0.9374$,
 		\item Spectral efficiency $\rho = \dfrac{R \log_2(M)}{BT} = 2R = 1.8748$,
-		\item Hardware implementation suitable for application with 10G and 40G fibers,
+		\item Hardware implementation suitable for application with 10G and 40G fibers.
 	\end{itemize}
 	
 \end{frame}
@@ -143,7 +146,7 @@
 			q = j + 172
 		\end{equation*}
 		\item Entries in $(0, 292-d), d \in [0, 172]$ are set to 0 and never transmitted,
-		\item 7 slopes $s_i, \, i \in \{1 \dots 7\}$ are chosen,
+		\item 7 slopes $s_i, \, i \in \{1 \dots 7\}$, are chosen,
 		\item For each slope $s_i$ 293 lines are defined by
 		\begin{equation*}
 			(a, b) | b = (s_ia + c)\lmod{293}, \quad c \in [0, 292]
@@ -318,7 +321,7 @@
 	$$
 		LLR_{\mu} = \ln \left( \frac{\mu(0)}{\mu(1)} \right)
 	$$
-	\textbf{Leaf nodes} are initialized with received values, and under the hypothesis of equally probable input symbols the LLR are
+	\textbf{Leaf nodes} are initialized with received values, and under the hypothesis of equally probable input symbols the LLR is
 	$$
 		LLR_{g_l \rightarrow =_l} = \ln \left( \frac{\frac{1}{\sqrt{2\pi\sigma_w^2}} e^{-\frac{1}{2\sigma_w^2}(r_l+1)}}{\frac{1}{\sqrt{2\pi\sigma_w^2}}e^{-\frac{1}{2\sigma_w^2}(r_l-1)}} \right) = -\frac{2r_l}{\sigma_w^2}
 	$$
@@ -371,27 +374,23 @@
 
 
 \begin{frame}{Check Node 2/2}
-	\begin{columns}
-	\column{0.5\textwidth}
-	The function $\tilde{\Phi} (x) $ is given by
-	$$
-		\tilde{\Phi} = - \ln \left( \tanh \left(\frac{1}{2} x\right)\right)
-	$$
-	\column{0.5\textwidth}
-	\begin{figure}[t]
-		\centering
-		\setlength\fheight{0.5\textwidth}
-		\setlength\fwidth{0.5\textwidth}
-		\input{./figures/phitilde.tex}
-		\caption{$\tilde{\Phi}(x)$}
-		\label{fig:info_uni}
-	\end{figure}
-	\end{columns}
-	\vfill
-	Min Sum algorithm was implemented too, by changing the update function in the check node
-	$$
-		LLR_{+\rightarrow j} = \min_{i \ne j} \left\{ |LLR_{i \rightarrow +}| \right\} \Pi_{i \ne j} \mbox{sign} \left( LLR_{i \rightarrow +} \right)
-	$$
+	\begin{itemize}
+		\item The function $\tilde{\Phi} (x) $ is given by
+				$
+					\tilde{\Phi} = - \ln \left( \tanh \left(\frac{1}{2} x\right)\right)
+				$
+				\begin{figure}[t]
+					\centering
+					\setlength\fheight{0.2\textwidth}
+					\setlength\fwidth{0.2\textwidth}
+					\input{./figures/phitilde.tex}
+					\label{fig:info_uni}
+				\end{figure}
+		\item Min Sum algorithm was implemented too, by changing the update function in the check node
+			$$
+				LLR_{+\rightarrow j} = \min_{i \ne j} \left\{ |LLR_{i \rightarrow +}| \right\} \Pi_{i \ne j} \mbox{sign} \left( LLR_{i \rightarrow +} \right)
+			$$
+	\end{itemize}
 
 \end{frame}
 
@@ -513,8 +512,13 @@
  		\item Encoding and message passing decoding were described,
  		\item The \texttt{C++} implementation was detailed,
  		\item Results show that Sum Product algorithm exhibits a waterfall between $4.6$ and $4.9$ dB,
+ 		\item Min Sum algorithm exhibits a $0.6$ dB gap with respect to Sum Product,
  		\item The code is available on Github \url{https://github.com/mychele/channelcoding1516}.
 	\end{itemize}
+\end{frame}
+
+\begin{frame}
+    \titlepage
 \end{frame}
 
 \end{document}
