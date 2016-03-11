@@ -377,7 +377,7 @@
 	\begin{itemize}
 		\item The function $\tilde{\Phi} (x) $ is given by
 				$
-					\tilde{\Phi} = - \ln \left( \tanh \left(\frac{1}{2} x\right)\right)
+					\tilde{\Phi}(x) = - \ln \left( \tanh \left(\frac{1}{2} x\right)\right)
 				$
 				\begin{figure}[t]
 					\centering
@@ -440,7 +440,7 @@
 	\begin{itemize}
 		\item For each simulation, a single noise vector is generated, and scaled by $\sigma_w$ for each $\frac{E_b}{N_0}$ with
 		$$
-			\sigma_w = \sqrt{\frac{1}{\sqrt{2 \frac{E_b}{N_0} R}}}
+			\sigma_w = \frac{1}{\sqrt{2 \frac{E_b}{N_0} R}}
 		$$
 		\item The decoding for each $\frac{E_b}{N_0}$ is launched in a separate thread, to parallelize computations.
 	\end{itemize}
